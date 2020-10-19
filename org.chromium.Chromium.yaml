@@ -175,6 +175,7 @@ modules:
         ffmpeg_branding="Chrome"
         is_component_ffmpeg=true
         use_vaapi=true
+        is_asan=true
         '
       - mkdir -p out/ReleaseFree
       - cp out/Release{,Free}/args.gn
