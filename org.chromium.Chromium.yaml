@@ -167,7 +167,6 @@ modules:
         CFLAGS: -Wno-unknown-warning-option -Wno-unknown-pragmas
         CXXFLAGS: -Wno-unknown-warning-option -Wno-unknown-pragmas
     build-commands:
-      - ln -s /app/lib/linux/libclang_rt.asan.* /usr/lib/x86_64-linux-gnu/clang/10.0.1/lib/linux/
       # DO NOT REUSE THE BELOW API KEYS; these are for Flathub only.
       # http://lists.debian.org/debian-legal/2013/11/msg00006.html
       - >-
@@ -196,8 +195,9 @@ modules:
       - cp out/Release{,Free}/args.gn
       - echo -e 'proprietary_codecs = false\nffmpeg_branding = "Chromium"' >> out/ReleaseFree/args.gn
       - out/Release/gn gen out/ReleaseFree
-      - ninja -C out/ReleaseFree -j$FLATPAK_BUILDER_N_JOBS libffmpeg.so
+      - ln -sf /app/lib/linux/libclang_rt.asan.* /usr/lib/x86_64-linux-gnu/clang/10.0.1/lib/linux/; ninja -C out/ReleaseFree -j$FLATPAK_BUILDER_N_JOBS libffmpeg.so
       - >
+        ln -sf /app/lib/linux/libclang_rt.asan.* /usr/lib/x86_64-linux-gnu/clang/10.0.1/lib/linux/;
         . /usr/lib/sdk/node12/enable.sh;
         . /usr/lib/sdk/openjdk11/enable.sh;
         ninja -C out/Release -j$FLATPAK_BUILDER_N_JOBS chrome
