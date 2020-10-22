@@ -3,6 +3,7 @@ runtime: org.freedesktop.Platform
 runtime-version: '20.08'
 sdk: org.freedesktop.Sdk
 command: chromium
+writable-sdk: true
 finish-args:
   - --require-version=1.8.2
   - --filesystem=host-etc
@@ -141,6 +142,20 @@ modules:
     build-commands:
       - mkdir -p /app/native-messaging-hosts /app/widevine
 
+  - name: compiler-rt-asan
+    buildsystem: cmake-ninja
+    builddir: true
+    config-opts:
+      - -DCOMPILER_RT_BUILD_BUILTINS=OFF
+      - -DCOMPILER_RT_BUILD_CRT=OFF
+      - -DCOMPILER_RT_BUILD_XRAY=OFF
+      - -DCOMPILER_RT_BUILD_PROFILE=OFF
+      - -DCOMPILER_RT_BUILD_MEMPROF=OFF
+    sources:
+      - type: archive
+        url: https://github.com/llvm/llvm-project/releases/download/llvmorg-10.0.1/compiler-rt-10.0.1.src.tar.xz
+        sha256: d90dc8e121ca0271f0fd3d639d135bfaa4b6ed41e67bd6eb77808f72629658fa
+
   - name: chromium
     buildsystem: simple
     build-options:
@@ -152,6 +167,7 @@ modules:
         CFLAGS: -Wno-unknown-warning-option -Wno-unknown-pragmas
         CXXFLAGS: -Wno-unknown-warning-option -Wno-unknown-pragmas
     build-commands:
+      - ln -s /app/lib/linux/libclang_rt.asan.* /usr/lib/x86_64-linux-gnu/clang/10.0.1/lib/linux/
       # DO NOT REUSE THE BELOW API KEYS; these are for Flathub only.
       # http://lists.debian.org/debian-legal/2013/11/msg00006.html
       - >-
