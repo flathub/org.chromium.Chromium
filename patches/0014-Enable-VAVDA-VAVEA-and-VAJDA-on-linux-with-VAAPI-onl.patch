@@ -1,7 +1,7 @@
-From 42f719c600de6b0f32d121f44c571004329b952c Mon Sep 17 00:00:00 2001
+From 8aa01bc253d182e0553f7f4f20dc138d9685d97e Mon Sep 17 00:00:00 2001
 From: Lorenzo Tilve <ltilve@igalia.com>
 Date: Mon, 7 Oct 2019 13:45:14 +0200
-Subject: [PATCH 13/17] Enable VAVDA, VAVEA and VAJDA on linux with VAAPI only
+Subject: [PATCH 14/18] Enable VAVDA, VAVEA and VAJDA on linux with VAAPI only
 
 This patch contains all the changes necessary to use VA-API along with
 vaapi-driver to run all media use cases supported with hardware acceleration.
@@ -50,7 +50,7 @@ Original patch retrieved/rebased from https://raw.githubusercontent.com/saiarcot
  10 files changed, 72 insertions(+), 48 deletions(-)
 
 diff --git a/chrome/browser/about_flags.cc b/chrome/browser/about_flags.cc
-index b1a12f28f5c09..6821101695ec8 100644
+index 111807a9bdf6c..1794b098518f5 100644
 --- a/chrome/browser/about_flags.cc
 +++ b/chrome/browser/about_flags.cc
 @@ -2647,7 +2647,7 @@ const FeatureEntry kFeatureEntries[] = {
@@ -76,7 +76,7 @@ index b1a12f28f5c09..6821101695ec8 100644
  #endif  // OS_CHROMEOS
      {"system-keyboard-lock", flag_descriptions::kSystemKeyboardLockName,
 diff --git a/chrome/browser/flag_descriptions.cc b/chrome/browser/flag_descriptions.cc
-index dedde6c53e908..3daf2e6fb47ac 100644
+index ff762a7462206..7014b7deb3ab9 100644
 --- a/chrome/browser/flag_descriptions.cc
 +++ b/chrome/browser/flag_descriptions.cc
 @@ -3519,9 +3519,7 @@ const char kVideoToolboxVp9DecodingDescription[] =
@@ -104,7 +104,7 @@ index dedde6c53e908..3daf2e6fb47ac 100644
  const char kAggregatedMlAppRankingDescription[] =
      "Use the aggregated ML model to rank the suggested apps.";
 diff --git a/chrome/browser/flag_descriptions.h b/chrome/browser/flag_descriptions.h
-index ce9bf4b93c2aa..c3f5ce95e1457 100644
+index fa4c889d357a4..82c3abd03cf3e 100644
 --- a/chrome/browser/flag_descriptions.h
 +++ b/chrome/browser/flag_descriptions.h
 @@ -2026,13 +2026,17 @@ extern const char kVideoToolboxVp9DecodingDescription[];

@@ -1,7 +1,7 @@
-From 1d31e91fb3c70cfe210e7361a75acc545249695f Mon Sep 17 00:00:00 2001
+From c4c75df8160abf15d1a9e3d465b05450a8fca652 Mon Sep 17 00:00:00 2001
 From: Daniel Drake <drake@endlessm.com>
 Date: Fri, 3 Jul 2015 14:59:24 -0600
-Subject: [PATCH 11/17] x11: Set _NET_WM_BYPASS_COMPOSITOR for fullscreen
+Subject: [PATCH 11/18] x11: Set _NET_WM_BYPASS_COMPOSITOR for fullscreen
 
 This improves performance at full screen.
 ---

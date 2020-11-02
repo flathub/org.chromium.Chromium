@@ -1,7 +1,7 @@
-From 2444f13dc9387906e516c4a36bca95a9376ad138 Mon Sep 17 00:00:00 2001
+From 420d5b6886d38c78f69490c08a79ccf34635ac97 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Mon, 31 Aug 2020 15:26:52 -0500
-Subject: [PATCH 14/17] XDG file chooser portal support
+Subject: [PATCH 16/18] XDG file chooser portal support
 
 ---
  chrome/browser/about_flags.cc             |   7 +
@@ -13,17 +13,17 @@ Subject: [PATCH 14/17] XDG file chooser portal support
  ui/gtk/gtk_ui.cc                          |   4 +
  ui/gtk/select_file_dialog_impl.cc         |  68 +-
  ui/gtk/select_file_dialog_impl.h          |   9 +
- ui/gtk/select_file_dialog_impl_portal.cc  | 729 ++++++++++++++++++++++
+ ui/gtk/select_file_dialog_impl_portal.cc  | 730 ++++++++++++++++++++++
  ui/gtk/select_file_dialog_impl_portal.h   | 134 ++++
- 11 files changed, 972 insertions(+), 19 deletions(-)
+ 11 files changed, 973 insertions(+), 19 deletions(-)
  create mode 100644 ui/gtk/select_file_dialog_impl_portal.cc
  create mode 100644 ui/gtk/select_file_dialog_impl_portal.h
 
 diff --git a/chrome/browser/about_flags.cc b/chrome/browser/about_flags.cc
-index 6821101695ec8..ec6e35da69c4f 100644
+index 1794b098518f5..84a803fbf38c1 100644
 --- a/chrome/browser/about_flags.cc
 +++ b/chrome/browser/about_flags.cc
-@@ -4694,6 +4694,13 @@ const FeatureEntry kFeatureEntries[] = {
+@@ -4702,6 +4702,13 @@ const FeatureEntry kFeatureEntries[] = {
       FEATURE_VALUE_TYPE(features::kVaapiWebPImageDecodeAcceleration)},
  #endif
  
@@ -38,7 +38,7 @@ index 6821101695ec8..ec6e35da69c4f 100644
      {"calculate-native-win-occlusion",
       flag_descriptions::kCalculateNativeWinOcclusionName,
 diff --git a/chrome/browser/flag_descriptions.cc b/chrome/browser/flag_descriptions.cc
-index 3daf2e6fb47ac..34bab7ded9cdd 100644
+index 7014b7deb3ab9..1765e023d8d96 100644
 --- a/chrome/browser/flag_descriptions.cc
 +++ b/chrome/browser/flag_descriptions.cc
 @@ -3376,6 +3376,17 @@ const char kSyncSetupFriendlySettingsDescription[] =
@@ -60,7 +60,7 @@ index 3daf2e6fb47ac..34bab7ded9cdd 100644
  
  #if defined(OS_WIN)
 diff --git a/chrome/browser/flag_descriptions.h b/chrome/browser/flag_descriptions.h
-index c3f5ce95e1457..10e436e081f3f 100644
+index 82c3abd03cf3e..6536d257bcdae 100644
 --- a/chrome/browser/flag_descriptions.h
 +++ b/chrome/browser/flag_descriptions.h
 @@ -1932,6 +1932,15 @@ extern const char kSyncSetupFriendlySettingsDescription[];
@@ -317,10 +317,10 @@ index 3cb8ee5d6a972..412a4394a8d65 100644
    // NewSelectFileDialogImplKDE will actually work.
 diff --git a/ui/gtk/select_file_dialog_impl_portal.cc b/ui/gtk/select_file_dialog_impl_portal.cc
 new file mode 100644
-index 0000000000000..8bab7ba17bbee
+index 0000000000000..d3f153557d5df
 --- /dev/null
 +++ b/ui/gtk/select_file_dialog_impl_portal.cc
-@@ -0,0 +1,729 @@
+@@ -0,0 +1,730 @@
 +#include "ui/gtk/select_file_dialog_impl_portal.h"
 +#include "base/bind.h"
 +#include "base/logging.h"
@@ -412,21 +412,21 @@ index 0000000000000..8bab7ba17bbee
 +
 +// static
 +bool SelectFileDialogImplPortal::IsPortalAvailable() {
-+  bool available = false;
-+  base::WaitableEvent event;
-+
-+  dbus_thread_linux::GetTaskRunner()->PostTask(
-+      FROM_HERE,
-+      base::BindOnce(&IsPortalAvailableOnTaskRunner,
-+                     base::Unretained(&available), base::Unretained(&event)));
-+
 +  // TODO: make this work
++  // base::WaitableEvent event;
++
++  // dbus_thread_linux::GetTaskRunner()->PostTask(
++  //     FROM_HERE,
++  //     base::BindOnce(&IsPortalAvailableOnTaskRunner,
++  //                    base::Unretained(&available),
++  //                    base::Unretained(&event)));
++
 +  // LOG(INFO) << "Waiting for bus thread!";
 +  // event.Wait();
-+  available = true;
 +
-+  VLOG(1) << "File chooser portal available: " << (available ? "yes" : "no");
-+  return available;
++  // VLOG(1) << "File chooser portal available: " << (available ? "yes" : "no");
++  // return available;
++  return true;
 +}
 +
 +// static
@@ -440,7 +440,6 @@ index 0000000000000..8bab7ba17bbee
 +void SelectFileDialogImplPortal::IsPortalAvailableOnTaskRunner(
 +    bool* out_available,
 +    base::WaitableEvent* event) {
-+  // LOG(INFO) << "On bus thread!";
 +  dbus::Bus* bus = AcquireBusOnTaskRunner();
 +
 +  dbus::ObjectProxy* dbus_proxy =
@@ -459,8 +458,7 @@ index 0000000000000..8bab7ba17bbee
 +    }
 +  }
 +
-+  // TODO
-+  // event->Signal();
++  event->Signal();
 +}
 +
 +// static
@@ -652,6 +650,9 @@ index 0000000000000..8bab7ba17bbee
 +    PortalFilterSet filter_set,
 +    base::FilePath::StringType default_extension) {
 +  dbus::Bus* bus = AcquireBusOnTaskRunner();
++  if (!bus->Connect()) {
++    LOG(FATAL) << "Could not connect to bus for XDG portal";
++  }
 +
 +  std::string method;
 +
