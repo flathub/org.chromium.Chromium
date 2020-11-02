@@ -1,4 +1,4 @@
-From 420d5b6886d38c78f69490c08a79ccf34635ac97 Mon Sep 17 00:00:00 2001
+From 7db034e2e7b0f18776e8556eb3d46a7b61ca06ec Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Mon, 31 Aug 2020 15:26:52 -0500
 Subject: [PATCH 16/18] XDG file chooser portal support
