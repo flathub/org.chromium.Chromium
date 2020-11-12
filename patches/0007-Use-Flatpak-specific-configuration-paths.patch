@@ -1,7 +1,7 @@
-From f761ad1220bd5236d563c289a2278315e61253aa Mon Sep 17 00:00:00 2001
+From 632f9f233694bb61f16558def6d8b32966270250 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Tue, 25 Aug 2020 19:26:07 -0500
-Subject: [PATCH 07/18] Use Flatpak-specific configuration paths
+Subject: [PATCH 07/22] Use Flatpak-specific configuration paths
 
 ---
  chrome/common/BUILD.gn        |  4 ++++

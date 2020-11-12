@@ -45,7 +45,7 @@ add-extensions:
     autodelete: true
 
   com.widevine.Widevine:
-    version: '1'
+    version: '4'
     directory: widevine
     autodelete: true
 
@@ -136,10 +136,17 @@ modules:
       - type: file
         path: krb5.conf
 
+  - name: flextop
+    buildsystem: meson
+    sources:
+      - type: git
+        url: https://github.com/refi64/flextop
+        commit: f0845f44e07739d3d1ba70a9f42fdfd0eb6947da
+
   - name: extensions
     buildsystem: simple
     build-commands:
-      - mkdir -p /app/native-messaging-hosts /app/widevine
+      - mkdir -p /app/native-messaging-hosts /app/policies /app/widevine
 
   - name: chromium
     buildsystem: simple
@@ -205,8 +212,8 @@ modules:
       - install -Dm 755 chromium.sh /app/bin/chromium
     sources:
       - type: archive
-        url: https://commondatastorage.googleapis.com/chromium-browser-official/chromium-86.0.4240.183.tar.xz
-        sha256: aa12c6665c33275f3edffb6f127f97f84fa0bb69c644b4b023d51d2d058a69bc
+        url: https://commondatastorage.googleapis.com/chromium-browser-official/chromium-86.0.4240.198.tar.xz
+        sha256: a0ab825e527becab4ab3e11ef889e842436fe11a4fb7874419d1970e680c7a44
       - type: patch
         paths:
           - patches/0001-ffmpeg-Use-royalty-free-libfdk-aac-for-AAC-playback.patch
@@ -227,6 +234,10 @@ modules:
           - patches/0016-XDG-file-chooser-portal-support.patch
           - patches/0017-Remove-dead-reloc-in-nonalloc-LD-flags.patch
           - patches/0018-XProto-Search-for-cursors-in-the-XDG-data-dirs.patch
+          - patches/0019-Remove-the-ability-to-create-desktop-shortcuts.patch
+          - patches/0020-webhid-Use-a-stub-where-there-is-no-OS-support.patch
+          - patches/0021-webusb-Don-t-reinitialize-a-failed-connection.patch
+          - patches/0022-Use-CHROME_WRAPPER-as-the-executable-on-restart.patch
       - type: file
         path: org.chromium.Chromium.desktop
       - type: file

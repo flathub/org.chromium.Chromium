@@ -1,7 +1,7 @@
-From c39a4449a5e61ab63aa71d3d20f972279f387c1c Mon Sep 17 00:00:00 2001
+From 696903debb0a9a52dfc3988b7408efdff9e705c4 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Tue, 17 Mar 2020 13:18:27 -0500
-Subject: [PATCH 06/18] Add Flatpak sandbox support
+Subject: [PATCH 06/22] Add Flatpak sandbox support
 
 ---
  .gitignore                                    |   1 +

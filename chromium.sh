@@ -27,4 +27,5 @@ if [[ -f "$XDG_CONFIG_HOME/chromium-flags.conf" ]]; then
 fi
 
 export TMPDIR="$XDG_RUNTIME_DIR/app/$FLATPAK_ID"
+export CHROME_WRAPPER=$(readlink -f "$0")
 exec /app/chromium/chrome "$@"

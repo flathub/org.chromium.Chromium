@@ -1,7 +1,7 @@
-From fe1320282c71ae6fd58693d18a437e75f86c9f00 Mon Sep 17 00:00:00 2001
+From 7e7f0dbfffc676093ebd5be2e38eecbfd0cdc725 Mon Sep 17 00:00:00 2001
 From: Daniel Nicoara <dnicoara@chromium.org>
 Date: Thu, 24 Sep 2020 02:34:24 +0000
-Subject: [PATCH 17/18] Remove dead-reloc-in-nonalloc LD flags
+Subject: [PATCH 17/22] Remove dead-reloc-in-nonalloc LD flags
 
 Breakpad change landed. Revert workaround.
 

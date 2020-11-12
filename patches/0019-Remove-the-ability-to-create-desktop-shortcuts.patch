@@ -1,0 +1,79 @@
+From 6e66ecec79f40a5b49cbc8df6c4c4d880411c86f Mon Sep 17 00:00:00 2001
+From: Ryan Gonzalez <rymg19@gmail.com>
+Date: Wed, 11 Nov 2020 16:51:49 -0600
+Subject: [PATCH 19/22] Remove the ability to create desktop shortcuts
+
+---
+ .../ui/views/create_application_shortcut_view.cc  | 15 +--------------
+ .../ui/views/create_application_shortcut_view.h   |  1 -
+ 2 files changed, 1 insertion(+), 15 deletions(-)
+
+diff --git a/chrome/browser/ui/views/create_application_shortcut_view.cc b/chrome/browser/ui/views/create_application_shortcut_view.cc
+index 7fdf7167de038..93f5240528dcb 100644
+--- a/chrome/browser/ui/views/create_application_shortcut_view.cc
++++ b/chrome/browser/ui/views/create_application_shortcut_view.cc
+@@ -109,10 +109,6 @@ void CreateChromeApplicationShortcutView::InitControls() {
+   create_shortcuts_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+   create_shortcuts_label->SetMultiLine(true);
+ 
+-  std::unique_ptr<views::Checkbox> desktop_check_box = AddCheckbox(
+-      l10n_util::GetStringUTF16(IDS_CREATE_SHORTCUTS_DESKTOP_CHKBOX),
+-      profile_->GetPrefs()->GetBoolean(prefs::kWebAppCreateOnDesktop));
+-
+   std::unique_ptr<views::Checkbox> menu_check_box;
+   std::unique_ptr<views::Checkbox> quick_launch_check_box;
+ 
+@@ -168,7 +164,6 @@ void CreateChromeApplicationShortcutView::InitControls() {
+       views::GridLayout::kFixedSize,
+       provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL));
+   layout->StartRow(views::GridLayout::kFixedSize, kTableColumnSetId);
+-  desktop_check_box_ = layout->AddView(std::move(desktop_check_box));
+ 
+   const int vertical_spacing =
+       provider->GetDistanceMetric(DISTANCE_RELATED_CONTROL_VERTICAL_SMALL);
+@@ -203,10 +198,6 @@ bool CreateChromeApplicationShortcutView::IsDialogButtonEnabled(
+     // Dialog's not ready because app info hasn't been loaded.
+     return false;
+ 
+-  // One of the three location checkboxes must be checked:
+-  if (desktop_check_box_->GetChecked())
+-    return true;
+-
+   if (menu_check_box_ && menu_check_box_->GetChecked())
+     return true;
+ 
+@@ -235,7 +226,6 @@ void CreateChromeApplicationShortcutView::OnDialogAccepted() {
+     return;
+ 
+   web_app::ShortcutLocations creation_locations;
+-  creation_locations.on_desktop = desktop_check_box_->GetChecked();
+   if (menu_check_box_ && menu_check_box_->GetChecked()) {
+     creation_locations.applications_menu_location =
+         web_app::APP_MENU_LOCATION_SUBDIR_CHROMEAPPS;
+@@ -258,10 +248,7 @@ void CreateChromeApplicationShortcutView::OnDialogAccepted() {
+ void CreateChromeApplicationShortcutView::ButtonPressed(
+     views::Button* sender,
+     const ui::Event& event) {
+-  if (sender == desktop_check_box_) {
+-    profile_->GetPrefs()->SetBoolean(prefs::kWebAppCreateOnDesktop,
+-                                     desktop_check_box_->GetChecked());
+-  } else if (sender == menu_check_box_) {
++  if (sender == menu_check_box_) {
+     profile_->GetPrefs()->SetBoolean(prefs::kWebAppCreateInAppsMenu,
+                                      menu_check_box_->GetChecked());
+   } else if (sender == quick_launch_check_box_) {
+diff --git a/chrome/browser/ui/views/create_application_shortcut_view.h b/chrome/browser/ui/views/create_application_shortcut_view.h
+index 6250145b12856..95779c6c9d76c 100644
+--- a/chrome/browser/ui/views/create_application_shortcut_view.h
++++ b/chrome/browser/ui/views/create_application_shortcut_view.h
+@@ -71,7 +71,6 @@ class CreateChromeApplicationShortcutView : public views::DialogDelegateView,
+   base::Callback<void(bool)> close_callback_;
+ 
+   // May be null if the platform doesn't support a particular location.
+-  views::Checkbox* desktop_check_box_ = nullptr;
+   views::Checkbox* menu_check_box_ = nullptr;
+   views::Checkbox* quick_launch_check_box_ = nullptr;
+ 
+-- 
+2.26.2
+
