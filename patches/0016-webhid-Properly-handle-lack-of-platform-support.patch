@@ -1,0 +1,82 @@
+From bed141e5f919b4ff6928d89119c4ac9aa1f40f07 Mon Sep 17 00:00:00 2001
+From: Ryan Gonzalez <rymg19@gmail.com>
+Date: Wed, 11 Nov 2020 16:53:24 -0600
+Subject: [PATCH 16/21] [webhid] Properly handle lack of platform support
+
+This avoids crashes when the platform does not have an HID service,
+which can occur on builds without udev.
+---
+ services/device/hid/hid_manager_impl.cc | 40 +++++++++++++++++--------
+ 1 file changed, 27 insertions(+), 13 deletions(-)
+
+diff --git a/services/device/hid/hid_manager_impl.cc b/services/device/hid/hid_manager_impl.cc
+index bcdb44d72101a..e9f4a17365a16 100644
+--- a/services/device/hid/hid_manager_impl.cc
++++ b/services/device/hid/hid_manager_impl.cc
+@@ -26,8 +26,9 @@ HidManagerImpl::HidManagerImpl() : hid_service_observer_(this) {
+   else
+     hid_service_ = HidService::Create();
+ 
+-  DCHECK(hid_service_);
+-  hid_service_observer_.Add(hid_service_.get());
++  if (hid_service_) {
++    hid_service_observer_.Add(hid_service_.get());
++  }
+ }
+ 
+ HidManagerImpl::~HidManagerImpl() {}
+@@ -51,15 +52,23 @@ void HidManagerImpl::AddReceiver(
+ void HidManagerImpl::GetDevicesAndSetClient(
+     mojo::PendingAssociatedRemote<mojom::HidManagerClient> client,
+     GetDevicesCallback callback) {
+-  hid_service_->GetDevices(base::BindOnce(
+-      &HidManagerImpl::CreateDeviceList, weak_factory_.GetWeakPtr(),
+-      std::move(callback), std::move(client)));
++  if (hid_service_) {
++    hid_service_->GetDevices(base::BindOnce(
++        &HidManagerImpl::CreateDeviceList, weak_factory_.GetWeakPtr(),
++        std::move(callback), std::move(client)));
++  } else {
++    CreateDeviceList(std::move(callback), std::move(client), {});
++  }
+ }
+ 
+ void HidManagerImpl::GetDevices(GetDevicesCallback callback) {
+-  hid_service_->GetDevices(base::BindOnce(
+-      &HidManagerImpl::CreateDeviceList, weak_factory_.GetWeakPtr(),
+-      std::move(callback), mojo::NullAssociatedRemote()));
++  if (hid_service_) {
++    hid_service_->GetDevices(base::BindOnce(
++        &HidManagerImpl::CreateDeviceList, weak_factory_.GetWeakPtr(),
++        std::move(callback), mojo::NullAssociatedRemote()));
++  } else {
++    CreateDeviceList(std::move(callback), mojo::NullAssociatedRemote(), {});
++  }
+ }
+ 
+ void HidManagerImpl::CreateDeviceList(
+@@ -79,11 +88,16 @@ void HidManagerImpl::Connect(
+     mojo::PendingRemote<mojom::HidConnectionClient> connection_client,
+     mojo::PendingRemote<mojom::HidConnectionWatcher> watcher,
+     ConnectCallback callback) {
+-  hid_service_->Connect(device_guid,
+-                        base::AdaptCallbackForRepeating(base::BindOnce(
+-                            &HidManagerImpl::CreateConnection,
+-                            weak_factory_.GetWeakPtr(), std::move(callback),
+-                            std::move(connection_client), std::move(watcher))));
++  if (hid_service_) {
++    hid_service_->Connect(
++        device_guid, base::AdaptCallbackForRepeating(base::BindOnce(
++                         &HidManagerImpl::CreateConnection,
++                         weak_factory_.GetWeakPtr(), std::move(callback),
++                         std::move(connection_client), std::move(watcher))));
++  } else {
++    CreateConnection(std::move(callback), mojo::NullRemote(),
++                     mojo::NullRemote(), nullptr);
++  }
+ }
+ 
+ void HidManagerImpl::CreateConnection(
+-- 
+2.26.2
+

@@ -1,7 +1,7 @@
-From 36c4698b90262d34818883288c0b0f97d50db923 Mon Sep 17 00:00:00 2001
+From 6f0b40c2e7bf6f7d21fc82249039536239c09289 Mon Sep 17 00:00:00 2001
 From: Lorenzo Tilve <ltilve@igalia.com>
 Date: Mon, 7 Oct 2019 13:45:14 +0200
-Subject: [PATCH 14/22] Enable VAVDA, VAVEA and VAJDA on linux with VAAPI only
+Subject: [PATCH 13/21] Enable VAVDA, VAVEA and VAJDA on linux with VAAPI only
 
 This patch contains all the changes necessary to use VA-API along with
 vaapi-driver to run all media use cases supported with hardware acceleration.
@@ -37,23 +37,23 @@ Signed-off-by: Daniel Charles <daniel.charles@intel.com>
 
 Original patch retrieved/rebased from https://raw.githubusercontent.com/saiarcot895/chromium-ubuntu-build/master/debian/patches/enable_vaapi_on_linux_2.diff
 ---
- chrome/browser/about_flags.cc                 |  6 +-
- chrome/browser/flag_descriptions.cc           | 10 ++-
- chrome/browser/flag_descriptions.h            | 10 ++-
- content/gpu/BUILD.gn                          |  5 ++
+ chrome/browser/about_flags.cc                 |  6 +--
+ chrome/browser/flag_descriptions.cc           | 10 ++--
+ chrome/browser/flag_descriptions.h            | 10 ++--
+ content/gpu/BUILD.gn                          |  6 +++
  media/base/media_switches.cc                  |  2 +-
  media/filters/BUILD.gn                        |  1 +
- .../gpu_video_decode_accelerator_factory.cc   |  3 +
+ .../gpu_video_decode_accelerator_factory.cc   |  3 ++
  .../service/gpu_video_decode_accelerator.cc   |  2 +
- .../vaapi/vaapi_video_decode_accelerator.cc   | 19 +++---
- media/gpu/vaapi/vaapi_wrapper.cc              | 62 +++++++++++--------
- 10 files changed, 72 insertions(+), 48 deletions(-)
+ .../vaapi/vaapi_video_decode_accelerator.cc   | 19 +++----
+ media/gpu/vaapi/vaapi_wrapper.cc              | 54 +++++++++++--------
+ 10 files changed, 71 insertions(+), 42 deletions(-)
 
 diff --git a/chrome/browser/about_flags.cc b/chrome/browser/about_flags.cc
-index 111807a9bdf6c..1794b098518f5 100644
+index 78bf907f995cf..12c12cf17b65f 100644
 --- a/chrome/browser/about_flags.cc
 +++ b/chrome/browser/about_flags.cc
-@@ -2647,7 +2647,7 @@ const FeatureEntry kFeatureEntries[] = {
+@@ -2870,7 +2870,7 @@ const FeatureEntry kFeatureEntries[] = {
          "disable-accelerated-video-decode",
          flag_descriptions::kAcceleratedVideoDecodeName,
          flag_descriptions::kAcceleratedVideoDecodeDescription,
@@ -62,7 +62,7 @@ index 111807a9bdf6c..1794b098518f5 100644
          SINGLE_DISABLE_VALUE_TYPE(switches::kDisableAcceleratedVideoDecode),
      },
  #endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
-@@ -3112,10 +3112,10 @@ const FeatureEntry kFeatureEntries[] = {
+@@ -3336,10 +3336,10 @@ const FeatureEntry kFeatureEntries[] = {
       flag_descriptions::kWebXrForceRuntimeDescription, kOsDesktop,
       MULTI_VALUE_TYPE(kWebXrForceRuntimeChoices)},
  #endif  // ENABLE_VR
@@ -76,10 +76,10 @@ index 111807a9bdf6c..1794b098518f5 100644
  #endif  // OS_CHROMEOS
      {"system-keyboard-lock", flag_descriptions::kSystemKeyboardLockName,
 diff --git a/chrome/browser/flag_descriptions.cc b/chrome/browser/flag_descriptions.cc
-index ff762a7462206..7014b7deb3ab9 100644
+index b454cbb3ad6a6..48d116e1891d2 100644
 --- a/chrome/browser/flag_descriptions.cc
 +++ b/chrome/browser/flag_descriptions.cc
-@@ -3519,9 +3519,7 @@ const char kVideoToolboxVp9DecodingDescription[] =
+@@ -3590,9 +3590,7 @@ const char kVideoToolboxVp9DecodingDescription[] =
  
  #endif
  
@@ -90,7 +90,7 @@ index ff762a7462206..7014b7deb3ab9 100644
  
  const char kAcceleratedMjpegDecodeName[] =
      "Hardware-accelerated mjpeg decode for captured frame";
-@@ -3529,6 +3527,12 @@ const char kAcceleratedMjpegDecodeDescription[] =
+@@ -3600,6 +3598,12 @@ const char kAcceleratedMjpegDecodeDescription[] =
      "Enable hardware-accelerated mjpeg decode for captured frame where "
      "available.";
  
@@ -104,10 +104,10 @@ index ff762a7462206..7014b7deb3ab9 100644
  const char kAggregatedMlAppRankingDescription[] =
      "Use the aggregated ML model to rank the suggested apps.";
 diff --git a/chrome/browser/flag_descriptions.h b/chrome/browser/flag_descriptions.h
-index fa4c889d357a4..82c3abd03cf3e 100644
+index 858a409fedc97..893398dc86c24 100644
 --- a/chrome/browser/flag_descriptions.h
 +++ b/chrome/browser/flag_descriptions.h
-@@ -2026,13 +2026,17 @@ extern const char kVideoToolboxVp9DecodingDescription[];
+@@ -2062,13 +2062,17 @@ extern const char kVideoToolboxVp9DecodingDescription[];
  
  #endif  // defined(OS_MAC)
  
@@ -129,18 +129,20 @@ index fa4c889d357a4..82c3abd03cf3e 100644
  extern const char kAggregatedMlAppRankingDescription[];
  
 diff --git a/content/gpu/BUILD.gn b/content/gpu/BUILD.gn
-index 747df62b16650..19c62f71c94ab 100644
+index 44aa83dcfa5cf..1b31fe9eb8f4b 100644
 --- a/content/gpu/BUILD.gn
 +++ b/content/gpu/BUILD.gn
-@@ -5,6 +5,7 @@
+@@ -4,7 +4,9 @@
+ 
  import("//build/config/ui.gni")
  import("//gpu/vulkan/features.gni")
- import("//media/media_options.gni")
 +import("//media/gpu/args.gni")
- import("//ui/ozone/ozone.gni")
+ import("//media/media_options.gni")
++import("//ui/ozone/ozone.gni")
  
- # See //content/BUILD.gn for how this works.
-@@ -128,4 +129,8 @@ target(link_target_type, "gpu_sources") {
+ # This file depends on the legacy global sources assignment filter. It should
+ # be converted to check target platform before assigning source files to the
+@@ -133,4 +135,8 @@ target(link_target_type, "gpu_sources") {
        (!is_chromecast || is_cast_desktop_build)) {
      configs += [ "//build/config/linux/dri" ]
    }
@@ -150,10 +152,10 @@ index 747df62b16650..19c62f71c94ab 100644
 +  }
  }
 diff --git a/media/base/media_switches.cc b/media/base/media_switches.cc
-index 3a9b0abe7d38d..01b576007f1c9 100644
+index 0c20d23e27340..178253609dbdf 100644
 --- a/media/base/media_switches.cc
 +++ b/media/base/media_switches.cc
-@@ -791,7 +791,7 @@ bool IsVideoCaptureAcceleratedJpegDecodingEnabled() {
+@@ -827,7 +827,7 @@ bool IsVideoCaptureAcceleratedJpegDecodingEnabled() {
            switches::kUseFakeMjpegDecodeAccelerator)) {
      return true;
    }
@@ -196,10 +198,10 @@ index a24ee0fe3c4f1..6db12a1e544c9 100644
    decoder.reset(new VaapiVideoDecodeAccelerator(gl_client_.make_context_current,
                                                  gl_client_.bind_image));
 diff --git a/media/gpu/ipc/service/gpu_video_decode_accelerator.cc b/media/gpu/ipc/service/gpu_video_decode_accelerator.cc
-index abce10ca7769d..190add1baa08a 100644
+index 34432ca11ac97..a20f0475b9477 100644
 --- a/media/gpu/ipc/service/gpu_video_decode_accelerator.cc
 +++ b/media/gpu/ipc/service/gpu_video_decode_accelerator.cc
-@@ -378,6 +378,7 @@ bool GpuVideoDecodeAccelerator::Initialize(
+@@ -384,6 +384,7 @@ bool GpuVideoDecodeAccelerator::Initialize(
      LOG(ERROR) << "Failed creating the VDA factory";
      return false;
    }
@@ -207,7 +209,7 @@ index abce10ca7769d..190add1baa08a 100644
  
    const gpu::GpuDriverBugWorkarounds& gpu_workarounds =
        stub_->channel()->gpu_channel_manager()->gpu_driver_bug_workarounds();
-@@ -398,6 +399,7 @@ bool GpuVideoDecodeAccelerator::Initialize(
+@@ -404,6 +405,7 @@ bool GpuVideoDecodeAccelerator::Initialize(
                 << (config.is_encrypted() ? " with encryption" : "");
      return false;
    }
@@ -216,7 +218,7 @@ index abce10ca7769d..190add1baa08a 100644
    // Attempt to set up performing decoding tasks on IO thread, if supported by
    // the VDA.
 diff --git a/media/gpu/vaapi/vaapi_video_decode_accelerator.cc b/media/gpu/vaapi/vaapi_video_decode_accelerator.cc
-index 5a99fcc9bcffd..3e4b6dac9ab1b 100644
+index 3772ad5859e23..07456e345b2a1 100644
 --- a/media/gpu/vaapi/vaapi_video_decode_accelerator.cc
 +++ b/media/gpu/vaapi/vaapi_video_decode_accelerator.cc
 @@ -58,6 +58,7 @@ unsigned int GetVaFormatForVideoCodecProfile(VideoCodecProfile profile) {
@@ -235,7 +237,7 @@ index 5a99fcc9bcffd..3e4b6dac9ab1b 100644
  
  }  // namespace
  
-@@ -680,10 +682,11 @@ void VaapiVideoDecodeAccelerator::AssignPictureBuffers(
+@@ -684,10 +686,11 @@ void VaapiVideoDecodeAccelerator::AssignPictureBuffers(
  
    available_picture_buffers_.clear();
  
@@ -251,7 +253,7 @@ index 5a99fcc9bcffd..3e4b6dac9ab1b 100644
    // requested_pic_size_ can be adjusted by VDA client. We should update
    // |requested_pic_size_| by buffers[0].size(). But AMD driver doesn't decode
    // frames correctly if the surface stride is different from the width of a
-@@ -1201,13 +1204,7 @@ VaapiVideoDecodeAccelerator::DecideBufferAllocationMode() {
+@@ -1210,13 +1213,7 @@ VaapiVideoDecodeAccelerator::DecideBufferAllocationMode() {
    DCHECK_NE(output_mode_, VideoDecodeAccelerator::Config::OutputMode::IMPORT);
    // TODO(crbug/1116701): get video decode acceleration working with ozone.
    DCHECK(!features::IsUsingOzonePlatform());
@@ -267,10 +269,10 @@ index 5a99fcc9bcffd..3e4b6dac9ab1b 100644
    // TODO(crbug.com/912295): Enable a better BufferAllocationMode for IMPORT
    // |output_mode_| as well.
 diff --git a/media/gpu/vaapi/vaapi_wrapper.cc b/media/gpu/vaapi/vaapi_wrapper.cc
-index ab80948cc927b..1b644554631ff 100644
+index 6a0ae649da26a..2a4cd1effd39f 100644
 --- a/media/gpu/vaapi/vaapi_wrapper.cc
 +++ b/media/gpu/vaapi/vaapi_wrapper.cc
-@@ -447,6 +447,11 @@ void VADisplayState::PreSandboxInitialization() {
+@@ -461,6 +461,11 @@ void VADisplayState::PreSandboxInitialization() {
        base::File::FLAG_OPEN | base::File::FLAG_READ | base::File::FLAG_WRITE);
    if (drm_file.IsValid())
      VADisplayState::Get()->SetDrmFd(drm_file.GetPlatformFile());
@@ -282,18 +284,7 @@ index ab80948cc927b..1b644554631ff 100644
  }
  
  VADisplayState::VADisplayState()
-@@ -474,10 +479,6 @@ bool VADisplayState::Initialize() {
- }
- 
- bool VADisplayState::InitializeOnce() {
--  static_assert(
--      VA_MAJOR_VERSION >= 2 || (VA_MAJOR_VERSION == 1 && VA_MINOR_VERSION >= 1),
--      "Requires VA-API >= 1.1.0");
--
-   switch (gl::GetGLImplementation()) {
-     case gl::kGLImplementationEGLGLES2:
-       va_display_ = vaGetDisplayDRM(drm_fd_.get());
-@@ -496,6 +497,7 @@ bool VADisplayState::InitializeOnce() {
+@@ -506,6 +511,7 @@ bool VADisplayState::InitializeVaDisplay_Locked() {
        if (!features::IsUsingOzonePlatform())
          va_display_ = vaGetDisplay(gfx::GetXDisplay());
  #endif  // USE_X11
@@ -301,7 +292,7 @@ index ab80948cc927b..1b644554631ff 100644
        break;
      // Cannot infer platform from GL, try all available displays
      case gl::kGLImplementationNone:
-@@ -543,8 +545,21 @@ bool VADisplayState::InitializeOnce() {
+@@ -538,14 +544,27 @@ bool VADisplayState::InitializeVaDriver_Locked() {
    int major_version, minor_version;
    VAStatus va_res = vaInitialize(va_display_, &major_version, &minor_version);
    if (va_res != VA_STATUS_SUCCESS) {
@@ -323,9 +314,6 @@ index ab80948cc927b..1b644554631ff 100644
 +      LOG(WARNING) << "vaInitialize succeeded for DRM";
 +    }
    }
- 
-   va_initialized_ = true;
-@@ -552,8 +567,8 @@ bool VADisplayState::InitializeOnce() {
    const std::string va_vendor_string = vaQueryVendorString(va_display_);
    DLOG_IF(WARNING, va_vendor_string.empty())
        << "Vendor string empty or error reading.";
@@ -335,8 +323,8 @@ index ab80948cc927b..1b644554631ff 100644
 +          << va_vendor_string;
    implementation_type_ = VendorStringToImplementationType(va_vendor_string);
  
-   // The VAAPI version is determined from what is loaded on the system by
-@@ -565,8 +580,8 @@ bool VADisplayState::InitializeOnce() {
+   va_initialized_ = true;
+@@ -559,8 +578,8 @@ bool VADisplayState::InitializeVaDriver_Locked() {
    if (VA_MAJOR_VERSION > major_version ||
        (VA_MAJOR_VERSION == major_version && VA_MINOR_VERSION > minor_version)) {
      LOG(ERROR) << "The system version " << major_version << "." << minor_version
@@ -347,18 +335,7 @@ index ab80948cc927b..1b644554631ff 100644
      return false;
    }
    return true;
-@@ -741,8 +756,8 @@ bool AreAttribsSupported(const base::Lock* va_lock,
-     if (attribs[i].type != required_attribs[i].type ||
-         (attribs[i].value & required_attribs[i].value) !=
-             required_attribs[i].value) {
--      DVLOG(1) << "Unsupported value " << required_attribs[i].value
--               << " for attribute type " << required_attribs[i].type;
-+      VLOG(1) << "Unsupported value " << required_attribs[i].value
-+              << " for attribute type " << required_attribs[i].type;
-       return false;
-     }
-   }
-@@ -939,7 +954,7 @@ bool VASupportedProfiles::FillProfileInfo_Locked(
+@@ -972,7 +991,7 @@ bool VASupportedProfiles::FillProfileInfo_Locked(
                         false);
  
    profile_info->va_profile = va_profile;
@@ -367,7 +344,7 @@ index ab80948cc927b..1b644554631ff 100644
    profile_info->min_resolution = gfx::Size();
    profile_info->max_resolution = gfx::Size();
    for (const auto& attrib : attrib_list) {
-@@ -1164,11 +1179,8 @@ bool VASupportedImageFormats::InitSupportedImageFormats_Locked() {
+@@ -1197,11 +1216,8 @@ bool VASupportedImageFormats::InitSupportedImageFormats_Locked() {
  
  bool IsLowPowerEncSupported(VAProfile va_profile) {
    constexpr VAProfile kSupportedLowPowerEncodeProfiles[] = {
@@ -381,7 +358,7 @@ index ab80948cc927b..1b644554631ff 100644
    if (!base::Contains(kSupportedLowPowerEncodeProfiles, va_profile))
      return false;
  
-@@ -1877,12 +1889,9 @@ bool VaapiWrapper::PutSurfaceIntoPixmap(VASurfaceID va_surface_id,
+@@ -1891,12 +1907,9 @@ bool VaapiWrapper::PutSurfaceIntoPixmap(VASurfaceID va_surface_id,
    VA_SUCCESS_OR_RETURN(va_res, VaapiFunctions::kVASyncSurface, false);
  
    // Put the data into an X Pixmap.
@@ -397,7 +374,7 @@ index ab80948cc927b..1b644554631ff 100644
    VA_SUCCESS_OR_RETURN(va_res, VaapiFunctions::kVAPutSurface, false);
    return true;
  }
-@@ -2104,9 +2113,8 @@ bool VaapiWrapper::GetVAEncMaxNumOfRefFrames(VideoCodecProfile profile,
+@@ -2120,9 +2133,8 @@ bool VaapiWrapper::GetVAEncMaxNumOfRefFrames(VideoCodecProfile profile,
    attrib.type = VAConfigAttribEncMaxRefFrames;
  
    base::AutoLock auto_lock(*va_lock_);

@@ -1,7 +1,7 @@
-From 696903debb0a9a52dfc3988b7408efdff9e705c4 Mon Sep 17 00:00:00 2001
+From d3959eb4525af4226a283e3199d6fbe8f5f8f3b5 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Tue, 17 Mar 2020 13:18:27 -0500
-Subject: [PATCH 06/22] Add Flatpak sandbox support
+Subject: [PATCH 06/21] flatpak: Add initial sandbox support
 
 ---
  .gitignore                                    |   1 +
@@ -29,7 +29,7 @@ Subject: [PATCH 06/22] Add Flatpak sandbox support
  create mode 100644 sandbox/linux/services/flatpak_sandbox.h
 
 diff --git a/.gitignore b/.gitignore
-index f50a151327a05..1daf12b72f66e 100644
+index 79990a08deeb4..adf8d0e89b997 100644
 --- a/.gitignore
 +++ b/.gitignore
 @@ -60,6 +60,7 @@ v8.log
@@ -234,19 +234,19 @@ index 21b8323eb4965..c69d687f8e871 100644
  
    // This lock protects the |zygote_pids_| set.
 diff --git a/content/common/child_process_host_impl.cc b/content/common/child_process_host_impl.cc
-index dbd2f448d5b17..fed1bbbc0f576 100644
+index 56e7fae0b8f49..66a9661d69888 100644
 --- a/content/common/child_process_host_impl.cc
 +++ b/content/common/child_process_host_impl.cc
-@@ -38,6 +38,7 @@
+@@ -39,6 +39,7 @@
  
- #if defined(OS_LINUX)
+ #if defined(OS_LINUX) || defined(OS_CHROMEOS)
  #include "base/linux_util.h"
 +#include "sandbox/linux/services/flatpak_sandbox.h"
  #elif defined(OS_MAC)
  #include "base/mac/foundation_util.h"
  #include "content/common/mac_helpers.h"
-@@ -73,7 +74,12 @@ base::FilePath ChildProcessHost::GetChildPath(int flags) {
- #if defined(OS_LINUX)
+@@ -74,7 +75,12 @@ base::FilePath ChildProcessHost::GetChildPath(int flags) {
+ #if defined(OS_LINUX) || defined(OS_CHROMEOS)
    // Use /proc/self/exe rather than our known binary path so updates
    // can't swap out the binary from underneath us.
 -  if (child_path.empty() && flags & CHILD_ALLOW_SELF)
@@ -259,7 +259,7 @@ index dbd2f448d5b17..fed1bbbc0f576 100644
      child_path = base::FilePath(base::kProcSelfExe);
  #endif
  
-@@ -294,7 +300,7 @@ bool ChildProcessHostImpl::OnMessageReceived(const IPC::Message& msg) {
+@@ -299,7 +305,7 @@ bool ChildProcessHostImpl::OnMessageReceived(const IPC::Message& msg) {
    }
  
    if (!handled) {
@@ -268,7 +268,7 @@ index dbd2f448d5b17..fed1bbbc0f576 100644
    }
  
  #if BUILDFLAG(IPC_MESSAGE_LOG_ENABLED)
-@@ -308,7 +314,7 @@ void ChildProcessHostImpl::OnChannelConnected(int32_t peer_pid) {
+@@ -313,7 +319,7 @@ void ChildProcessHostImpl::OnChannelConnected(int32_t peer_pid) {
    if (!peer_process_.IsValid()) {
      peer_process_ = base::Process::OpenWithExtraPrivileges(peer_pid);
      if (!peer_process_.IsValid())
@@ -278,7 +278,7 @@ index dbd2f448d5b17..fed1bbbc0f576 100644
    }
    opening_channel_ = false;
 diff --git a/content/zygote/zygote_linux.cc b/content/zygote/zygote_linux.cc
-index a7bbb410caf60..4fcce91d5ee23 100644
+index 95d5a82c25082..3cf22b2efa7b4 100644
 --- a/content/zygote/zygote_linux.cc
 +++ b/content/zygote/zygote_linux.cc
 @@ -115,7 +115,7 @@ bool Zygote::ProcessRequests() {
@@ -302,7 +302,7 @@ index a7bbb410caf60..4fcce91d5ee23 100644
    std::vector<base::ScopedFD> fds;
    char buf[kZygoteMaxMessageLength];
 diff --git a/content/zygote/zygote_linux.h b/content/zygote/zygote_linux.h
-index 8e451fa6afe51..f7a1dc3db1ee1 100644
+index d186e71979700..f86e0257821d4 100644
 --- a/content/zygote/zygote_linux.h
 +++ b/content/zygote/zygote_linux.h
 @@ -62,6 +62,8 @@ class Zygote {
@@ -315,10 +315,10 @@ index 8e451fa6afe51..f7a1dc3db1ee1 100644
    // ---------------------------------------------------------------------------
    // Requests from the browser...
 diff --git a/content/zygote/zygote_main_linux.cc b/content/zygote/zygote_main_linux.cc
-index 14ac0b9ac8d23..aa8b85c624ba8 100644
+index 07a6eeab44fa2..3596e8793c38a 100644
 --- a/content/zygote/zygote_main_linux.cc
 +++ b/content/zygote/zygote_main_linux.cc
-@@ -33,6 +33,7 @@
+@@ -34,6 +34,7 @@
  #include "content/public/common/zygote/zygote_fork_delegate_linux.h"
  #include "content/zygote/zygote_linux.h"
  #include "sandbox/linux/services/credentials.h"
@@ -326,7 +326,7 @@ index 14ac0b9ac8d23..aa8b85c624ba8 100644
  #include "sandbox/linux/services/init_process_reaper.h"
  #include "sandbox/linux/services/libc_interceptor.h"
  #include "sandbox/linux/services/namespace_sandbox.h"
-@@ -150,6 +151,7 @@ static void EnterNamespaceSandbox(sandbox::policy::SandboxLinux* linux_sandbox,
+@@ -149,6 +150,7 @@ static void EnterNamespaceSandbox(sandbox::policy::SandboxLinux* linux_sandbox,
  
  static void EnterLayerOneSandbox(sandbox::policy::SandboxLinux* linux_sandbox,
                                   const bool using_layer1_sandbox,
@@ -334,7 +334,7 @@ index 14ac0b9ac8d23..aa8b85c624ba8 100644
                                   base::OnceClosure post_fork_parent_callback) {
    DCHECK(linux_sandbox);
  
-@@ -171,7 +173,8 @@ static void EnterLayerOneSandbox(sandbox::policy::SandboxLinux* linux_sandbox,
+@@ -170,7 +172,8 @@ static void EnterLayerOneSandbox(sandbox::policy::SandboxLinux* linux_sandbox,
    } else if (sandbox::NamespaceSandbox::InNewUserNamespace()) {
      EnterNamespaceSandbox(linux_sandbox, std::move(post_fork_parent_callback));
    } else {
@@ -344,7 +344,7 @@ index 14ac0b9ac8d23..aa8b85c624ba8 100644
    }
  }
  
-@@ -195,8 +198,11 @@ bool ZygoteMain(
+@@ -194,8 +197,11 @@ bool ZygoteMain(
        linux_sandbox->setuid_sandbox_client()->IsSuidSandboxChild();
    const bool using_namespace_sandbox =
        sandbox::NamespaceSandbox::InNewUserNamespace();
@@ -357,7 +357,7 @@ index 14ac0b9ac8d23..aa8b85c624ba8 100644
  
    if (using_setuid_sandbox) {
      linux_sandbox->setuid_sandbox_client()->CloseDummyFile();
-@@ -223,7 +229,7 @@ bool ZygoteMain(
+@@ -222,7 +228,7 @@ bool ZygoteMain(
  
    // Turn on the first layer of the sandbox if the configuration warrants it.
    EnterLayerOneSandbox(
@@ -366,7 +366,7 @@ index 14ac0b9ac8d23..aa8b85c624ba8 100644
        base::BindOnce(CloseFds, linux_sandbox->GetFileDescriptorsToClose()));
  
    const int sandbox_flags = linux_sandbox->GetStatus();
-@@ -235,6 +241,10 @@ bool ZygoteMain(
+@@ -234,6 +240,10 @@ bool ZygoteMain(
        !!(sandbox_flags & sandbox::policy::SandboxLinux::kUserNS);
    CHECK_EQ(using_namespace_sandbox, namespace_sandbox_engaged);
  
@@ -376,12 +376,12 @@ index 14ac0b9ac8d23..aa8b85c624ba8 100644
 +
    Zygote zygote(sandbox_flags, std::move(fork_delegates),
                  base::GlobalDescriptors::Descriptor(
-                     static_cast<uint32_t>(service_manager::kSandboxIPCChannel),
+                     static_cast<uint32_t>(kSandboxIPCChannel), GetSandboxFD()));
 diff --git a/sandbox/linux/BUILD.gn b/sandbox/linux/BUILD.gn
-index d1f3f14d44a9c..8cdf9172c262e 100644
+index 4fd639fd0fa3f..0957bf410d833 100644
 --- a/sandbox/linux/BUILD.gn
 +++ b/sandbox/linux/BUILD.gn
-@@ -321,6 +321,10 @@ if (is_linux || is_chromeos) {
+@@ -329,6 +329,10 @@ if (is_linux || is_chromeos) {
  
  component("sandbox_services") {
    sources = [
@@ -392,7 +392,7 @@ index d1f3f14d44a9c..8cdf9172c262e 100644
      "services/init_process_reaper.cc",
      "services/init_process_reaper.h",
      "services/proc_util.cc",
-@@ -355,7 +359,10 @@ component("sandbox_services") {
+@@ -367,7 +371,10 @@ component("sandbox_services") {
  
    defines = [ "SANDBOX_IMPLEMENTATION" ]
  
@@ -1230,7 +1230,7 @@ index 0000000000000..fc8a77d403f96
 +
 +#endif  // SANDBOX_LINUX_SERVICES_FLATPAK_SANDBOX_H_
 diff --git a/sandbox/policy/linux/sandbox_linux.cc b/sandbox/policy/linux/sandbox_linux.cc
-index a2f1150a0b61f..a3213edc47a06 100644
+index c4231d0b964a7..15c8942e63d86 100644
 --- a/sandbox/policy/linux/sandbox_linux.cc
 +++ b/sandbox/policy/linux/sandbox_linux.cc
 @@ -33,6 +33,7 @@
@@ -1263,7 +1263,7 @@ index a2f1150a0b61f..a3213edc47a06 100644
  
      // We report whether the sandbox will be activated when renderers, workers
 diff --git a/sandbox/policy/linux/sandbox_linux.h b/sandbox/policy/linux/sandbox_linux.h
-index 3f818b9ad3a70..2bf95066a6468 100644
+index 4b32dc48c27cd..fb6f41e7ed822 100644
 --- a/sandbox/policy/linux/sandbox_linux.h
 +++ b/sandbox/policy/linux/sandbox_linux.h
 @@ -12,6 +12,7 @@
@@ -1284,7 +1284,7 @@ index 3f818b9ad3a70..2bf95066a6468 100644
      // A flag that denotes an invalid sandbox status.
      kInvalid = 1 << 31,
    };
-@@ -283,6 +287,9 @@ class SANDBOX_POLICY_EXPORT SandboxLinux {
+@@ -290,6 +294,9 @@ class SANDBOX_POLICY_EXPORT SandboxLinux {
    bool seccomp_bpf_supported_;             // Accurate if pre_initialized_.
    bool seccomp_bpf_with_tsync_supported_;  // Accurate if pre_initialized_.
    bool yama_is_enforcing_;                 // Accurate if pre_initialized_.

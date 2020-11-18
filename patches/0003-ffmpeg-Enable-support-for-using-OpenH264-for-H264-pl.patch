@@ -1,4 +1,4 @@
-From efc83a074019724fa40aa4bc755c5facf4a65da6 Mon Sep 17 00:00:00 2001
+From 2bd49607adff6fae9a62d449df5541d0955a9964 Mon Sep 17 00:00:00 2001
 From: Mario Sanchez Prada <mario@endlessm.com>
 Date: Tue, 17 Jul 2018 17:11:01 +0100
 Subject: [PATCH 3/5] ffmpeg: Enable support for using OpenH264 for H264
@@ -66,7 +66,7 @@ index e7c876c01..337e45cb3 100755
  
      } else if (is_win) {
 diff --git a/third_party/ffmpeg/chromium/config/Chrome/linux/arm-neon/config.h b/third_party/ffmpeg/chromium/config/Chrome/linux/arm-neon/config.h
-index 65fd732ff..7c0096606 100644
+index 47daba5a3..ce2b37003 100644
 --- a/third_party/ffmpeg/chromium/config/Chrome/linux/arm-neon/config.h
 +++ b/third_party/ffmpeg/chromium/config/Chrome/linux/arm-neon/config.h
 @@ -468,7 +468,7 @@
@@ -78,7 +78,7 @@ index 65fd732ff..7c0096606 100644
  #define CONFIG_LIBOPENJPEG 0
  #define CONFIG_LIBOPENMPT 0
  #define CONFIG_LIBOPENVINO 0
-@@ -1252,7 +1252,7 @@
+@@ -1253,7 +1253,7 @@
  #define CONFIG_XBIN_DECODER 0
  #define CONFIG_IDF_DECODER 0
  #define CONFIG_LIBAOM_AV1_DECODER 0
@@ -88,7 +88,7 @@ index 65fd732ff..7c0096606 100644
  #define CONFIG_HEVC_CUVID_DECODER 0
  #define CONFIG_HEVC_MEDIACODEC_DECODER 0
 diff --git a/third_party/ffmpeg/chromium/config/Chrome/linux/arm/config.h b/third_party/ffmpeg/chromium/config/Chrome/linux/arm/config.h
-index f315b9a70..ef74846ce 100644
+index 4a93a5d5b..554c42437 100644
 --- a/third_party/ffmpeg/chromium/config/Chrome/linux/arm/config.h
 +++ b/third_party/ffmpeg/chromium/config/Chrome/linux/arm/config.h
 @@ -468,7 +468,7 @@
@@ -100,7 +100,7 @@ index f315b9a70..ef74846ce 100644
  #define CONFIG_LIBOPENJPEG 0
  #define CONFIG_LIBOPENMPT 0
  #define CONFIG_LIBOPENVINO 0
-@@ -1252,7 +1252,7 @@
+@@ -1253,7 +1253,7 @@
  #define CONFIG_XBIN_DECODER 0
  #define CONFIG_IDF_DECODER 0
  #define CONFIG_LIBAOM_AV1_DECODER 0
@@ -110,7 +110,7 @@ index f315b9a70..ef74846ce 100644
  #define CONFIG_HEVC_CUVID_DECODER 0
  #define CONFIG_HEVC_MEDIACODEC_DECODER 0
 diff --git a/third_party/ffmpeg/chromium/config/Chrome/linux/arm64/config.h b/third_party/ffmpeg/chromium/config/Chrome/linux/arm64/config.h
-index 9ae7f3168..4718f8d3c 100644
+index 4800f66f7..2857031e9 100644
 --- a/third_party/ffmpeg/chromium/config/Chrome/linux/arm64/config.h
 +++ b/third_party/ffmpeg/chromium/config/Chrome/linux/arm64/config.h
 @@ -468,7 +468,7 @@
@@ -122,7 +122,7 @@ index 9ae7f3168..4718f8d3c 100644
  #define CONFIG_LIBOPENJPEG 0
  #define CONFIG_LIBOPENMPT 0
  #define CONFIG_LIBOPENVINO 0
-@@ -1252,7 +1252,7 @@
+@@ -1253,7 +1253,7 @@
  #define CONFIG_XBIN_DECODER 0
  #define CONFIG_IDF_DECODER 0
  #define CONFIG_LIBAOM_AV1_DECODER 0
@@ -132,7 +132,7 @@ index 9ae7f3168..4718f8d3c 100644
  #define CONFIG_HEVC_CUVID_DECODER 0
  #define CONFIG_HEVC_MEDIACODEC_DECODER 0
 diff --git a/third_party/ffmpeg/chromium/config/Chrome/linux/x64/config.asm b/third_party/ffmpeg/chromium/config/Chrome/linux/x64/config.asm
-index 4a9c4dfd8..20e186164 100644
+index 20da33027..8af78df09 100644
 --- a/third_party/ffmpeg/chromium/config/Chrome/linux/x64/config.asm
 +++ b/third_party/ffmpeg/chromium/config/Chrome/linux/x64/config.asm
 @@ -453,7 +453,7 @@
@@ -144,7 +144,7 @@ index 4a9c4dfd8..20e186164 100644
  %define CONFIG_LIBOPENJPEG 0
  %define CONFIG_LIBOPENMPT 0
  %define CONFIG_LIBOPENVINO 0
-@@ -1237,7 +1237,7 @@
+@@ -1238,7 +1238,7 @@
  %define CONFIG_XBIN_DECODER 0
  %define CONFIG_IDF_DECODER 0
  %define CONFIG_LIBAOM_AV1_DECODER 0
@@ -154,7 +154,7 @@ index 4a9c4dfd8..20e186164 100644
  %define CONFIG_HEVC_CUVID_DECODER 0
  %define CONFIG_HEVC_MEDIACODEC_DECODER 0
 diff --git a/third_party/ffmpeg/chromium/config/Chrome/linux/x64/config.h b/third_party/ffmpeg/chromium/config/Chrome/linux/x64/config.h
-index 4c380eb57..e2bc161c0 100644
+index 13d2241a0..bf7d0e78c 100644
 --- a/third_party/ffmpeg/chromium/config/Chrome/linux/x64/config.h
 +++ b/third_party/ffmpeg/chromium/config/Chrome/linux/x64/config.h
 @@ -468,7 +468,7 @@
@@ -166,7 +166,7 @@ index 4c380eb57..e2bc161c0 100644
  #define CONFIG_LIBOPENJPEG 0
  #define CONFIG_LIBOPENMPT 0
  #define CONFIG_LIBOPENVINO 0
-@@ -1252,7 +1252,7 @@
+@@ -1253,7 +1253,7 @@
  #define CONFIG_XBIN_DECODER 0
  #define CONFIG_IDF_DECODER 0
  #define CONFIG_LIBAOM_AV1_DECODER 0
@@ -176,7 +176,7 @@ index 4c380eb57..e2bc161c0 100644
  #define CONFIG_HEVC_CUVID_DECODER 0
  #define CONFIG_HEVC_MEDIACODEC_DECODER 0
 diff --git a/third_party/ffmpeg/chromium/config/Chromium/linux/arm-neon/config.h b/third_party/ffmpeg/chromium/config/Chromium/linux/arm-neon/config.h
-index bfb362311..ba08b5161 100644
+index cdc20335c..21ce1caca 100644
 --- a/third_party/ffmpeg/chromium/config/Chromium/linux/arm-neon/config.h
 +++ b/third_party/ffmpeg/chromium/config/Chromium/linux/arm-neon/config.h
 @@ -468,7 +468,7 @@
@@ -188,7 +188,7 @@ index bfb362311..ba08b5161 100644
  #define CONFIG_LIBOPENJPEG 0
  #define CONFIG_LIBOPENMPT 0
  #define CONFIG_LIBOPENVINO 0
-@@ -708,7 +708,7 @@
+@@ -709,7 +709,7 @@
  #define CONFIG_EXTRACT_EXTRADATA_BSF 0
  #define CONFIG_FILTER_UNITS_BSF 0
  #define CONFIG_H264_METADATA_BSF 0
@@ -197,7 +197,7 @@ index bfb362311..ba08b5161 100644
  #define CONFIG_H264_REDUNDANT_PPS_BSF 0
  #define CONFIG_HAPQA_EXTRACT_BSF 0
  #define CONFIG_HEVC_METADATA_BSF 0
-@@ -1252,7 +1252,7 @@
+@@ -1253,7 +1253,7 @@
  #define CONFIG_XBIN_DECODER 0
  #define CONFIG_IDF_DECODER 0
  #define CONFIG_LIBAOM_AV1_DECODER 0
@@ -228,7 +228,7 @@ index e055ba602..4ebfb46b0 100644
      &ff_pcm_alaw_decoder,
      &ff_pcm_f32le_decoder,
 diff --git a/third_party/ffmpeg/chromium/config/Chromium/linux/arm/config.h b/third_party/ffmpeg/chromium/config/Chromium/linux/arm/config.h
-index 92ace6897..3e6682a29 100644
+index a4e822696..837bfc378 100644
 --- a/third_party/ffmpeg/chromium/config/Chromium/linux/arm/config.h
 +++ b/third_party/ffmpeg/chromium/config/Chromium/linux/arm/config.h
 @@ -468,7 +468,7 @@
@@ -240,7 +240,7 @@ index 92ace6897..3e6682a29 100644
  #define CONFIG_LIBOPENJPEG 0
  #define CONFIG_LIBOPENMPT 0
  #define CONFIG_LIBOPENVINO 0
-@@ -708,7 +708,7 @@
+@@ -709,7 +709,7 @@
  #define CONFIG_EXTRACT_EXTRADATA_BSF 0
  #define CONFIG_FILTER_UNITS_BSF 0
  #define CONFIG_H264_METADATA_BSF 0
@@ -249,7 +249,7 @@ index 92ace6897..3e6682a29 100644
  #define CONFIG_H264_REDUNDANT_PPS_BSF 0
  #define CONFIG_HAPQA_EXTRACT_BSF 0
  #define CONFIG_HEVC_METADATA_BSF 0
-@@ -1252,7 +1252,7 @@
+@@ -1253,7 +1253,7 @@
  #define CONFIG_XBIN_DECODER 0
  #define CONFIG_IDF_DECODER 0
  #define CONFIG_LIBAOM_AV1_DECODER 0
@@ -280,7 +280,7 @@ index e055ba602..4ebfb46b0 100644
      &ff_pcm_alaw_decoder,
      &ff_pcm_f32le_decoder,
 diff --git a/third_party/ffmpeg/chromium/config/Chromium/linux/arm64/config.h b/third_party/ffmpeg/chromium/config/Chromium/linux/arm64/config.h
-index 56304fd68..e2a96ef8e 100644
+index 5a5727da7..dca46bcd3 100644
 --- a/third_party/ffmpeg/chromium/config/Chromium/linux/arm64/config.h
 +++ b/third_party/ffmpeg/chromium/config/Chromium/linux/arm64/config.h
 @@ -468,7 +468,7 @@
@@ -292,7 +292,7 @@ index 56304fd68..e2a96ef8e 100644
  #define CONFIG_LIBOPENJPEG 0
  #define CONFIG_LIBOPENMPT 0
  #define CONFIG_LIBOPENVINO 0
-@@ -708,7 +708,7 @@
+@@ -709,7 +709,7 @@
  #define CONFIG_EXTRACT_EXTRADATA_BSF 0
  #define CONFIG_FILTER_UNITS_BSF 0
  #define CONFIG_H264_METADATA_BSF 0
@@ -301,7 +301,7 @@ index 56304fd68..e2a96ef8e 100644
  #define CONFIG_H264_REDUNDANT_PPS_BSF 0
  #define CONFIG_HAPQA_EXTRACT_BSF 0
  #define CONFIG_HEVC_METADATA_BSF 0
-@@ -1252,7 +1252,7 @@
+@@ -1253,7 +1253,7 @@
  #define CONFIG_XBIN_DECODER 0
  #define CONFIG_IDF_DECODER 0
  #define CONFIG_LIBAOM_AV1_DECODER 0
@@ -332,7 +332,7 @@ index e055ba602..4ebfb46b0 100644
      &ff_pcm_alaw_decoder,
      &ff_pcm_f32le_decoder,
 diff --git a/third_party/ffmpeg/chromium/config/Chromium/linux/x64/config.asm b/third_party/ffmpeg/chromium/config/Chromium/linux/x64/config.asm
-index dd4da1f7d..70fd064d5 100644
+index 8b746b159..be3f433f9 100644
 --- a/third_party/ffmpeg/chromium/config/Chromium/linux/x64/config.asm
 +++ b/third_party/ffmpeg/chromium/config/Chromium/linux/x64/config.asm
 @@ -453,7 +453,7 @@
@@ -344,7 +344,7 @@ index dd4da1f7d..70fd064d5 100644
  %define CONFIG_LIBOPENJPEG 0
  %define CONFIG_LIBOPENMPT 0
  %define CONFIG_LIBOPENVINO 0
-@@ -1237,7 +1237,7 @@
+@@ -1238,7 +1238,7 @@
  %define CONFIG_XBIN_DECODER 0
  %define CONFIG_IDF_DECODER 0
  %define CONFIG_LIBAOM_AV1_DECODER 0
@@ -354,7 +354,7 @@ index dd4da1f7d..70fd064d5 100644
  %define CONFIG_HEVC_CUVID_DECODER 0
  %define CONFIG_HEVC_MEDIACODEC_DECODER 0
 diff --git a/third_party/ffmpeg/chromium/config/Chromium/linux/x64/config.h b/third_party/ffmpeg/chromium/config/Chromium/linux/x64/config.h
-index 2bf20b38e..4f5859984 100644
+index 3f3f672c0..fef1a7377 100644
 --- a/third_party/ffmpeg/chromium/config/Chromium/linux/x64/config.h
 +++ b/third_party/ffmpeg/chromium/config/Chromium/linux/x64/config.h
 @@ -468,7 +468,7 @@
@@ -366,7 +366,7 @@ index 2bf20b38e..4f5859984 100644
  #define CONFIG_LIBOPENJPEG 0
  #define CONFIG_LIBOPENMPT 0
  #define CONFIG_LIBOPENVINO 0
-@@ -708,7 +708,7 @@
+@@ -709,7 +709,7 @@
  #define CONFIG_EXTRACT_EXTRADATA_BSF 0
  #define CONFIG_FILTER_UNITS_BSF 0
  #define CONFIG_H264_METADATA_BSF 0
@@ -375,7 +375,7 @@ index 2bf20b38e..4f5859984 100644
  #define CONFIG_H264_REDUNDANT_PPS_BSF 0
  #define CONFIG_HAPQA_EXTRACT_BSF 0
  #define CONFIG_HEVC_METADATA_BSF 0
-@@ -1252,7 +1252,7 @@
+@@ -1253,7 +1253,7 @@
  #define CONFIG_XBIN_DECODER 0
  #define CONFIG_IDF_DECODER 0
  #define CONFIG_LIBAOM_AV1_DECODER 0
@@ -419,15 +419,15 @@ index 7218d99ed..3b59e28c2 100755
  
    # Google Chrome & ChromeOS specific configuration.
 diff --git a/third_party/ffmpeg/ffmpeg_generated.gni b/third_party/ffmpeg/ffmpeg_generated.gni
-index 296767890..5c84c697a 100644
+index c26f6f237..94776cfad 100644
 --- a/third_party/ffmpeg/ffmpeg_generated.gni
 +++ b/third_party/ffmpeg/ffmpeg_generated.gni
 @@ -14,6 +14,7 @@ ffmpeg_asm_sources = []
  
- use_linux_config = is_linux || is_fuchsia
+ use_linux_config = is_linux || is_chromeos || is_fuchsia
  
 +# EndlessOS: Modified to always build the FDK-AAC and OpenH264 decoders.
- if ((is_android && current_cpu == "arm" && arm_use_neon) || (is_android && current_cpu == "arm64") || (is_android && current_cpu == "x64") || (is_android && current_cpu == "x86") || (is_mac) || (is_win) || (use_linux_config)) {
+ if ((is_android && current_cpu == "arm" && arm_use_neon) || (is_android && current_cpu == "arm64") || (is_android && current_cpu == "mips64el") || (is_android && current_cpu == "mipsel") || (is_android && current_cpu == "x64") || (is_android && current_cpu == "x86") || (is_mac) || (is_win) || (use_linux_config)) {
    ffmpeg_c_sources += [
      "libavcodec/ac3_parser.c",
 @@ -50,9 +51,12 @@ if ((is_android && current_cpu == "arm" && arm_use_neon) || (is_android && curre

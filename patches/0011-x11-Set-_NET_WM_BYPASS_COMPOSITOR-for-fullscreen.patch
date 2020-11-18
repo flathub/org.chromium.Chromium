@@ -1,7 +1,7 @@
-From 901213ed5aa8bce5b3346c91b0370ea1eacf5b9a Mon Sep 17 00:00:00 2001
+From d1359ce523583e0ac4bf3828dda9a85b24f5ac02 Mon Sep 17 00:00:00 2001
 From: Daniel Drake <drake@endlessm.com>
 Date: Fri, 3 Jul 2015 14:59:24 -0600
-Subject: [PATCH 11/22] x11: Set _NET_WM_BYPASS_COMPOSITOR for fullscreen
+Subject: [PATCH 11/21] x11: Set _NET_WM_BYPASS_COMPOSITOR for fullscreen
 
 This improves performance at full screen.
 ---
@@ -11,10 +11,10 @@ This improves performance at full screen.
  3 files changed, 7 insertions(+)
 
 diff --git a/ui/base/x/x11_window.cc b/ui/base/x/x11_window.cc
-index 24dbb60257bb6..5da4eaeb38271 100644
+index 7d151df864f4e..3ceb6361740c4 100644
 --- a/ui/base/x/x11_window.cc
 +++ b/ui/base/x/x11_window.cc
-@@ -537,6 +537,10 @@ void XWindow::SetFullscreen(bool fullscreen) {
+@@ -531,6 +531,10 @@ void XWindow::SetFullscreen(bool fullscreen) {
                   x11::Atom::None);
  }
  
@@ -38,7 +38,7 @@ index af282d4190dd2..a988633aabd5a 100644
    void Deactivate();
    bool IsActive() const;
 diff --git a/ui/platform_window/x11/x11_window.cc b/ui/platform_window/x11/x11_window.cc
-index c0ba5c3a156ec..3046ecef067ad 100644
+index 7941edf6d3cbc..091b6c76b4e0b 100644
 --- a/ui/platform_window/x11/x11_window.cc
 +++ b/ui/platform_window/x11/x11_window.cc
 @@ -299,6 +299,8 @@ void X11Window::ToggleFullscreen() {

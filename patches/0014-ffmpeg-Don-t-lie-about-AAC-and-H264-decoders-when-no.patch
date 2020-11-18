@@ -1,7 +1,7 @@
-From d39489e6ee114b3b9c516db6b35009b963a0faa0 Mon Sep 17 00:00:00 2001
+From aa01f92d3b1148ea74eb74516de67c3c2be069d1 Mon Sep 17 00:00:00 2001
 From: Mario Sanchez Prada <mario@endlessm.com>
 Date: Tue, 25 Oct 2016 16:57:00 +0000
-Subject: [PATCH 15/22] ffmpeg: Don't lie about AAC and H264 decoders when not
+Subject: [PATCH 14/21] ffmpeg: Don't lie about AAC and H264 decoders when not
  available
 
 On Endless OS, we always build with USE_PROPRIETARY_CODECS defined
@@ -31,10 +31,10 @@ https://phabricator.endlessm.com/T30300
  2 files changed, 83 insertions(+), 7 deletions(-)
 
 diff --git a/media/base/BUILD.gn b/media/base/BUILD.gn
-index 8d281ddff37e7..5d09a2bdb2d07 100644
+index 676eb65140516..2ee265868bf3a 100644
 --- a/media/base/BUILD.gn
 +++ b/media/base/BUILD.gn
-@@ -374,6 +374,10 @@ source_set("base") {
+@@ -381,6 +381,10 @@ source_set("base") {
        "//third_party/ffmpeg",
        "//third_party/ffmpeg:ffmpeg_features",
      ]
@@ -46,7 +46,7 @@ index 8d281ddff37e7..5d09a2bdb2d07 100644
  
    if (media_use_libvpx) {
 diff --git a/media/base/mime_util_internal.cc b/media/base/mime_util_internal.cc
-index 39d62476358b4..e2affba445789 100644
+index 39d62476358b4..533154f4b45fb 100644
 --- a/media/base/mime_util_internal.cc
 +++ b/media/base/mime_util_internal.cc
 @@ -4,6 +4,8 @@
@@ -87,36 +87,36 @@ index 39d62476358b4..e2affba445789 100644
 +
 +static void CheckNonFreeMimeTypesOnFlatpak(bool& supports_h264,
 +                                           bool& supports_aac) {
-+  /* Get a handle for the current process */
-+  void* handle = dlopen(nullptr, RTLD_NOW);
-+  if (!handle) {
-+    DVLOG(4) << ": Unable to obtain handle for main process: " << dlerror();
-+    return;
++  // Get a handle for the current process
++  std::unique_ptr<void, decltype(&dlclose)> handle(dlopen(nullptr, RTLD_NOW),
++                                                   dlclose);
++  if (handle) {
++    // Let's check what ffmpeg-based decoders are available.
++    supports_h264 = dlsym(handle.get(), "ff_h264_decoder") != nullptr;
++    supports_aac = dlsym(handle.get(), "ff_libfdk_aac_decoder") != nullptr;
++
++    if (supports_h264) {
++      VLOG(1) << "Using FFmpeg's H.264 decoder";
++    }
++    if (supports_aac) {
++      VLOG(1) << "Using FFmpeg's AAC decoder";
++    }
++  } else {
++    LOG(WARNING) << ": Unable to obtain handle for main process: " << dlerror();
 +  }
 +
-+  // Let's check what ffmpeg-based decoders are available.
-+  supports_h264 = false;
-+
-+  if (dlsym(handle, "ff_h264_decoder") != nullptr) {
-+    // For now, we prioritize ffmpeg's H264 decoder over Cisco's OpenH264 one.
-+    VLOG(1) << "Using FFmpeg's H.264 decoder";
-+    supports_h264 = true;
-+  } else {
++  if (!supports_h264) {
 +    SDecoderCapability decoder_caps;
 +    // The real library will always return 0 (ERROR_NONE), while our
 +    // own dummy library will return 3 (ERROR_API_FAILED) instead, and
 +    // we only want to support H264 if it's the real one, of course.
-+    if (WelsGetDecoderCapability(&decoder_caps) == 0) {
++    supports_h264 = WelsGetDecoderCapability(&decoder_caps) == 0;
++    if (supports_h264) {
 +      VLOG(1) << "Using Cisco OpenH264";
-+      supports_h264 = true;
 +    } else {
 +      VLOG(1) << "No H.264 decoder available";
 +    }
 +  }
-+
-+  supports_aac = dlsym(handle, "ff_libfdk_aac_decoder") != nullptr;
-+
-+  dlclose(handle);
 +}
 +
  // Each call to AddContainerWithCodecs() contains a media type

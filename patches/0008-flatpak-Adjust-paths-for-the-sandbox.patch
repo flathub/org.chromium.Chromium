@@ -1,0 +1,262 @@
+From c3c11f616be5f1f344298d0460111bdb1c619e6b Mon Sep 17 00:00:00 2001
+From: Ryan Gonzalez <rymg19@gmail.com>
+Date: Tue, 25 Aug 2020 19:26:07 -0500
+Subject: [PATCH 08/21] flatpak: Adjust paths for the sandbox
+
+---
+ chrome/common/BUILD.gn                        |  4 ++
+ chrome/common/chrome_paths.cc                 | 50 +++++++++++++------
+ components/policy/core/common/BUILD.gn        |  3 ++
+ .../core/common/config_dir_policy_loader.cc   | 32 ++++++++++--
+ .../core/common/config_dir_policy_loader.h    |  3 ++
+ 5 files changed, 73 insertions(+), 19 deletions(-)
+
+diff --git a/chrome/common/BUILD.gn b/chrome/common/BUILD.gn
+index 52ae4877ab7bd..da3ea85370192 100644
+--- a/chrome/common/BUILD.gn
++++ b/chrome/common/BUILD.gn
+@@ -649,6 +649,10 @@ static_library("constants") {
+       "//third_party/widevine/cdm:headers",
+     ]
+   }
++
++  if (is_linux) {
++    deps += [ "//sandbox/linux:sandbox_services" ]
++  }
+ }
+ 
+ # Use a static library here because many test binaries depend on this but don't
+diff --git a/chrome/common/chrome_paths.cc b/chrome/common/chrome_paths.cc
+index 26dc3fc1cafa8..eb273f9133f68 100644
+--- a/chrome/common/chrome_paths.cc
++++ b/chrome/common/chrome_paths.cc
+@@ -4,6 +4,7 @@
+ 
+ #include "chrome/common/chrome_paths.h"
+ 
++#include "base/files/file_path.h"
+ #include "base/files/file_util.h"
+ #include "base/logging.h"
+ #include "base/native_library.h"
+@@ -37,6 +38,10 @@
+ #include "base/win/registry.h"
+ #endif
+ 
++#if defined(OS_LINUX)
++#include "sandbox/linux/services/flatpak_sandbox.h"
++#endif
++
+ #if (defined(OS_LINUX) || defined(OS_CHROMEOS)) && BUILDFLAG(ENABLE_WIDEVINE)
+ #include "third_party/widevine/cdm/widevine_cdm_common.h"  // nogncheck
+ #endif
+@@ -221,8 +226,8 @@ bool PathProvider(int key, base::FilePath* result) {
+ #else
+       if (!GetUserDownloadsDirectory(&cur))
+         return false;
+-      // Do not create the download directory here, we have done it twice now
+-      // and annoyed a lot of users.
++        // Do not create the download directory here, we have done it twice now
++        // and annoyed a lot of users.
+ #endif
+       break;
+     case chrome::DIR_CRASH_DUMPS:
+@@ -411,7 +416,7 @@ bool PathProvider(int key, base::FilePath* result) {
+ #if defined(OS_MAC)
+       cur = base::mac::FrameworkBundlePath();
+       cur = cur.Append(FILE_PATH_LITERAL("Resources"))
+-               .Append(FILE_PATH_LITERAL("resources.pak"));
++                .Append(FILE_PATH_LITERAL("resources.pak"));
+       break;
+ #elif defined(OS_ANDROID)
+       if (!base::PathService::Get(ui::DIR_RESOURCE_PAKS_ANDROID, &cur))
+@@ -492,6 +497,13 @@ bool PathProvider(int key, base::FilePath* result) {
+       break;
+ #if defined(OS_POSIX) && !defined(OS_MAC) && !defined(OS_OPENBSD)
+     case chrome::DIR_POLICY_FILES: {
++#if defined(OS_LINUX)
++      if (sandbox::FlatpakSandbox::GetInstance()->GetSandboxLevel() >
++          sandbox::FlatpakSandbox::SandboxLevel::kNone) {
++        cur = base::FilePath(FILE_PATH_LITERAL("/app/policies"));
++        break;
++      }
++#endif
+ #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+       cur = base::FilePath(FILE_PATH_LITERAL("/etc/opt/chrome/policies"));
+ #else
+@@ -511,7 +523,12 @@ bool PathProvider(int key, base::FilePath* result) {
+ #endif
+ #if defined(OS_LINUX) || defined(OS_CHROMEOS)
+     case chrome::DIR_STANDALONE_EXTERNAL_EXTENSIONS: {
+-      cur = base::FilePath(kFilepathSinglePrefExtensions);
++      if (sandbox::FlatpakSandbox::GetInstance()->GetSandboxLevel() >
++          sandbox::FlatpakSandbox::SandboxLevel::kNone) {
++        cur = base::FilePath(FILE_PATH_LITERAL("/app/extensions/manifest"));
++      } else {
++        cur = base::FilePath(kFilepathSinglePrefExtensions);
++      }
+       break;
+     }
+ #endif
+@@ -521,8 +538,8 @@ bool PathProvider(int key, base::FilePath* result) {
+         return false;
+ 
+       cur = cur.Append(FILE_PATH_LITERAL("Google"))
+-               .Append(FILE_PATH_LITERAL("Chrome"))
+-               .Append(FILE_PATH_LITERAL("External Extensions"));
++                .Append(FILE_PATH_LITERAL("Chrome"))
++                .Append(FILE_PATH_LITERAL("External Extensions"));
+       create_dir = false;
+ #else
+       if (!base::PathService::Get(base::DIR_MODULE, &cur))
+@@ -548,19 +565,25 @@ bool PathProvider(int key, base::FilePath* result) {
+     case chrome::DIR_NATIVE_MESSAGING:
+ #if defined(OS_MAC)
+ #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+-      cur = base::FilePath(FILE_PATH_LITERAL(
+-           "/Library/Google/Chrome/NativeMessagingHosts"));
++      cur = base::FilePath(
++          FILE_PATH_LITERAL("/Library/Google/Chrome/NativeMessagingHosts"));
+ #else
+       cur = base::FilePath(FILE_PATH_LITERAL(
+           "/Library/Application Support/Chromium/NativeMessagingHosts"));
+ #endif
+ #else  // defined(OS_MAC)
++      if (sandbox::FlatpakSandbox::GetInstance()->GetSandboxLevel() >
++          sandbox::FlatpakSandbox::SandboxLevel::kNone) {
++        cur = base::FilePath(
++            FILE_PATH_LITERAL("/app/native-messaging-hosts/manifest"));
++        break;
++      }
+ #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+-      cur = base::FilePath(FILE_PATH_LITERAL(
+-          "/etc/opt/chrome/native-messaging-hosts"));
++      cur = base::FilePath(
++          FILE_PATH_LITERAL("/etc/opt/chrome/native-messaging-hosts"));
+ #else
+-      cur = base::FilePath(FILE_PATH_LITERAL(
+-          "/etc/chromium/native-messaging-hosts"));
++      cur = base::FilePath(
++          FILE_PATH_LITERAL("/etc/chromium/native-messaging-hosts"));
+ #endif
+ #endif  // !defined(OS_MAC)
+       break;
+@@ -608,8 +631,7 @@ bool PathProvider(int key, base::FilePath* result) {
+ 
+   // TODO(bauerb): http://crbug.com/259796
+   base::ThreadRestrictions::ScopedAllowIO allow_io;
+-  if (create_dir && !base::PathExists(cur) &&
+-      !base::CreateDirectory(cur))
++  if (create_dir && !base::PathExists(cur) && !base::CreateDirectory(cur))
+     return false;
+ 
+   *result = cur;
+diff --git a/components/policy/core/common/BUILD.gn b/components/policy/core/common/BUILD.gn
+index 43ffb518e3a84..86350818f4609 100644
+--- a/components/policy/core/common/BUILD.gn
++++ b/components/policy/core/common/BUILD.gn
+@@ -267,6 +267,9 @@ source_set("internal") {
+       "cloud/user_cloud_policy_store.h",
+     ]
+   }
++  if (is_linux) {
++    deps += [ "//sandbox/linux:sandbox_services" ]
++  }
+   if (is_apple) {
+     sources += [
+       "mac_util.cc",
+diff --git a/components/policy/core/common/config_dir_policy_loader.cc b/components/policy/core/common/config_dir_policy_loader.cc
+index 457d97cf107ae..f7c9b2c8c6bb5 100644
+--- a/components/policy/core/common/config_dir_policy_loader.cc
++++ b/components/policy/core/common/config_dir_policy_loader.cc
+@@ -22,6 +22,10 @@
+ #include "components/policy/core/common/policy_load_status.h"
+ #include "components/policy/core/common/policy_types.h"
+ 
++#if defined(OS_LINUX)
++#include "sandbox/linux/services/flatpak_sandbox.h"
++#endif
++
+ namespace policy {
+ 
+ namespace {
+@@ -31,6 +35,11 @@ constexpr base::FilePath::CharType kMandatoryConfigDir[] =
+     FILE_PATH_LITERAL("managed");
+ constexpr base::FilePath::CharType kRecommendedConfigDir[] =
+     FILE_PATH_LITERAL("recommended");
++  
++#if defined(OS_LINUX)
++constexpr base::FilePath::CharType kFlatpakConfigSuffix[] =
++    FILE_PATH_LITERAL("policy");
++#endif
+ 
+ PolicyLoadStatus JsonErrorToPolicyLoadStatus(int status) {
+   switch (status) {
+@@ -67,18 +76,18 @@ void ConfigDirPolicyLoader::InitOnBackgroundThread() {
+   DCHECK(task_runner_->RunsTasksInCurrentSequence());
+   base::FilePathWatcher::Callback callback = base::BindRepeating(
+       &ConfigDirPolicyLoader::OnFileUpdated, base::Unretained(this));
+-  mandatory_watcher_.Watch(config_dir_.Append(kMandatoryConfigDir), false,
++  mandatory_watcher_.Watch(GetPolicySubdir(kMandatoryConfigDir), false,
+                            callback);
+-  recommended_watcher_.Watch(config_dir_.Append(kRecommendedConfigDir), false,
++  recommended_watcher_.Watch(GetPolicySubdir(kRecommendedConfigDir), false,
+                              callback);
+ }
+ 
+ std::unique_ptr<PolicyBundle> ConfigDirPolicyLoader::Load() {
+   std::unique_ptr<PolicyBundle> bundle(new PolicyBundle());
+-  LoadFromPath(config_dir_.Append(kMandatoryConfigDir),
++  LoadFromPath(GetPolicySubdir(kMandatoryConfigDir),
+                POLICY_LEVEL_MANDATORY,
+                bundle.get());
+-  LoadFromPath(config_dir_.Append(kRecommendedConfigDir),
++  LoadFromPath(GetPolicySubdir(kRecommendedConfigDir),
+                POLICY_LEVEL_RECOMMENDED,
+                bundle.get());
+   return bundle;
+@@ -93,7 +102,7 @@ base::Time ConfigDirPolicyLoader::LastModificationTime() {
+   base::File::Info info;
+ 
+   for (size_t i = 0; i < base::size(kConfigDirSuffixes); ++i) {
+-    base::FilePath path(config_dir_.Append(kConfigDirSuffixes[i]));
++    base::FilePath path(GetPolicySubdir(kConfigDirSuffixes[i]));
+ 
+     // Skip if the file doesn't exist, or it isn't a directory.
+     if (!base::GetFileInfo(path, &info) || !info.is_directory)
+@@ -113,6 +122,19 @@ base::Time ConfigDirPolicyLoader::LastModificationTime() {
+   return last_modification;
+ }
+ 
++base::FilePath ConfigDirPolicyLoader::GetPolicySubdir(
++    const base::FilePath::CharType* subdir) {
++  base::FilePath result = config_dir_.Append(subdir);
++#if defined(OS_LINUX)
++  // This is a bad place for this code!
++  if (sandbox::FlatpakSandbox::GetInstance()->GetSandboxLevel() >
++      sandbox::FlatpakSandbox::SandboxLevel::kNone) {
++      result = result.Append(kFlatpakConfigSuffix);
++  }
++#endif
++  return result;
++}
++
+ void ConfigDirPolicyLoader::LoadFromPath(const base::FilePath& path,
+                                          PolicyLevel level,
+                                          PolicyBundle* bundle) {
+diff --git a/components/policy/core/common/config_dir_policy_loader.h b/components/policy/core/common/config_dir_policy_loader.h
+index 934ed4f1cd9d9..21fff7ceef0cc 100644
+--- a/components/policy/core/common/config_dir_policy_loader.h
++++ b/components/policy/core/common/config_dir_policy_loader.h
+@@ -37,6 +37,9 @@ class POLICY_EXPORT ConfigDirPolicyLoader : public AsyncPolicyLoader {
+   base::Time LastModificationTime() override;
+ 
+  private:
++  // Gets a policy subdirectory of the main config directory.
++  base::FilePath GetPolicySubdir(const base::FilePath::CharType* subdir);
++
+   // Loads the policy files at |path| into the |bundle|, with the given |level|.
+   void LoadFromPath(const base::FilePath& path,
+                     PolicyLevel level,
+-- 
+2.26.2
+

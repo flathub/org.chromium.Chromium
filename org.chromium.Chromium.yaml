@@ -5,7 +5,7 @@ sdk: org.freedesktop.Sdk
 command: chromium
 finish-args:
   - --require-version=1.8.2
-  - --filesystem=xdg-download
+  - --filesystem=home
   - --device=all
   - --env=GTK_PATH=/app/lib/gtkmodules
   - --share=ipc
@@ -36,17 +36,28 @@ add-extensions:
     no-autodownload: true
     autodelete: true
 
-  org.chromium.Chromium.Policy:
+  org.chromium.Chromium.Extension:
     version: '1'
-    directory: policies
+    directory: extensions
     merge-dirs: manifest
     subdirectories: true
     no-autodownload: true
     autodelete: true
 
-  com.widevine.Widevine:
-    version: '4'
-    directory: widevine
+  org.chromium.Chromium.Policy.Managed:
+    version: '1'
+    directory: policies/managed
+    merge-dirs: policy
+    subdirectories: true
+    no-autodownload: true
+    autodelete: true
+
+  org.chromium.Chromium.Policy.Recommended:
+    version: '1'
+    directory: policies/recommended
+    merge-dirs: policy
+    subdirectories: true
+    no-autodownload: true
     autodelete: true
 
 sdk-extensions:
@@ -141,12 +152,16 @@ modules:
     sources:
       - type: git
         url: https://github.com/refi64/flextop
-        commit: 3d3f8fe389ad7f5e37bea6b424e1ec8d146eeb54
+        commit: b8ca6d9952a9f5d40df99903448c3fa7ccea80ee
 
   - name: extensions
     buildsystem: simple
     build-commands:
-      - mkdir -p /app/native-messaging-hosts /app/policies /app/widevine
+      - >
+        mkdir -p
+        /app/extensions
+        /app/native-messaging-hosts
+        /app/policies/{managed,recommended}
 
   - name: chromium
     buildsystem: simple
@@ -183,6 +198,7 @@ modules:
         is_component_ffmpeg=true
         use_vaapi=true
         enable_widevine=true
+        chrome_pgo_phase=0
         '
       - mkdir -p out/ReleaseFree
       - cp out/Release{,Free}/args.gn
@@ -212,8 +228,8 @@ modules:
       - install -Dm 755 chromium.sh /app/bin/chromium
     sources:
       - type: archive
-        url: https://commondatastorage.googleapis.com/chromium-browser-official/chromium-86.0.4240.198.tar.xz
-        sha256: a0ab825e527becab4ab3e11ef889e842436fe11a4fb7874419d1970e680c7a44
+        url: https://commondatastorage.googleapis.com/chromium-browser-official/chromium-87.0.4280.66.tar.xz
+        sha256: 29a8e4ea82edec2fdcf34ece68323bec7ab90f3d5669e6b77f58cff9c278f741
       - type: patch
         paths:
           - patches/0001-ffmpeg-Use-royalty-free-libfdk-aac-for-AAC-playback.patch
@@ -221,23 +237,22 @@ modules:
           - patches/0003-ffmpeg-Enable-support-for-using-OpenH264-for-H264-pl.patch
           - patches/0004-Use-system-wide-node.patch
           - patches/0005-Ensure-libffmpeg.so-is-in-the-rpath-of-binaries.patch
-          - patches/0006-Add-Flatpak-sandbox-support.patch
-          - patches/0007-Use-Flatpak-specific-configuration-paths.patch
-          - patches/0008-Add-support-for-Flatpak-s-Widevine-location.patch
-          - patches/0009-Import-widevine-enable-version-string.patch-from-Ubu.patch
+          - patches/0006-flatpak-Add-initial-sandbox-support.patch
+          - patches/0007-flatpak-Expose-Widevine-into-the-sandbox.patch
+          - patches/0008-flatpak-Adjust-paths-for-the-sandbox.patch
+          - patches/0009-Import-chromium-71.0.3578.98-widevine-r3.patch.patch
           - patches/0010-Enable-Chromecast-by-default.patch
           - patches/0011-x11-Set-_NET_WM_BYPASS_COMPOSITOR-for-fullscreen.patch
           - patches/0012-memory-Enable-the-tab-discards-feature.patch
-          - patches/0013-Add-memory-pressure-monitor-for-Linux.patch
-          - patches/0014-Enable-VAVDA-VAVEA-and-VAJDA-on-linux-with-VAAPI-onl.patch
-          - patches/0015-ffmpeg-Don-t-lie-about-AAC-and-H264-decoders-when-no.patch
-          - patches/0016-XDG-file-chooser-portal-support.patch
-          - patches/0017-Remove-dead-reloc-in-nonalloc-LD-flags.patch
-          - patches/0018-XProto-Search-for-cursors-in-the-XDG-data-dirs.patch
-          - patches/0019-Remove-the-ability-to-create-desktop-shortcuts.patch
-          - patches/0020-webhid-Use-a-stub-where-there-is-no-OS-support.patch
-          - patches/0021-webusb-Don-t-reinitialize-a-failed-connection.patch
-          - patches/0022-Use-CHROME_WRAPPER-as-the-executable-on-restart.patch
+          - patches/0013-Enable-VAVDA-VAVEA-and-VAJDA-on-linux-with-VAAPI-onl.patch
+          - patches/0014-ffmpeg-Don-t-lie-about-AAC-and-H264-decoders-when-no.patch
+          - patches/0015-Remove-the-ability-to-create-desktop-shortcuts.patch
+          - patches/0016-webhid-Properly-handle-lack-of-platform-support.patch
+          - patches/0017-webusb-Properly-handle-lack-of-platform-support.patch
+          - patches/0018-Use-CHROME_WRAPPER-as-the-executable-on-restart.patch
+          - patches/0019-Add-support-for-the-XDG-file-chooser-portal.patch
+          - patches/0020-Add-OpenURI-portal-support-for-opening-directories.patch
+          - patches/0021-Remove-references-to-enable-dse-memoryssa.patch
       - type: file
         path: org.chromium.Chromium.desktop
       - type: file

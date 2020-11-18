@@ -1,4 +1,4 @@
-From 2b684e9cebb85c108d23e1a0a82ec32c65ef5dd2 Mon Sep 17 00:00:00 2001
+From b49dcc4badb5411922f0f39115baaedf1dffc123 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Thu, 1 Oct 2020 16:39:00 -0500
 Subject: [PATCH 5/5] Ensure libffmpeg.so is in the rpath of binaries

@@ -1,7 +1,7 @@
-From 01dceae68e42c2986e556b596d6b7908b4b7b09b Mon Sep 17 00:00:00 2001
+From 67137a4314081aefefe4a60596eaae68f0e90949 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Mon, 31 Aug 2020 15:26:52 -0500
-Subject: [PATCH 16/22] XDG file chooser portal support
+Subject: [PATCH 19/21] Add support for the XDG file chooser portal
 
 ---
  chrome/browser/about_flags.cc             |   7 +
@@ -13,17 +13,17 @@ Subject: [PATCH 16/22] XDG file chooser portal support
  ui/gtk/gtk_ui.cc                          |   4 +
  ui/gtk/select_file_dialog_impl.cc         |  68 +-
  ui/gtk/select_file_dialog_impl.h          |   9 +
- ui/gtk/select_file_dialog_impl_portal.cc  | 730 ++++++++++++++++++++++
+ ui/gtk/select_file_dialog_impl_portal.cc  | 734 ++++++++++++++++++++++
  ui/gtk/select_file_dialog_impl_portal.h   | 134 ++++
- 11 files changed, 973 insertions(+), 19 deletions(-)
+ 11 files changed, 977 insertions(+), 19 deletions(-)
  create mode 100644 ui/gtk/select_file_dialog_impl_portal.cc
  create mode 100644 ui/gtk/select_file_dialog_impl_portal.h
 
 diff --git a/chrome/browser/about_flags.cc b/chrome/browser/about_flags.cc
-index 1794b098518f5..84a803fbf38c1 100644
+index 12c12cf17b65f..10428e75732c4 100644
 --- a/chrome/browser/about_flags.cc
 +++ b/chrome/browser/about_flags.cc
-@@ -4702,6 +4702,13 @@ const FeatureEntry kFeatureEntries[] = {
+@@ -4927,6 +4927,13 @@ const FeatureEntry kFeatureEntries[] = {
       FEATURE_VALUE_TYPE(features::kVaapiWebPImageDecodeAcceleration)},
  #endif
  
@@ -38,10 +38,10 @@ index 1794b098518f5..84a803fbf38c1 100644
      {"calculate-native-win-occlusion",
       flag_descriptions::kCalculateNativeWinOcclusionName,
 diff --git a/chrome/browser/flag_descriptions.cc b/chrome/browser/flag_descriptions.cc
-index 7014b7deb3ab9..1765e023d8d96 100644
+index 48d116e1891d2..39c544ae521a5 100644
 --- a/chrome/browser/flag_descriptions.cc
 +++ b/chrome/browser/flag_descriptions.cc
-@@ -3376,6 +3376,17 @@ const char kSyncSetupFriendlySettingsDescription[] =
+@@ -3446,6 +3446,17 @@ const char kTabFreezeDescription[] =
  
  #endif  // !defined(OS_ANDROID)
  
@@ -60,10 +60,10 @@ index 7014b7deb3ab9..1765e023d8d96 100644
  
  #if defined(OS_WIN)
 diff --git a/chrome/browser/flag_descriptions.h b/chrome/browser/flag_descriptions.h
-index 82c3abd03cf3e..6536d257bcdae 100644
+index 893398dc86c24..ba58b3bd43de7 100644
 --- a/chrome/browser/flag_descriptions.h
 +++ b/chrome/browser/flag_descriptions.h
-@@ -1932,6 +1932,15 @@ extern const char kSyncSetupFriendlySettingsDescription[];
+@@ -1968,6 +1968,15 @@ extern const char kTabFreezeDescription[];
  
  #endif  // defined(OS_ANDROID)
  
@@ -80,10 +80,10 @@ index 82c3abd03cf3e..6536d257bcdae 100644
  
  #if defined(OS_WIN)
 diff --git a/content/public/common/content_features.cc b/content/public/common/content_features.cc
-index 99d8f1bcedd28..4084195b6ee53 100644
+index 450c516bfa10e..c9c53c223090a 100644
 --- a/content/public/common/content_features.cc
 +++ b/content/public/common/content_features.cc
-@@ -191,7 +191,7 @@ const base::Feature kEnableNewCanvas2DAPI{"EnableNewCanvas2DAPI",
+@@ -199,7 +199,7 @@ const base::Feature kEnableNewCanvas2DAPI{"EnableNewCanvas2DAPI",
  // media-device enumeration will provide at most one device per type and the
  // device IDs will not be available.
  // TODO(crbug.com/1019176): remove the feature in M89.
@@ -92,7 +92,7 @@ index 99d8f1bcedd28..4084195b6ee53 100644
    "EnumerateDevicesHideDeviceIDs",
  #if defined(OS_ANDROID)
        base::FEATURE_DISABLED_BY_DEFAULT
-@@ -896,7 +896,13 @@ const base::Feature kForce60HzRefreshRate{"Force60HzRefreshRate",
+@@ -914,7 +914,13 @@ const base::Feature kForce60HzRefreshRate{"Force60HzRefreshRate",
  const base::Feature kWebNfc{"WebNFC", base::FEATURE_ENABLED_BY_DEFAULT};
  #endif  // defined(OS_ANDROID)
  
@@ -100,7 +100,7 @@ index 99d8f1bcedd28..4084195b6ee53 100644
 +#if defined(OS_LINUX)
 +// Enables use of the XDG file chooser portal for file selection.
 +const base::Feature kXdgFileChooserPortal{"XdgFileChooserPortal",
-+                                          base::FEATURE_ENABLED_BY_DEFAULT};
++                                          base::FEATURE_DISABLED_BY_DEFAULT};
 +#endif  // defined(OS_LINUX)
 +
 +#if defined(OS_MACOS)
@@ -108,10 +108,10 @@ index 99d8f1bcedd28..4084195b6ee53 100644
  const base::Feature kDeviceMonitorMac{"DeviceMonitorMac",
                                        base::FEATURE_ENABLED_BY_DEFAULT};
 diff --git a/content/public/common/content_features.h b/content/public/common/content_features.h
-index 902522421aa9c..c4e2222902656 100644
+index 579f33f573883..42f3f3f12c316 100644
 --- a/content/public/common/content_features.h
 +++ b/content/public/common/content_features.h
-@@ -189,6 +189,10 @@ CONTENT_EXPORT extern const base::Feature kWarmUpNetworkProcess;
+@@ -191,6 +191,10 @@ CONTENT_EXPORT extern const base::Feature kWarmUpNetworkProcess;
  CONTENT_EXPORT extern const base::Feature kWebNfc;
  #endif  // defined(OS_ANDROID)
  
@@ -317,11 +317,14 @@ index 3cb8ee5d6a972..412a4394a8d65 100644
    // NewSelectFileDialogImplKDE will actually work.
 diff --git a/ui/gtk/select_file_dialog_impl_portal.cc b/ui/gtk/select_file_dialog_impl_portal.cc
 new file mode 100644
-index 0000000000000..d3f153557d5df
+index 0000000000000..93df4e03f6313
 --- /dev/null
 +++ b/ui/gtk/select_file_dialog_impl_portal.cc
-@@ -0,0 +1,730 @@
+@@ -0,0 +1,734 @@
 +#include "ui/gtk/select_file_dialog_impl_portal.h"
++
++#include <gdk/gdkx.h>
++
 +#include "base/bind.h"
 +#include "base/logging.h"
 +#include "base/nix/mime_util_xdg.h"
@@ -341,7 +344,7 @@ index 0000000000000..d3f153557d5df
 +#include "ui/aura/window_tree_host.h"
 +#include "ui/base/l10n/l10n_util.h"
 +#include "ui/gfx/native_widget_types.h"
-+#include "ui/gfx/x/x11.h"
++#include "ui/gtk/gtk_ui.h"
 +#include "ui/gtk/select_file_dialog_impl.h"
 +#include "ui/strings/grit/ui_strings.h"
 +#include "url/url_util.h"
@@ -675,14 +678,15 @@ index 0000000000000..d3f153557d5df
 +  dbus::MethodCall method_call(kFileChooserInterfaceName, method);
 +  dbus::MessageWriter writer(&method_call);
 +
++  std::string parent_handle;
 +  if (info->parent) {
-+    // XXX: Assumes X11.
-+    std::string parent_window =
-+        base::StringPrintf("x11:%u", static_cast<std::uint32_t>(*info->parent));
-+    writer.AppendString(parent_window);
-+  } else {
-+    writer.AppendString("");
++    GdkWindow* window = gtk::GtkUi::GetDelegate()->GetGdkWindow(*info->parent);
++    if (window != nullptr && GDK_IS_X11_WINDOW(window)) {
++      parent_handle = gdk_x11_window_get_xid(window);
++    }
 +  }
++
++  writer.AppendString(parent_handle);
 +
 +  if (!title.empty()) {
 +    writer.AppendString(base::UTF16ToUTF8(title));
