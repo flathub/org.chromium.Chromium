@@ -213,6 +213,7 @@ modules:
         enable_widevine=true
         chrome_pgo_phase=0
         rtc_use_pipewire=true
+        enable_hangout_services_extension=true
         '
       - mkdir -p out/ReleaseFree
       - cp out/Release{,Free}/args.gn
