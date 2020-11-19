@@ -6,6 +6,7 @@ command: chromium
 finish-args:
   - --require-version=1.8.2
   - --filesystem=home
+  - --filesystem=xdg-run/pipewire-0
   - --device=all
   - --env=GTK_PATH=/app/lib/gtkmodules
   - --share=ipc
@@ -164,6 +165,17 @@ modules:
         /app/native-messaging-hosts
         /app/policies/{managed,recommended}
 
+  - name: pipewire
+    buildsystem: meson
+    config-opts:
+      - -Dgstreamer=disabled
+      - -Dman=false
+      - -Dsystemd=false
+    sources:
+      - type: git
+        url: https://gitlab.freedesktop.org/pipewire/pipewire.git
+        tag: 0.2.7
+
   - name: chromium
     buildsystem: simple
     build-options:
@@ -200,6 +212,7 @@ modules:
         use_vaapi=true
         enable_widevine=true
         chrome_pgo_phase=0
+        rtc_use_pipewire=true
         '
       - mkdir -p out/ReleaseFree
       - cp out/Release{,Free}/args.gn
