@@ -1,7 +1,7 @@
-From 57d7d1a3046e0823beea5c23c41a21a27b2839d5 Mon Sep 17 00:00:00 2001
+From fa387da2f416667b14de57686ab55489d3325677 Mon Sep 17 00:00:00 2001
 From: Mario Sanchez Prada <mario@endlessm.com>
 Date: Thu, 28 Jan 2016 13:53:08 +0000
-Subject: [PATCH 12/21] memory: Enable the tab discards feature
+Subject: [PATCH 12/22] memory: Enable the tab discards feature
 
 This allows manually discarding tabs from chrome://discards as well
 as automatic tab discards once a certain level of "memory pressure"

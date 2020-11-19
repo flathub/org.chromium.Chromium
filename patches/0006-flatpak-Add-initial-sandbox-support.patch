@@ -1,7 +1,7 @@
 From d3959eb4525af4226a283e3199d6fbe8f5f8f3b5 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Tue, 17 Mar 2020 13:18:27 -0500
-Subject: [PATCH 06/21] flatpak: Add initial sandbox support
+Subject: [PATCH 06/22] flatpak: Add initial sandbox support
 
 ---
  .gitignore                                    |   1 +

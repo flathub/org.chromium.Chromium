@@ -1,7 +1,7 @@
-From 189d03a017a216e2dfced95e29bfcd095532a542 Mon Sep 17 00:00:00 2001
+From 824472e8eb944750ff2d39e7f5745cab6daeb359 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Tue, 17 Nov 2020 22:35:26 -0600
-Subject: [PATCH 20/21] Add OpenURI portal support for opening directories
+Subject: [PATCH 20/22] Add OpenURI portal support for opening directories
 
 ---
  chrome/browser/platform_util_linux.cc | 80 +++++++++++++++++++++++----

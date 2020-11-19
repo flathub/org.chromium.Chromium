@@ -1,7 +1,7 @@
-From 6768a9b1d1d4347ad153e0fd588f13d95d307ead Mon Sep 17 00:00:00 2001
+From bb1e032ad759f4f1d620d8daa6db828699145155 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Wed, 26 Aug 2020 20:30:35 -0500
-Subject: [PATCH 10/21] Enable Chromecast by default
+Subject: [PATCH 10/22] Enable Chromecast by default
 
 ---
  extensions/common/feature_switch.cc | 14 ++++----------

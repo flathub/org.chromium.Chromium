@@ -1,7 +1,7 @@
-From 9ef0c77804ebc29637d69d61767d7f8ad0c1ce8b Mon Sep 17 00:00:00 2001
+From 62f7d75195022970840ce4af6981414c581dbc4d Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Tue, 17 Nov 2020 23:33:35 -0600
-Subject: [PATCH 21/21] Remove references to enable-dse-memoryssa
+Subject: [PATCH 21/22] Remove references to enable-dse-memoryssa
 
 This was a feature added in (or at least enabled by default in) LLVM 12,
 which is far newer than the freedesktop SDK's LLVM 10. Therefore, it
