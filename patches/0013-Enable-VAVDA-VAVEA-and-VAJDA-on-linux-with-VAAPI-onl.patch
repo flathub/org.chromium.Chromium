@@ -1,7 +1,7 @@
-From 6f0b40c2e7bf6f7d21fc82249039536239c09289 Mon Sep 17 00:00:00 2001
+From 353c1b9fba2bf9a49fc34204ee3147a136a3f00a Mon Sep 17 00:00:00 2001
 From: Lorenzo Tilve <ltilve@igalia.com>
 Date: Mon, 7 Oct 2019 13:45:14 +0200
-Subject: [PATCH 13/21] Enable VAVDA, VAVEA and VAJDA on linux with VAAPI only
+Subject: [PATCH 13/22] Enable VAVDA, VAVEA and VAJDA on linux with VAAPI only
 
 This patch contains all the changes necessary to use VA-API along with
 vaapi-driver to run all media use cases supported with hardware acceleration.

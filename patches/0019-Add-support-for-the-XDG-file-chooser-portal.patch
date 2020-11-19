@@ -1,7 +1,7 @@
-From 67137a4314081aefefe4a60596eaae68f0e90949 Mon Sep 17 00:00:00 2001
+From 62a0b61c4e52a362982daea29c7cd4b4828e05e5 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Mon, 31 Aug 2020 15:26:52 -0500
-Subject: [PATCH 19/21] Add support for the XDG file chooser portal
+Subject: [PATCH 19/22] Add support for the XDG file chooser portal
 
 ---
  chrome/browser/about_flags.cc             |   7 +

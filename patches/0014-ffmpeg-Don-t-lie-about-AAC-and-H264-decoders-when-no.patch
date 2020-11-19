@@ -1,7 +1,7 @@
-From aa01f92d3b1148ea74eb74516de67c3c2be069d1 Mon Sep 17 00:00:00 2001
+From 694308d32ea8677678cb014e50346c8726be1dbe Mon Sep 17 00:00:00 2001
 From: Mario Sanchez Prada <mario@endlessm.com>
 Date: Tue, 25 Oct 2016 16:57:00 +0000
-Subject: [PATCH 14/21] ffmpeg: Don't lie about AAC and H264 decoders when not
+Subject: [PATCH 14/22] ffmpeg: Don't lie about AAC and H264 decoders when not
  available
 
 On Endless OS, we always build with USE_PROPRIETARY_CODECS defined

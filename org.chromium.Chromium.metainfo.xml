@@ -26,6 +26,11 @@
     </screenshot>
   </screenshots>
   <releases>
+    <release version="87.0.4280.66" date="2020-11-18" />
+    <release version="86.0.4240.198" date="2020-11-12" />
+    <release version="86.0.4240.183" date="2020-11-02" />
+    <release version="86.0.4240.111" date="2020-11-01" />
+    <release version="86.0.4240.75" date="2020-10-15" />
     <release version="85.0.4183.121" date="2020-09-29" />
   </releases>
   <content_rating type="oars-1.1" />
