@@ -8,6 +8,7 @@ finish-args:
   - --filesystem=home
   - --device=all
   - --env=GTK_PATH=/app/lib/gtkmodules
+  - --env=LD_LIBRARY_PATH=/app/chromium/nonfree-codecs/lib
   - --share=ipc
   - --share=network
   - --socket=cups
@@ -31,32 +32,24 @@ add-extensions:
 
   org.chromium.Chromium.NativeMessagingHost:
     version: '1'
-    directory: native-messaging-hosts
-    merge-dirs: manifest
+    directory: chromium/native-messaging-hosts
+    merge-dirs: native-messaging-hosts
     subdirectories: true
     no-autodownload: true
     autodelete: true
 
   org.chromium.Chromium.Extension:
     version: '1'
-    directory: extensions
-    merge-dirs: manifest
+    directory: chromium/extensions
+    merge-dirs: extensions
     subdirectories: true
     no-autodownload: true
     autodelete: true
 
-  org.chromium.Chromium.Policy.Managed:
+  org.chromium.Chromium.Policy:
     version: '1'
-    directory: policies/managed
-    merge-dirs: policy
-    subdirectories: true
-    no-autodownload: true
-    autodelete: true
-
-  org.chromium.Chromium.Policy.Recommended:
-    version: '1'
-    directory: policies/recommended
-    merge-dirs: policy
+    directory: chromium/policies
+    merge-dirs: managed;recommended
     subdirectories: true
     no-autodownload: true
     autodelete: true
@@ -158,11 +151,7 @@ modules:
   - name: extensions
     buildsystem: simple
     build-commands:
-      - >
-        mkdir -p
-        /app/extensions
-        /app/native-messaging-hosts
-        /app/policies/{managed,recommended}
+      - mkdir -p /app/chromium/{extensions,native-messaging-hosts,policies}
 
   - name: chromium
     buildsystem: simple
@@ -254,6 +243,7 @@ modules:
           - patches/0019-Add-support-for-the-XDG-file-chooser-portal.patch
           - patches/0020-Add-OpenURI-portal-support-for-opening-directories.patch
           - patches/0021-Remove-references-to-enable-dse-memoryssa.patch
+          - patches/0022-Enable-new-dtags-on-non-component-builds.patch
       - type: file
         path: org.chromium.Chromium.desktop
       - type: file
