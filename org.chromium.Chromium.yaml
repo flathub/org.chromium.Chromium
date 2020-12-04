@@ -147,7 +147,7 @@ modules:
     sources:
       - type: git
         url: https://github.com/refi64/flextop
-        commit: b8ca6d9952a9f5d40df99903448c3fa7ccea80ee
+        commit: 485c332c7ec36a8b74be8f3622fc756ac6263f40
 
   - name: extensions
     buildsystem: simple
@@ -232,8 +232,8 @@ modules:
       - install -Dm 755 chromium.sh /app/bin/chromium
     sources:
       - type: archive
-        url: https://commondatastorage.googleapis.com/chromium-browser-official/chromium-87.0.4280.66.tar.xz
-        sha256: 29a8e4ea82edec2fdcf34ece68323bec7ab90f3d5669e6b77f58cff9c278f741
+        url: https://commondatastorage.googleapis.com/chromium-browser-official/chromium-87.0.4280.88.tar.xz
+        sha256: 3e4645328735ef60db78d1a313efb3770a3edeaede90d076414df52f567a09c0
       - type: patch
         paths:
           - patches/0001-ffmpeg-Use-royalty-free-libfdk-aac-for-AAC-playback.patch
