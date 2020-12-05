@@ -157,13 +157,18 @@ modules:
   - name: pipewire
     buildsystem: meson
     config-opts:
-      - -Dgstreamer=disabled
+      - -Dgstreamer=false
+      - -Dexamples=false
       - -Dman=false
+      - -Dtests=false
       - -Dsystemd=false
+      - -Dpipewire-jack=false
+      - -Dspa-plugins=false
+      - -Dpw-cat=false
     sources:
       - type: git
         url: https://gitlab.freedesktop.org/pipewire/pipewire.git
-        tag: 0.2.7
+        tag: 0.3.17
 
   - name: chromium
     buildsystem: simple
