@@ -258,6 +258,7 @@ modules:
           - patches/0020-Add-OpenURI-portal-support-for-opening-directories.patch
           - patches/0021-Remove-references-to-enable-dse-memoryssa.patch
           - patches/0022-Enable-new-dtags-on-non-component-builds.patch
+          - patches/0023-Add-support-for-respecting-system-proxy-settings-whe.patch
       - type: file
         path: org.chromium.Chromium.desktop
       - type: file
