@@ -7,6 +7,7 @@ finish-args:
   - --require-version=1.8.2
   - --filesystem=home
   - --filesystem=xdg-run/pipewire-0
+  - --filesystem=/run/.heim_org.h5l.kcm-socket
   - --device=all
   - --env=GTK_PATH=/app/lib/gtkmodules
   - --env=LD_LIBRARY_PATH=/app/chromium/nonfree-codecs/lib
