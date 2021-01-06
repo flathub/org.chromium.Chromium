@@ -177,60 +177,9 @@ modules:
         CFLAGS: -Wno-unknown-warning-option -Wno-unknown-pragmas
         CXXFLAGS: -Wno-unknown-warning-option -Wno-unknown-pragmas
     build-commands:
-      # DO NOT REUSE THE BELOW API KEYS; these are for Flathub only.
-      # http://lists.debian.org/debian-legal/2013/11/msg00006.html
-      - >-
-        tools/gn/bootstrap/bootstrap.py -v --no-clean --gn-gen-args='
-        use_sysroot=false
-        custom_toolchain="//build/toolchain/linux/unbundle:default"
-        host_toolchain="//build/toolchain/linux/unbundle:default"
-        use_udev=false
-        use_lld=true
-        enable_nacl=false
-        blink_symbol_level=0
-        use_gnome_keyring=false
-        use_pulseaudio=true
-        clang_use_chrome_plugins=false
-        is_official_build=true
-        google_api_key="AIzaSyAL6fqCZVFhA7K_qBvz9GO5Z-V1JBcPO0A"
-        google_default_client_id="62778694883-t4a8bf01lumav756cl6ujhhrqsqselq9.apps.googleusercontent.com"
-        google_default_client_secret="eeHsihEqYjhD2zuIROjerl_7"
-        treat_warnings_as_errors=false
-        proprietary_codecs=true
-        ffmpeg_branding="Chrome"
-        is_component_ffmpeg=true
-        use_vaapi=true
-        enable_widevine=true
-        chrome_pgo_phase=0
-        rtc_use_pipewire=true
-        enable_hangout_services_extension=true
-        '
-      - mkdir -p out/ReleaseFree
-      - cp out/Release{,Free}/args.gn
-      - echo -e 'proprietary_codecs = false\nffmpeg_branding = "Chromium"' >> out/ReleaseFree/args.gn
-      - out/Release/gn gen out/ReleaseFree
-      - ninja -C out/ReleaseFree -j$FLATPAK_BUILDER_N_JOBS libffmpeg.so
-      - >
-        . /usr/lib/sdk/node12/enable.sh;
-        . /usr/lib/sdk/openjdk11/enable.sh;
-        ninja -C out/Release -j$FLATPAK_BUILDER_N_JOBS chrome
-      - mkdir -p /app/chromium
-      # Keep file names sync with build_devel_flatpak.py
-      - >-
-        cd out/Release && for path in chrome icudtl.dat *.so *.pak *.bin *.png locales MEIPreload; do
-          cp -rv $path /app/chromium;
-        done
-      # Place the proprietary libffmpeg in the extension path, then overwrite it with the free one.
-      - install -Dm 755 out/ReleaseFree/libffmpeg.so /app/chromium/libffmpeg.so
-      - install -Dm 755 out/Release/libffmpeg.so /app/chromium/nonfree-codecs/lib/libffmpeg.so
-      - >-
-        for size in 24 48 64 128 256; do
-          install -Dm 644 chrome/app/theme/chromium/product_logo_$size.png /app/share/icons/hicolor/${size}x${size}/apps/org.chromium.Chromium.png;
-        done
-      - install -Dm 644 portal_error.txt -t /app/share/flatpak-chromium
-      - install -Dm 644 org.chromium.Chromium.desktop -t /app/share/applications
-      - install -Dm 644 org.chromium.Chromium.metainfo.xml -t /app/share/metainfo
-      - install -Dm 755 chromium.sh /app/bin/chromium
+      - ./bootstrap.sh
+      - ./build.sh
+      - ./install.sh
     sources:
       - type: archive
         url: https://commondatastorage.googleapis.com/chromium-browser-official/chromium-87.0.4280.88.tar.xz
@@ -268,3 +217,5 @@ modules:
         path: chromium.sh
       - type: file
         path: portal_error.txt
+      - type: dir
+        path: build-aux
