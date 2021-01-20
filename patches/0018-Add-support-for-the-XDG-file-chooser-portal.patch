@@ -1,7 +1,7 @@
-From 62a0b61c4e52a362982daea29c7cd4b4828e05e5 Mon Sep 17 00:00:00 2001
+From 9db9fdade071008efb28c51876d4a4ca53f397ea Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Mon, 31 Aug 2020 15:26:52 -0500
-Subject: [PATCH 19/22] Add support for the XDG file chooser portal
+Subject: [PATCH 18/23] Add support for the XDG file chooser portal
 
 ---
  chrome/browser/about_flags.cc             |   7 +
@@ -20,10 +20,10 @@ Subject: [PATCH 19/22] Add support for the XDG file chooser portal
  create mode 100644 ui/gtk/select_file_dialog_impl_portal.h
 
 diff --git a/chrome/browser/about_flags.cc b/chrome/browser/about_flags.cc
-index 12c12cf17b65f..10428e75732c4 100644
+index 262cdf7d97581..15f5ffa3168bb 100644
 --- a/chrome/browser/about_flags.cc
 +++ b/chrome/browser/about_flags.cc
-@@ -4927,6 +4927,13 @@ const FeatureEntry kFeatureEntries[] = {
+@@ -4867,6 +4867,13 @@ const FeatureEntry kFeatureEntries[] = {
       FEATURE_VALUE_TYPE(features::kVaapiWebPImageDecodeAcceleration)},
  #endif
  
@@ -38,10 +38,10 @@ index 12c12cf17b65f..10428e75732c4 100644
      {"calculate-native-win-occlusion",
       flag_descriptions::kCalculateNativeWinOcclusionName,
 diff --git a/chrome/browser/flag_descriptions.cc b/chrome/browser/flag_descriptions.cc
-index 48d116e1891d2..39c544ae521a5 100644
+index 29bb8b14fd6bc..6622df0e02e3a 100644
 --- a/chrome/browser/flag_descriptions.cc
 +++ b/chrome/browser/flag_descriptions.cc
-@@ -3446,6 +3446,17 @@ const char kTabFreezeDescription[] =
+@@ -3431,6 +3431,17 @@ const char kTabFreezeDescription[] =
  
  #endif  // !defined(OS_ANDROID)
  
@@ -60,10 +60,10 @@ index 48d116e1891d2..39c544ae521a5 100644
  
  #if defined(OS_WIN)
 diff --git a/chrome/browser/flag_descriptions.h b/chrome/browser/flag_descriptions.h
-index 893398dc86c24..ba58b3bd43de7 100644
+index a2cba3ed2d88c..220f5d0e394df 100644
 --- a/chrome/browser/flag_descriptions.h
 +++ b/chrome/browser/flag_descriptions.h
-@@ -1968,6 +1968,15 @@ extern const char kTabFreezeDescription[];
+@@ -1977,6 +1977,15 @@ extern const char kTabFreezeDescription[];
  
  #endif  // defined(OS_ANDROID)
  
@@ -80,10 +80,10 @@ index 893398dc86c24..ba58b3bd43de7 100644
  
  #if defined(OS_WIN)
 diff --git a/content/public/common/content_features.cc b/content/public/common/content_features.cc
-index 450c516bfa10e..c9c53c223090a 100644
+index c119af8b0118d..3f0a6b1114ae7 100644
 --- a/content/public/common/content_features.cc
 +++ b/content/public/common/content_features.cc
-@@ -199,7 +199,7 @@ const base::Feature kEnableNewCanvas2DAPI{"EnableNewCanvas2DAPI",
+@@ -205,7 +205,7 @@ const base::Feature kEnableNewCanvas2DAPI{"EnableNewCanvas2DAPI",
  // media-device enumeration will provide at most one device per type and the
  // device IDs will not be available.
  // TODO(crbug.com/1019176): remove the feature in M89.
@@ -92,7 +92,7 @@ index 450c516bfa10e..c9c53c223090a 100644
    "EnumerateDevicesHideDeviceIDs",
  #if defined(OS_ANDROID)
        base::FEATURE_DISABLED_BY_DEFAULT
-@@ -914,7 +914,13 @@ const base::Feature kForce60HzRefreshRate{"Force60HzRefreshRate",
+@@ -897,7 +897,13 @@ const base::Feature kWarmUpNetworkProcess{"WarmUpNetworkProcess",
  const base::Feature kWebNfc{"WebNFC", base::FEATURE_ENABLED_BY_DEFAULT};
  #endif  // defined(OS_ANDROID)
  
@@ -108,10 +108,10 @@ index 450c516bfa10e..c9c53c223090a 100644
  const base::Feature kDeviceMonitorMac{"DeviceMonitorMac",
                                        base::FEATURE_ENABLED_BY_DEFAULT};
 diff --git a/content/public/common/content_features.h b/content/public/common/content_features.h
-index 579f33f573883..42f3f3f12c316 100644
+index 0e92e709d70b9..5a4be457fb17e 100644
 --- a/content/public/common/content_features.h
 +++ b/content/public/common/content_features.h
-@@ -191,6 +191,10 @@ CONTENT_EXPORT extern const base::Feature kWarmUpNetworkProcess;
+@@ -192,6 +192,10 @@ CONTENT_EXPORT extern const base::Feature kWarmUpNetworkProcess;
  CONTENT_EXPORT extern const base::Feature kWebNfc;
  #endif  // defined(OS_ANDROID)
  
@@ -123,7 +123,7 @@ index 579f33f573883..42f3f3f12c316 100644
  CONTENT_EXPORT extern const base::Feature kDeviceMonitorMac;
  CONTENT_EXPORT extern const base::Feature kIOSurfaceCapturer;
 diff --git a/ui/gtk/BUILD.gn b/ui/gtk/BUILD.gn
-index 3759400373b77..14762a75f5cad 100644
+index e110639211331..7488e9e1ff265 100644
 --- a/ui/gtk/BUILD.gn
 +++ b/ui/gtk/BUILD.gn
 @@ -43,6 +43,8 @@ component("gtk") {
@@ -154,7 +154,7 @@ index 3759400373b77..14762a75f5cad 100644
  
    if (use_cups) {
 diff --git a/ui/gtk/gtk_ui.cc b/ui/gtk/gtk_ui.cc
-index 9905c4f0b355f..d41673b38da87 100644
+index 63f4dbc4518e9..e2f79d8e2fe6c 100644
 --- a/ui/gtk/gtk_ui.cc
 +++ b/ui/gtk/gtk_ui.cc
 @@ -392,6 +392,8 @@ GtkUi::GtkUi(ui::GtkUiDelegate* delegate) : delegate_(delegate) {
@@ -1196,5 +1196,5 @@ index 0000000000000..fd838bcd3a1ed
 +
 +#endif  // UI_GTK_SELECT_FILE_DIALOG_IMPL_PORTAL_H_
 -- 
-2.26.2
+2.29.2
 

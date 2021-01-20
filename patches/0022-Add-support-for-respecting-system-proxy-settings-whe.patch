@@ -1,7 +1,7 @@
-From 2fc65c6722cdd50accf044868de3a4614309c172 Mon Sep 17 00:00:00 2001
+From 179fa125f824780c16db955ee6124c3a5467d2d2 Mon Sep 17 00:00:00 2001
 From: Andre Moreira Magalhaes <andre.magalhaes@endlessos.org>
 Date: Thu, 17 Dec 2020 19:05:10 -0300
-Subject: [PATCH 23/23] Add support for respecting system proxy settings when
+Subject: [PATCH 22/23] Add support for respecting system proxy settings when
  running on Linux/Flatpak
 
 Some general notes on implementation:
@@ -54,10 +54,10 @@ Closes https://github.com/flathub/org.chromium.Chromium/issues/36
  create mode 100644 net/proxy_resolution/proxy_resolver_linux.h
 
 diff --git a/chrome/app/generated_resources.grd b/chrome/app/generated_resources.grd
-index eca8e40478142..c83ef84dcc7e6 100644
+index 2af89a7e76f77..38dd6faa0f547 100644
 --- a/chrome/app/generated_resources.grd
 +++ b/chrome/app/generated_resources.grd
-@@ -9295,6 +9295,12 @@ Please help our engineers fix this problem. Tell us what happened right before y
+@@ -9384,6 +9384,12 @@ Please help our engineers fix this problem. Tell us what happened right before y
  
            &lt;p&gt;But you can still configure via the command line.  Please see &lt;code&gt;man <ph name="PRODUCT_BINARY_NAME">$2<ex>google-chrome</ex></ph>&lt;/code&gt; for more information on flags and environment variables.&lt;/p&gt;
          </message>
@@ -71,7 +71,7 @@ index eca8e40478142..c83ef84dcc7e6 100644
  
        <message name="IDS_IMAGE_FILES" desc="The description of the image file extensions in the select file dialog.">
 diff --git a/chrome/browser/net/system_network_context_manager.cc b/chrome/browser/net/system_network_context_manager.cc
-index c53056f7a4ba5..b0d0d422912a9 100644
+index c45a5a758d91d..4795982f25249 100644
 --- a/chrome/browser/net/system_network_context_manager.cc
 +++ b/chrome/browser/net/system_network_context_manager.cc
 @@ -80,6 +80,7 @@
@@ -82,7 +82,7 @@ index c53056f7a4ba5..b0d0d422912a9 100644
  #include "ui/base/l10n/l10n_util.h"
  #endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
  
-@@ -579,7 +580,13 @@ void SystemNetworkContextManager::ConfigureDefaultNetworkContextParams(
+@@ -593,7 +594,13 @@ void SystemNetworkContextManager::ConfigureDefaultNetworkContextParams(
    // or if it does work, now.
    // Should be possible now that a private isolate is used.
    // http://crbug.com/474654
@@ -98,7 +98,7 @@ index c53056f7a4ba5..b0d0d422912a9 100644
        LOG(ERROR) << "Cannot use V8 Proxy resolver in single process mode.";
      } else {
 diff --git a/chrome/browser/ui/webui/about_ui.cc b/chrome/browser/ui/webui/about_ui.cc
-index ba4753e68de1b..8cff42d24ea59 100644
+index ea457a333aa21..c53a8047f349d 100644
 --- a/chrome/browser/ui/webui/about_ui.cc
 +++ b/chrome/browser/ui/webui/about_ui.cc
 @@ -93,6 +93,10 @@
@@ -131,10 +131,10 @@ index ba4753e68de1b..8cff42d24ea59 100644
                                  base::ASCIIToUTF16(binary.BaseName().value())));
    AppendFooter(&data);
 diff --git a/net/BUILD.gn b/net/BUILD.gn
-index c399590e2b02d..77be307aec8b8 100644
+index 47cd72a16e2e5..a1fd1ba768700 100644
 --- a/net/BUILD.gn
 +++ b/net/BUILD.gn
-@@ -1248,6 +1248,8 @@ component("net") {
+@@ -1236,6 +1236,8 @@ component("net") {
          "base/network_change_notifier_linux.h",
          "proxy_resolution/proxy_config_service_linux.cc",
          "proxy_resolution/proxy_config_service_linux.h",
@@ -143,7 +143,7 @@ index c399590e2b02d..77be307aec8b8 100644
        ]
      }
  
-@@ -1712,6 +1714,7 @@ source_set("net_deps") {
+@@ -1700,6 +1702,7 @@ source_set("net_deps") {
  
      if (use_gio) {
        public_configs += [ "//build/linux:gio_config" ]
@@ -152,10 +152,10 @@ index c399590e2b02d..77be307aec8b8 100644
  
      if (is_android) {
 diff --git a/net/proxy_resolution/configured_proxy_resolution_service.cc b/net/proxy_resolution/configured_proxy_resolution_service.cc
-index 7a7ca7518ee05..3474b60dcc570 100644
+index c4ef89aa46b01..64339934c18d3 100644
 --- a/net/proxy_resolution/configured_proxy_resolution_service.cc
 +++ b/net/proxy_resolution/configured_proxy_resolution_service.cc
-@@ -48,6 +48,7 @@
+@@ -49,6 +49,7 @@
  #include "net/proxy_resolution/proxy_resolver_mac.h"
  #elif defined(OS_LINUX) && !defined(OS_CHROMEOS)
  #include "net/proxy_resolution/proxy_config_service_linux.h"
@@ -163,7 +163,7 @@ index 7a7ca7518ee05..3474b60dcc570 100644
  #elif defined(OS_ANDROID)
  #include "net/proxy_resolution/proxy_config_service_android.h"
  #endif
-@@ -258,6 +259,8 @@ class ProxyResolverFactoryForSystem : public MultiThreadedProxyResolverFactory {
+@@ -259,6 +260,8 @@ class ProxyResolverFactoryForSystem : public MultiThreadedProxyResolverFactory {
      return std::make_unique<ProxyResolverFactoryWinHttp>();
  #elif defined(OS_APPLE)
      return std::make_unique<ProxyResolverFactoryMac>();
@@ -172,7 +172,7 @@ index 7a7ca7518ee05..3474b60dcc570 100644
  #else
      NOTREACHED();
      return nullptr;
-@@ -265,7 +268,7 @@ class ProxyResolverFactoryForSystem : public MultiThreadedProxyResolverFactory {
+@@ -266,7 +269,7 @@ class ProxyResolverFactoryForSystem : public MultiThreadedProxyResolverFactory {
    }
  
    static bool IsSupported() {
@@ -384,5 +384,5 @@ index 0000000000000..0a7a22aa44d59
 +
 +#endif  // NET_PROXY_RESOLUTION_PROXY_RESOLVER_LINUX_H_
 -- 
-2.20.1
+2.29.2
 

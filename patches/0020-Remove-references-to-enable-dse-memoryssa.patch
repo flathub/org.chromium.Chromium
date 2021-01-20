@@ -1,0 +1,39 @@
+From 879f3dae566379771f30c78eaa2f228afce006e8 Mon Sep 17 00:00:00 2001
+From: Ryan Gonzalez <rymg19@gmail.com>
+Date: Tue, 17 Nov 2020 23:33:35 -0600
+Subject: [PATCH 20/23] Remove references to enable-dse-memoryssa
+
+This was a feature added in (or at least enabled by default in) LLVM 12,
+which is far newer than the freedesktop SDK's LLVM 10. Therefore, it
+essentially fixes nothing and solely breaks the build.
+---
+ build/config/compiler/BUILD.gn | 6 ------
+ 1 file changed, 6 deletions(-)
+
+diff --git a/build/config/compiler/BUILD.gn b/build/config/compiler/BUILD.gn
+index 9d66490cdb555..880f0f39e91d7 100644
+--- a/build/config/compiler/BUILD.gn
++++ b/build/config/compiler/BUILD.gn
+@@ -604,9 +604,6 @@ config("compiler") {
+         # Experimentally determined to yield a reasonable trade-off between
+         # build time, run-time performance, and binary size.
+         "-mllvm:-import-instr-limit=10",
+-
+-        # TODO(https://crbug.com/1127713): Investigate, remove.
+-        "-mllvm:-enable-dse-memoryssa=false",
+       ]
+     } else {
+       ldflags += [ "-flto=thin" ]
+@@ -631,9 +628,6 @@ config("compiler") {
+         "-Wl,--thinlto-cache-policy,$cache_policy",
+       ]
+ 
+-      # TODO(https://crbug.com/1127713): Investigate, remove.
+-      ldflags += [ "-Wl,-mllvm,-enable-dse-memoryssa=false" ]
+-
+       ldflags += [ "-Wl,--lto-O" + lto_opt_level ]
+       if (thin_lto_enable_optimizations) {
+         # TODO(gbiv): We ideally shouldn't need to specify this; ThinLTO
+-- 
+2.29.2
+

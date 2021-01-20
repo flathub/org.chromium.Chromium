@@ -1,7 +1,7 @@
-From e905576ccd32101763776acb9d63d0d34dd2a7e5 Mon Sep 17 00:00:00 2001
+From c8150343789f2903d2c381eb5828e2331c7e0007 Mon Sep 17 00:00:00 2001
 From: Mario Sanchez Prada <mario@endlessm.com>
 Date: Wed, 4 Jul 2018 17:02:26 +0100
-Subject: [PATCH 1/5] ffmpeg: Use royalty-free libfdk-aac for AAC playback
+Subject: [PATCH 1/4] ffmpeg: Use royalty-free libfdk-aac for AAC playback
 
 Changes:
 - Explicitly add `ff_fdk_aac_decoder` to the list of codecs provided
@@ -37,35 +37,50 @@ https://phabricator.endlessm.com/T21886
 https://phabricator.endlessm.com/T30286
 https://phabricator.endlessm.com/T30300
 ---
- third_party/ffmpeg/BUILD.gn                   | 17 +++++
- .../config/Chrome/linux/arm-neon/config.h     |  6 +-
- .../linux/arm-neon/libavcodec/codec_list.c    |  2 +-
- .../chromium/config/Chrome/linux/arm/config.h |  6 +-
- .../Chrome/linux/arm/libavcodec/codec_list.c  |  2 +-
- .../config/Chrome/linux/arm64/config.h        |  6 +-
- .../linux/arm64/libavcodec/codec_list.c       |  2 +-
- .../config/Chrome/linux/x64/config.asm        |  6 +-
- .../chromium/config/Chrome/linux/x64/config.h |  6 +-
- .../Chrome/linux/x64/libavcodec/codec_list.c  |  2 +-
- .../config/Chromium/linux/arm-neon/config.h   |  8 +--
- .../linux/arm-neon/libavcodec/codec_list.c    |  1 +
- .../linux/arm-neon/libavformat/demuxer_list.c |  1 +
- .../config/Chromium/linux/arm/config.h        |  8 +--
- .../linux/arm/libavcodec/codec_list.c         |  1 +
- .../linux/arm/libavformat/demuxer_list.c      |  1 +
- .../config/Chromium/linux/arm64/config.h      |  8 +--
- .../linux/arm64/libavcodec/codec_list.c       |  1 +
- .../linux/arm64/libavformat/demuxer_list.c    |  1 +
- .../config/Chromium/linux/x64/config.asm      |  8 +--
- .../config/Chromium/linux/x64/config.h        |  8 +--
- .../linux/x64/libavcodec/codec_list.c         |  1 +
- .../linux/x64/libavformat/demuxer_list.c      |  1 +
- .../ffmpeg/chromium/scripts/build_ffmpeg.py   | 15 ++++-
- third_party/ffmpeg/ffmpeg_generated.gni       | 62 +++----------------
- 25 files changed, 86 insertions(+), 94 deletions(-)
+ third_party/ffmpeg/BUILD.gn                   |  17 +
+ third_party/ffmpeg/CREDITS.chromium           | 454 +-----------------
+ .../config/Chrome/linux/arm64/config.h        |  20 +-
+ .../linux/arm64/libavcodec/codec_list.c       |   2 +-
+ .../Chrome/linux/arm64/libavutil/ffversion.h  |   2 +-
+ .../config/Chrome/linux/x64/config.asm        |  18 +-
+ .../chromium/config/Chrome/linux/x64/config.h |  22 +-
+ .../Chrome/linux/x64/libavcodec/codec_list.c  |   2 +-
+ .../Chrome/linux/x64/libavutil/ffversion.h    |   2 +-
+ .../config/ChromeOS/linux/arm64/config.h      |  20 +-
+ .../linux/arm64/libavcodec/codec_list.c       |   2 +-
+ .../linux/arm64/libavutil/ffversion.h         |   2 +-
+ .../config/ChromeOS/linux/x64/config.asm      |  18 +-
+ .../config/ChromeOS/linux/x64/config.h        |  22 +-
+ .../linux/x64/libavcodec/codec_list.c         |   2 +-
+ .../ChromeOS/linux/x64/libavutil/ffversion.h  |   2 +-
+ .../config/Chromium/linux/arm64/config.h      |  26 +-
+ .../linux/arm64/libavcodec/bsf_list.c         |   1 +
+ .../linux/arm64/libavcodec/codec_list.c       |   2 +
+ .../linux/arm64/libavcodec/parser_list.c      |   1 +
+ .../linux/arm64/libavformat/demuxer_list.c    |   1 +
+ .../linux/arm64/libavutil/ffversion.h         |   2 +-
+ .../config/Chromium/linux/x64/config.asm      |  24 +-
+ .../config/Chromium/linux/x64/config.h        |  28 +-
+ .../Chromium/linux/x64/libavcodec/bsf_list.c  |   1 +
+ .../linux/x64/libavcodec/codec_list.c         |   2 +
+ .../linux/x64/libavcodec/parser_list.c        |   1 +
+ .../linux/x64/libavformat/demuxer_list.c      |   1 +
+ .../Chromium/linux/x64/libavutil/ffversion.h  |   2 +-
+ .../ffmpeg/chromium/scripts/build_ffmpeg.py   |  22 +-
+ .../ffmpeg/chromium/scripts/generate_gn.py    |   3 +-
+ third_party/ffmpeg/ffmpeg_generated.gni       | 420 +++-------------
+ .../autorename_libavcodec_aarch64_videodsp.S  |   2 +
+ ...orename_libavcodec_aarch64_videodsp_init.c |   2 +
+ ...rename_libavcodec_aarch64_vorbisdsp_init.c |   2 +
+ ...orename_libavutil_aarch64_float_dsp_init.c |   2 +
+ 36 files changed, 257 insertions(+), 895 deletions(-)
+ create mode 100644 third_party/ffmpeg/libavcodec/aarch64/autorename_libavcodec_aarch64_videodsp.S
+ create mode 100644 third_party/ffmpeg/libavcodec/aarch64/autorename_libavcodec_aarch64_videodsp_init.c
+ create mode 100644 third_party/ffmpeg/libavcodec/aarch64/autorename_libavcodec_aarch64_vorbisdsp_init.c
+ create mode 100644 third_party/ffmpeg/libavutil/aarch64/autorename_libavutil_aarch64_float_dsp_init.c
 
 diff --git a/third_party/ffmpeg/BUILD.gn b/third_party/ffmpeg/BUILD.gn
-index f7f34ea41..e7c876c01 100755
+index f7f34ea414..337e45cb3f 100755
 --- a/third_party/ffmpeg/BUILD.gn
 +++ b/third_party/ffmpeg/BUILD.gn
 @@ -435,6 +435,23 @@ if (is_component_ffmpeg) {
@@ -86,104 +101,535 @@ index f7f34ea41..e7c876c01 100755
 +        ]
 +      }
 +      libs = [
-+        "fdk-aac",
++        "fdk-aac","openh264"
 +      ]
 +
      } else if (is_win) {
        # Windows component build needs the .def file to export ffmpeg symbols.
        deps += [ ":ffmpeg_generate_def" ]
-diff --git a/third_party/ffmpeg/chromium/config/Chrome/linux/arm-neon/config.h b/third_party/ffmpeg/chromium/config/Chrome/linux/arm-neon/config.h
-index 9e521bed7..47daba5a3 100644
---- a/third_party/ffmpeg/chromium/config/Chrome/linux/arm-neon/config.h
-+++ b/third_party/ffmpeg/chromium/config/Chrome/linux/arm-neon/config.h
-@@ -425,7 +425,7 @@
- #define CONFIG_LIBXAVS2 0
- #define CONFIG_LIBXVID 0
- #define CONFIG_DECKLINK 0
--#define CONFIG_LIBFDK_AAC 0
-+#define CONFIG_LIBFDK_AAC 1
- #define CONFIG_OPENSSL 0
- #define CONFIG_LIBTLS 0
- #define CONFIG_GMP 0
-@@ -1009,7 +1009,7 @@
- #define CONFIG_ZEROCODEC_DECODER 0
- #define CONFIG_ZLIB_DECODER 0
- #define CONFIG_ZMBV_DECODER 0
--#define CONFIG_AAC_DECODER 1
-+#define CONFIG_AAC_DECODER 0
- #define CONFIG_AAC_FIXED_DECODER 0
- #define CONFIG_AAC_LATM_DECODER 0
- #define CONFIG_AC3_DECODER 0
-@@ -1235,7 +1235,7 @@
- #define CONFIG_LIBCODEC2_DECODER 0
- #define CONFIG_LIBDAV1D_DECODER 0
- #define CONFIG_LIBDAVS2_DECODER 0
--#define CONFIG_LIBFDK_AAC_DECODER 0
-+#define CONFIG_LIBFDK_AAC_DECODER 1
- #define CONFIG_LIBGSM_DECODER 0
- #define CONFIG_LIBGSM_MS_DECODER 0
- #define CONFIG_LIBILBC_DECODER 0
-diff --git a/third_party/ffmpeg/chromium/config/Chrome/linux/arm-neon/libavcodec/codec_list.c b/third_party/ffmpeg/chromium/config/Chrome/linux/arm-neon/libavcodec/codec_list.c
-index 49f757b2d..7e49e07bb 100644
---- a/third_party/ffmpeg/chromium/config/Chrome/linux/arm-neon/libavcodec/codec_list.c
-+++ b/third_party/ffmpeg/chromium/config/Chrome/linux/arm-neon/libavcodec/codec_list.c
-@@ -3,7 +3,7 @@ static const AVCodec * const codec_list[] = {
-     &ff_theora_decoder,
-     &ff_vp3_decoder,
-     &ff_vp8_decoder,
--    &ff_aac_decoder,
-+    &ff_libfdk_aac_decoder,
-     &ff_flac_decoder,
-     &ff_mp3_decoder,
-     &ff_vorbis_decoder,
-diff --git a/third_party/ffmpeg/chromium/config/Chrome/linux/arm/config.h b/third_party/ffmpeg/chromium/config/Chrome/linux/arm/config.h
-index 6071f43f2..4a93a5d5b 100644
---- a/third_party/ffmpeg/chromium/config/Chrome/linux/arm/config.h
-+++ b/third_party/ffmpeg/chromium/config/Chrome/linux/arm/config.h
-@@ -425,7 +425,7 @@
- #define CONFIG_LIBXAVS2 0
- #define CONFIG_LIBXVID 0
- #define CONFIG_DECKLINK 0
--#define CONFIG_LIBFDK_AAC 0
-+#define CONFIG_LIBFDK_AAC 1
- #define CONFIG_OPENSSL 0
- #define CONFIG_LIBTLS 0
- #define CONFIG_GMP 0
-@@ -1009,7 +1009,7 @@
- #define CONFIG_ZEROCODEC_DECODER 0
- #define CONFIG_ZLIB_DECODER 0
- #define CONFIG_ZMBV_DECODER 0
--#define CONFIG_AAC_DECODER 1
-+#define CONFIG_AAC_DECODER 0
- #define CONFIG_AAC_FIXED_DECODER 0
- #define CONFIG_AAC_LATM_DECODER 0
- #define CONFIG_AC3_DECODER 0
-@@ -1235,7 +1235,7 @@
- #define CONFIG_LIBCODEC2_DECODER 0
- #define CONFIG_LIBDAV1D_DECODER 0
- #define CONFIG_LIBDAVS2_DECODER 0
--#define CONFIG_LIBFDK_AAC_DECODER 0
-+#define CONFIG_LIBFDK_AAC_DECODER 1
- #define CONFIG_LIBGSM_DECODER 0
- #define CONFIG_LIBGSM_MS_DECODER 0
- #define CONFIG_LIBILBC_DECODER 0
-diff --git a/third_party/ffmpeg/chromium/config/Chrome/linux/arm/libavcodec/codec_list.c b/third_party/ffmpeg/chromium/config/Chrome/linux/arm/libavcodec/codec_list.c
-index 49f757b2d..7e49e07bb 100644
---- a/third_party/ffmpeg/chromium/config/Chrome/linux/arm/libavcodec/codec_list.c
-+++ b/third_party/ffmpeg/chromium/config/Chrome/linux/arm/libavcodec/codec_list.c
-@@ -3,7 +3,7 @@ static const AVCodec * const codec_list[] = {
-     &ff_theora_decoder,
-     &ff_vp3_decoder,
-     &ff_vp8_decoder,
--    &ff_aac_decoder,
-+    &ff_libfdk_aac_decoder,
-     &ff_flac_decoder,
-     &ff_mp3_decoder,
-     &ff_vorbis_decoder,
+diff --git a/third_party/ffmpeg/CREDITS.chromium b/third_party/ffmpeg/CREDITS.chromium
+index 0043df2c50..bfef733faf 100644
+--- a/third_party/ffmpeg/CREDITS.chromium
++++ b/third_party/ffmpeg/CREDITS.chromium
+@@ -131,444 +131,24 @@ compatible with the LGPL.
+ 
+ ********************************************************************************
+ 
+-libavcodec/arm/jrevdct_arm.S
++libavcodec/libfdk-aacdec.c
+ 
+-C-like prototype :
+-        void j_rev_dct_arm(DCTBLOCK data)
+-
+-   With DCTBLOCK being a pointer to an array of 64 'signed shorts'
+-
+-   Copyright (c) 2001 Lionel Ulmer (lionel.ulmer@free.fr / bbrox@bbrox.org)
+-
+-   Permission is hereby granted, free of charge, to any person obtaining a copy
+-   of this software and associated documentation files (the "Software"), to deal
+-   in the Software without restriction, including without limitation the rights
+-   to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+-   copies of the Software, and to permit persons to whom the Software is
+-   furnished to do so, subject to the following conditions:
+-
+-   The above copyright notice and this permission notice shall be included in
+-   all copies or substantial portions of the Software.
+-
+-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+-   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+-   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
+-   COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+-   IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+-   CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+-
+-********************************************************************************
+-
+-libavcodec/arm/vp8dsp_armv6.S
+-
+-VP8 ARMv6 optimisations
+-
+-Copyright (c) 2010 Google Inc.
+-Copyright (c) 2010 Rob Clark <rob@ti.com>
+-Copyright (c) 2011 Mans Rullgard <mans@mansr.com>
+-
+-This file is part of FFmpeg.
+-
+-FFmpeg is free software; you can redistribute it and/or
+-modify it under the terms of the GNU Lesser General Public
+-License as published by the Free Software Foundation; either
+-version 2.1 of the License, or (at your option) any later version.
+-
+-FFmpeg is distributed in the hope that it will be useful,
+-but WITHOUT ANY WARRANTY; without even the implied warranty of
+-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+-Lesser General Public License for more details.
+-
+-You should have received a copy of the GNU Lesser General Public
+-License along with FFmpeg; if not, write to the Free Software
+-Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+-
+-This code was partially ported from libvpx, which uses this license:
+-
+-Redistribution and use in source and binary forms, with or without
+-modification, are permitted provided that the following conditions are
+-met:
+-
+-* Redistributions of source code must retain the above copyright
+-notice, this list of conditions and the following disclaimer.
+-
+-* Redistributions in binary form must reproduce the above copyright
+-notice, this list of conditions and the following disclaimer in
+-the documentation and/or other materials provided with the
+-distribution.
+-
+-* Neither the name of Google nor the names of its contributors may
+-be used to endorse or promote products derived from this software
+-without specific prior written permission.
+-
+-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+-"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+-LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+-A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+-HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+-SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+-LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+-DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+-THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+-(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+-OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+-
+-********************************************************************************
+-
+-libavcodec/mips/acelp_filters_mips.c
+-
+-Copyright (c) 2012
+-MIPS Technologies, Inc., California.
+-
+-Redistribution and use in source and binary forms, with or without
+-modification, are permitted provided that the following conditions
+-are met:
+-1. Redistributions of source code must retain the above copyright
+-notice, this list of conditions and the following disclaimer.
+-2. Redistributions in binary form must reproduce the above copyright
+-notice, this list of conditions and the following disclaimer in the
+-documentation and/or other materials provided with the distribution.
+-3. Neither the name of the MIPS Technologies, Inc., nor the names of its
+-contributors may be used to endorse or promote products derived from
+-this software without specific prior written permission.
+-
+-THIS SOFTWARE IS PROVIDED BY THE MIPS TECHNOLOGIES, INC. ``AS IS'' AND
+-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+-IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+-ARE DISCLAIMED.  IN NO EVENT SHALL THE MIPS TECHNOLOGIES, INC. BE LIABLE
+-FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+-DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+-OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+-HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+-LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+-OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+-SUCH DAMAGE.
+-
+-Author:  Nedeljko Babic (nbabic@mips.com)
+-
+-various filters for ACELP-based codecs optimized for MIPS
+-
+-This file is part of FFmpeg.
+-
+-FFmpeg is free software; you can redistribute it and/or
+-modify it under the terms of the GNU Lesser General Public
+-License as published by the Free Software Foundation; either
+-version 2.1 of the License, or (at your option) any later version.
+-
+-FFmpeg is distributed in the hope that it will be useful,
+-but WITHOUT ANY WARRANTY; without even the implied warranty of
+-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+-Lesser General Public License for more details.
+-
+-You should have received a copy of the GNU Lesser General Public
+-License along with FFmpeg; if not, write to the Free Software
+-Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+-
+-********************************************************************************
+-
+-libavcodec/mips/acelp_vectors_mips.c
+-
+-Copyright (c) 2012
+-MIPS Technologies, Inc., California.
+-
+-Redistribution and use in source and binary forms, with or without
+-modification, are permitted provided that the following conditions
+-are met:
+-1. Redistributions of source code must retain the above copyright
+-notice, this list of conditions and the following disclaimer.
+-2. Redistributions in binary form must reproduce the above copyright
+-notice, this list of conditions and the following disclaimer in the
+-documentation and/or other materials provided with the distribution.
+-3. Neither the name of the MIPS Technologies, Inc., nor the names of its
+-contributors may be used to endorse or promote products derived from
+-this software without specific prior written permission.
+-
+-THIS SOFTWARE IS PROVIDED BY THE MIPS TECHNOLOGIES, INC. ``AS IS'' AND
+-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+-IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+-ARE DISCLAIMED.  IN NO EVENT SHALL THE MIPS TECHNOLOGIES, INC. BE LIABLE
+-FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+-DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+-OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+-HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+-LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+-OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+-SUCH DAMAGE.
+-
+-Author:  Nedeljko Babic (nbabic@mips.com)
+-
+-adaptive and fixed codebook vector operations for ACELP-based codecs
+-optimized for MIPS
++AAC decoder wrapper
++Copyright (c) 2012 Martin Storsjo
+ 
+ This file is part of FFmpeg.
+ 
+-FFmpeg is free software; you can redistribute it and/or
+-modify it under the terms of the GNU Lesser General Public
+-License as published by the Free Software Foundation; either
+-version 2.1 of the License, or (at your option) any later version.
+-
+-FFmpeg is distributed in the hope that it will be useful,
+-but WITHOUT ANY WARRANTY; without even the implied warranty of
+-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+-Lesser General Public License for more details.
+-
+-You should have received a copy of the GNU Lesser General Public
+-License along with FFmpeg; if not, write to the Free Software
+-Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+-
+-********************************************************************************
++Permission to use, copy, modify, and/or distribute this software for any
++purpose with or without fee is hereby granted, provided that the above
++copyright notice and this permission notice appear in all copies.
+ 
+-libavcodec/mips/amrwbdec_mips.c
+-
+-Copyright (c) 2012
+-MIPS Technologies, Inc., California.
+-
+-Redistribution and use in source and binary forms, with or without
+-modification, are permitted provided that the following conditions
+-are met:
+-1. Redistributions of source code must retain the above copyright
+-notice, this list of conditions and the following disclaimer.
+-2. Redistributions in binary form must reproduce the above copyright
+-notice, this list of conditions and the following disclaimer in the
+-documentation and/or other materials provided with the distribution.
+-3. Neither the name of the MIPS Technologies, Inc., nor the names of its
+-contributors may be used to endorse or promote products derived from
+-this software without specific prior written permission.
+-
+-THIS SOFTWARE IS PROVIDED BY THE MIPS TECHNOLOGIES, INC. ``AS IS'' AND
+-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+-IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+-ARE DISCLAIMED.  IN NO EVENT SHALL THE MIPS TECHNOLOGIES, INC. BE LIABLE
+-FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+-DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+-OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+-HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+-LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+-OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+-SUCH DAMAGE.
+-
+-Author:  Nedeljko Babic (nbabic@mips.com)
+-
+-This file is part of FFmpeg.
+-
+-FFmpeg is free software; you can redistribute it and/or
+-modify it under the terms of the GNU Lesser General Public
+-License as published by the Free Software Foundation; either
+-version 2.1 of the License, or (at your option) any later version.
+-
+-FFmpeg is distributed in the hope that it will be useful,
+-but WITHOUT ANY WARRANTY; without even the implied warranty of
+-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+-Lesser General Public License for more details.
+-
+-You should have received a copy of the GNU Lesser General Public
+-License along with FFmpeg; if not, write to the Free Software
+-Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+-
+-********************************************************************************
+-
+-libavcodec/mips/celp_filters_mips.c
+-
+-Copyright (c) 2012
+-MIPS Technologies, Inc., California.
+-
+-Redistribution and use in source and binary forms, with or without
+-modification, are permitted provided that the following conditions
+-are met:
+-1. Redistributions of source code must retain the above copyright
+-notice, this list of conditions and the following disclaimer.
+-2. Redistributions in binary form must reproduce the above copyright
+-notice, this list of conditions and the following disclaimer in the
+-documentation and/or other materials provided with the distribution.
+-3. Neither the name of the MIPS Technologies, Inc., nor the names of its
+-contributors may be used to endorse or promote products derived from
+-this software without specific prior written permission.
+-
+-THIS SOFTWARE IS PROVIDED BY THE MIPS TECHNOLOGIES, INC. ``AS IS'' AND
+-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+-IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+-ARE DISCLAIMED.  IN NO EVENT SHALL THE MIPS TECHNOLOGIES, INC. BE LIABLE
+-FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+-DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+-OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+-HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+-LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+-OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+-SUCH DAMAGE.
+-
+-Author:  Nedeljko Babic (nbabic@mips.com)
+-
+-various filters for CELP-based codecs optimized for MIPS
+-
+-This file is part of FFmpeg.
+-
+-FFmpeg is free software; you can redistribute it and/or
+-modify it under the terms of the GNU Lesser General Public
+-License as published by the Free Software Foundation; either
+-version 2.1 of the License, or (at your option) any later version.
+-
+-FFmpeg is distributed in the hope that it will be useful,
+-but WITHOUT ANY WARRANTY; without even the implied warranty of
+-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+-Lesser General Public License for more details.
+-
+-You should have received a copy of the GNU Lesser General Public
+-License along with FFmpeg; if not, write to the Free Software
+-Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+-
+-********************************************************************************
+-
+-libavcodec/mips/celp_math_mips.c
+-
+-Copyright (c) 2012
+-MIPS Technologies, Inc., California.
+-
+-Redistribution and use in source and binary forms, with or without
+-modification, are permitted provided that the following conditions
+-are met:
+-1. Redistributions of source code must retain the above copyright
+-notice, this list of conditions and the following disclaimer.
+-2. Redistributions in binary form must reproduce the above copyright
+-notice, this list of conditions and the following disclaimer in the
+-documentation and/or other materials provided with the distribution.
+-3. Neither the name of the MIPS Technologies, Inc., nor the names of its
+-contributors may be used to endorse or promote products derived from
+-this software without specific prior written permission.
+-
+-THIS SOFTWARE IS PROVIDED BY THE MIPS TECHNOLOGIES, INC. ``AS IS'' AND
+-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+-IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+-ARE DISCLAIMED.  IN NO EVENT SHALL THE MIPS TECHNOLOGIES, INC. BE LIABLE
+-FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+-DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+-OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+-HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+-LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+-OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+-SUCH DAMAGE.
+-
+-Author:  Nedeljko Babic (nbabic@mips.com)
+-
+-Math operations optimized for MIPS
+-
+-This file is part of FFmpeg.
+-
+-FFmpeg is free software; you can redistribute it and/or
+-modify it under the terms of the GNU Lesser General Public
+-License as published by the Free Software Foundation; either
+-version 2.1 of the License, or (at your option) any later version.
+-
+-FFmpeg is distributed in the hope that it will be useful,
+-but WITHOUT ANY WARRANTY; without even the implied warranty of
+-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+-Lesser General Public License for more details.
+-
+-You should have received a copy of the GNU Lesser General Public
+-License along with FFmpeg; if not, write to the Free Software
+-Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+-
+-********************************************************************************
+-
+-libavcodec/mips/fft_mips.c
+-
+-Copyright (c) 2012
+-MIPS Technologies, Inc., California.
+-
+-Redistribution and use in source and binary forms, with or without
+-modification, are permitted provided that the following conditions
+-are met:
+-1. Redistributions of source code must retain the above copyright
+-notice, this list of conditions and the following disclaimer.
+-2. Redistributions in binary form must reproduce the above copyright
+-notice, this list of conditions and the following disclaimer in the
+-documentation and/or other materials provided with the distribution.
+-3. Neither the name of the MIPS Technologies, Inc., nor the names of its
+-contributors may be used to endorse or promote products derived from
+-this software without specific prior written permission.
+-
+-THIS SOFTWARE IS PROVIDED BY THE MIPS TECHNOLOGIES, INC. ``AS IS'' AND
+-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+-IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+-ARE DISCLAIMED.  IN NO EVENT SHALL THE MIPS TECHNOLOGIES, INC. BE LIABLE
+-FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+-DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+-OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+-HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+-LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+-OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+-SUCH DAMAGE.
+-
+-Author:  Stanislav Ocovaj (socovaj@mips.com)
+-Author:  Zoran Lukic (zoranl@mips.com)
+-
+-Optimized MDCT/IMDCT and FFT transforms
+-
+-This file is part of FFmpeg.
+-
+-FFmpeg is free software; you can redistribute it and/or
+-modify it under the terms of the GNU Lesser General Public
+-License as published by the Free Software Foundation; either
+-version 2.1 of the License, or (at your option) any later version.
+-
+-FFmpeg is distributed in the hope that it will be useful,
+-but WITHOUT ANY WARRANTY; without even the implied warranty of
+-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+-Lesser General Public License for more details.
+-
+-You should have received a copy of the GNU Lesser General Public
+-License along with FFmpeg; if not, write to the Free Software
+-Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+-
+-********************************************************************************
+-
+-libavcodec/mips/mpegaudiodsp_mips_float.c
+-
+-Copyright (c) 2012
+-MIPS Technologies, Inc., California.
+-
+-Redistribution and use in source and binary forms, with or without
+-modification, are permitted provided that the following conditions
+-are met:
+-1. Redistributions of source code must retain the above copyright
+-notice, this list of conditions and the following disclaimer.
+-2. Redistributions in binary form must reproduce the above copyright
+-notice, this list of conditions and the following disclaimer in the
+-documentation and/or other materials provided with the distribution.
+-3. Neither the name of the MIPS Technologies, Inc., nor the names of its
+-contributors may be used to endorse or promote products derived from
+-this software without specific prior written permission.
+-
+-THIS SOFTWARE IS PROVIDED BY THE MIPS TECHNOLOGIES, INC. ``AS IS'' AND
+-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+-IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+-ARE DISCLAIMED.  IN NO EVENT SHALL THE MIPS TECHNOLOGIES, INC. BE LIABLE
+-FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+-DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+-OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+-HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+-LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+-OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+-SUCH DAMAGE.
+-
+-Author:  Bojan Zivkovic (bojan@mips.com)
+-
+-MPEG Audio decoder optimized for MIPS floating-point architecture
+-
+-This file is part of FFmpeg.
+-
+-FFmpeg is free software; you can redistribute it and/or
+-modify it under the terms of the GNU Lesser General Public
+-License as published by the Free Software Foundation; either
+-version 2.1 of the License, or (at your option) any later version.
+-
+-FFmpeg is distributed in the hope that it will be useful,
+-but WITHOUT ANY WARRANTY; without even the implied warranty of
+-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+-Lesser General Public License for more details.
+-
+-You should have received a copy of the GNU Lesser General Public
+-License along with FFmpeg; if not, write to the Free Software
+-Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
++THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
++WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
++MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
++ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
++WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
++ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
++OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ 
+ ********************************************************************************
+ 
+@@ -784,21 +364,13 @@ libavcodec/fft_fixed_32.c
+ libavcodec/fft_init_table.c
+ libavcodec/fft_table.h
+ libavcodec/mdct_fixed_32.c
+-libavcodec/mips/aacdec_mips.c
+-libavcodec/mips/aacdec_mips.h
+-libavcodec/mips/aacpsdsp_mips.c
+-libavcodec/mips/aacsbr_mips.c
+-libavcodec/mips/aacsbr_mips.h
+ libavcodec/mips/amrwbdec_mips.h
+ libavcodec/mips/compute_antialias_fixed.h
+ libavcodec/mips/compute_antialias_float.h
+ libavcodec/mips/lsp_mips.h
+-libavcodec/mips/sbrdsp_mips.c
+ libavutil/fixed_dsp.c
+ libavutil/fixed_dsp.h
+-libavutil/mips/float_dsp_mips.c
+ libavutil/mips/libm_mips.h
+-libavutil/softfloat_tables.h
+ 
+ Copyright (c) 2012
+ MIPS Technologies, Inc., California.
 diff --git a/third_party/ffmpeg/chromium/config/Chrome/linux/arm64/config.h b/third_party/ffmpeg/chromium/config/Chrome/linux/arm64/config.h
-index 7b9814bef..4800f66f7 100644
+index 17cf7da560..2cccd571c7 100644
 --- a/third_party/ffmpeg/chromium/config/Chrome/linux/arm64/config.h
 +++ b/third_party/ffmpeg/chromium/config/Chrome/linux/arm64/config.h
+@@ -1,12 +1,12 @@
+ /* Automatically generated by configure - do not modify! */
+ #ifndef FFMPEG_CONFIG_H
+ #define FFMPEG_CONFIG_H
+-/* #define FFMPEG_CONFIGURATION "--disable-everything --disable-all --disable-doc --disable-htmlpages --disable-manpages --disable-podpages --disable-txtpages --disable-static --enable-avcodec --enable-avformat --enable-avutil --enable-fft --enable-rdft --enable-static --enable-libopus --disable-debug --disable-bzlib --disable-error-resilience --disable-iconv --disable-lzo --disable-network --disable-schannel --disable-sdl2 --disable-symver --disable-xlib --disable-zlib --disable-securetransport --disable-faan --disable-alsa --disable-autodetect --enable-decoder='vorbis,libopus,flac' --enable-decoder='pcm_u8,pcm_s16le,pcm_s24le,pcm_s32le,pcm_f32le,mp3' --enable-decoder='pcm_s16be,pcm_s24be,pcm_mulaw,pcm_alaw' --enable-demuxer='ogg,matroska,wav,flac,mp3,mov' --enable-parser='opus,vorbis,flac,mpegaudio,vp9' --extra-cflags=-I/mnt/src/chromium/src/third_party/opus/src/include --disable-linux-perf --x86asmexe=nasm --optflags='\"-O2\"' --enable-decoder='theora,vp8' --enable-parser='vp3,vp8' --enable-cross-compile --cross-prefix=/usr/bin/aarch64-linux-gnu- --target-os=linux --extra-cflags='--target=aarch64-linux-gnu' --extra-ldflags='--target=aarch64-linux-gnu' --sysroot=/mnt/src/chromium/src/build/linux/debian_sid_arm64-sysroot --arch=aarch64 --enable-armv8 --extra-cflags='-march=armv8-a' --enable-pic --cc=clang --cxx=clang++ --ld=clang --extra-ldflags='-fuse-ld=lld' --enable-decoder='aac,h264' --enable-demuxer=aac --enable-parser='aac,h264'" -- elide long configuration string from binary */
++/* #define FFMPEG_CONFIGURATION "--disable-everything --disable-all --disable-doc --disable-htmlpages --disable-manpages --disable-podpages --disable-txtpages --disable-static --enable-avcodec --enable-avformat --enable-avutil --enable-fft --enable-rdft --enable-static --enable-libopus --disable-debug --disable-bzlib --disable-error-resilience --disable-iconv --disable-lzo --disable-network --disable-schannel --disable-sdl2 --disable-symver --disable-xlib --disable-zlib --disable-securetransport --disable-faan --disable-alsa --disable-autodetect --enable-decoder='vorbis,libopus,flac' --enable-decoder='pcm_u8,pcm_s16le,pcm_s24le,pcm_s32le,pcm_f32le,mp3' --enable-decoder='pcm_s16be,pcm_s24be,pcm_mulaw,pcm_alaw' --enable-demuxer='ogg,matroska,wav,flac,mp3,mov' --enable-parser='opus,vorbis,flac,mpegaudio,vp9' --extra-cflags=-I/chromium/third_party/opus/src/include --disable-linux-perf --x86asmexe=nasm --optflags='\"-O2\"' --enable-decoder='theora,vp8' --enable-parser='vp3,vp8' --enable-cross-compile --cross-prefix=/usr/bin/aarch64-linux-gnu- --target-os=linux --extra-cflags='--target=aarch64-linux-gnu' --extra-ldflags='--target=aarch64-linux-gnu' --sysroot=/chromium/build/linux/debian_sid_arm64-sysroot --arch=aarch64 --enable-armv8 --extra-cflags='-march=armv8-a' --enable-pic --cc=clang --cxx=clang++ --ld=clang --extra-ldflags='-fuse-ld=lld' --enable-demuxer=aac --enable-parser=aac --enable-libfdk-aac --enable-decoder=libfdk_aac --disable-decoder=aac --enable-decoder=h264 --enable-parser=h264" -- elide long configuration string from binary */
+ #define FFMPEG_LICENSE "LGPL version 2.1 or later"
+ #define CONFIG_THIS_YEAR 2020
+ #define FFMPEG_DATADIR "/usr/local/share/ffmpeg"
+ #define AVCONV_DATADIR "/usr/local/share/ffmpeg"
+-#define CC_IDENT "clang version 12.0.0 (https://github.com/llvm/llvm-project/ d0abc757495349fd053beeaea81cd954c2e457e7)"
++#define CC_IDENT "clang version 12.0.0 (https://github.com/llvm/llvm-project/ 418f18c6cdfe56e77669e2f4d3df3bca1020156d)"
+ #define av_restrict restrict
+ #define EXTERN_PREFIX ""
+ #define EXTERN_ASM 
+@@ -348,7 +348,7 @@
+ #define HAVE_INLINE_ASM_LABELS 1
+ #define HAVE_INLINE_ASM_NONLOCAL_LABELS 1
+ #define HAVE_PRAGMA_DEPRECATED 1
+-#define HAVE_RSYNC_CONTIMEOUT 1
++#define HAVE_RSYNC_CONTIMEOUT 0
+ #define HAVE_SYMVER_ASM_LABEL 1
+ #define HAVE_SYMVER_GNU_ASM 1
+ /* #define HAVE_VFP_ARGS 0 -- softfp/hardfp selection is done by the chrome build */
+@@ -374,8 +374,8 @@
+ #define HAVE_STRUCT_STAT_ST_MTIM_TV_NSEC 1
+ #define HAVE_STRUCT_V4L2_FRMIVALENUM_DISCRETE 0
+ #define HAVE_LIBDRM_GETFB2 0
+-#define HAVE_MAKEINFO 1
+-#define HAVE_MAKEINFO_HTML 1
++#define HAVE_MAKEINFO 0
++#define HAVE_MAKEINFO_HTML 0
+ #define HAVE_OPENCL_D3D11 0
+ #define HAVE_OPENCL_DRM_ARM 0
+ #define HAVE_OPENCL_DRM_BEIGNET 0
 @@ -425,7 +425,7 @@
  #define CONFIG_LIBXAVS2 0
  #define CONFIG_LIBXVID 0
@@ -193,7 +639,25 @@ index 7b9814bef..4800f66f7 100644
  #define CONFIG_OPENSSL 0
  #define CONFIG_LIBTLS 0
  #define CONFIG_GMP 0
-@@ -1009,7 +1009,7 @@
+@@ -649,7 +649,7 @@
+ #define CONFIG_HUFFYUVENCDSP 0
+ #define CONFIG_IDCTDSP 0
+ #define CONFIG_IIRFILTER 0
+-#define CONFIG_MDCT15 1
++#define CONFIG_MDCT15 0
+ #define CONFIG_INTRAX8 0
+ #define CONFIG_ISO_MEDIA 1
+ #define CONFIG_IVIDSP 0
+@@ -682,7 +682,7 @@
+ #define CONFIG_RTPENC_CHAIN 0
+ #define CONFIG_RV34DSP 0
+ #define CONFIG_SCENE_SAD 0
+-#define CONFIG_SINEWIN 1
++#define CONFIG_SINEWIN 0
+ #define CONFIG_SNAPPY 0
+ #define CONFIG_SRTP 0
+ #define CONFIG_STARTCODE 1
+@@ -1013,7 +1013,7 @@
  #define CONFIG_ZEROCODEC_DECODER 0
  #define CONFIG_ZLIB_DECODER 0
  #define CONFIG_ZMBV_DECODER 0
@@ -202,7 +666,7 @@ index 7b9814bef..4800f66f7 100644
  #define CONFIG_AAC_FIXED_DECODER 0
  #define CONFIG_AAC_LATM_DECODER 0
  #define CONFIG_AC3_DECODER 0
-@@ -1235,7 +1235,7 @@
+@@ -1241,7 +1241,7 @@
  #define CONFIG_LIBCODEC2_DECODER 0
  #define CONFIG_LIBDAV1D_DECODER 0
  #define CONFIG_LIBDAVS2_DECODER 0
@@ -212,22 +676,68 @@ index 7b9814bef..4800f66f7 100644
  #define CONFIG_LIBGSM_MS_DECODER 0
  #define CONFIG_LIBILBC_DECODER 0
 diff --git a/third_party/ffmpeg/chromium/config/Chrome/linux/arm64/libavcodec/codec_list.c b/third_party/ffmpeg/chromium/config/Chrome/linux/arm64/libavcodec/codec_list.c
-index 49f757b2d..7e49e07bb 100644
+index 49f757b2d8..e6e4d9d4f8 100644
 --- a/third_party/ffmpeg/chromium/config/Chrome/linux/arm64/libavcodec/codec_list.c
 +++ b/third_party/ffmpeg/chromium/config/Chrome/linux/arm64/libavcodec/codec_list.c
-@@ -3,7 +3,7 @@ static const AVCodec * const codec_list[] = {
+@@ -3,7 +3,6 @@ static const AVCodec * const codec_list[] = {
      &ff_theora_decoder,
      &ff_vp3_decoder,
      &ff_vp8_decoder,
 -    &ff_aac_decoder,
-+    &ff_libfdk_aac_decoder,
      &ff_flac_decoder,
      &ff_mp3_decoder,
      &ff_vorbis_decoder,
+@@ -16,5 +15,6 @@ static const AVCodec * const codec_list[] = {
+     &ff_pcm_s24le_decoder,
+     &ff_pcm_s32le_decoder,
+     &ff_pcm_u8_decoder,
++    &ff_libfdk_aac_decoder,
+     &ff_libopus_decoder,
+     NULL };
+diff --git a/third_party/ffmpeg/chromium/config/Chrome/linux/arm64/libavutil/ffversion.h b/third_party/ffmpeg/chromium/config/Chrome/linux/arm64/libavutil/ffversion.h
+index 0f5c7b1d74..bc43b980d5 100644
+--- a/third_party/ffmpeg/chromium/config/Chrome/linux/arm64/libavutil/ffversion.h
++++ b/third_party/ffmpeg/chromium/config/Chrome/linux/arm64/libavutil/ffversion.h
+@@ -1,5 +1,5 @@
+ /* Automatically generated by version.sh, do not manually edit! */
+ #ifndef AVUTIL_FFVERSION_H
+ #define AVUTIL_FFVERSION_H
+-#define FFMPEG_VERSION "N-100481-g0493b979df"
++#define FFMPEG_VERSION "4.3.git"
+ #endif /* AVUTIL_FFVERSION_H */
 diff --git a/third_party/ffmpeg/chromium/config/Chrome/linux/x64/config.asm b/third_party/ffmpeg/chromium/config/Chrome/linux/x64/config.asm
-index ed0869c87..20da33027 100644
+index 567fae94aa..896fd6c9eb 100644
 --- a/third_party/ffmpeg/chromium/config/Chrome/linux/x64/config.asm
 +++ b/third_party/ffmpeg/chromium/config/Chrome/linux/x64/config.asm
+@@ -218,7 +218,7 @@
+ %define HAVE_TERMIOS_H 1
+ %define HAVE_UDPLITE_H 0
+ %define HAVE_UNISTD_H 1
+-%define HAVE_VALGRIND_VALGRIND_H 0 ; %define HAVE_VALGRIND_VALGRIND_H 1 -- forced to 0. See https://crbug.com/590440
++%define HAVE_VALGRIND_VALGRIND_H 0 ; %define HAVE_VALGRIND_VALGRIND_H 0 -- forced to 0. See https://crbug.com/590440
+ %define HAVE_WINDOWS_H 0
+ %define HAVE_WINSOCK2_H 0
+ %define HAVE_INTRINSICS_NEON 0
+@@ -333,7 +333,7 @@
+ %define HAVE_INLINE_ASM_LABELS 1
+ %define HAVE_INLINE_ASM_NONLOCAL_LABELS 1
+ %define HAVE_PRAGMA_DEPRECATED 1
+-%define HAVE_RSYNC_CONTIMEOUT 1
++%define HAVE_RSYNC_CONTIMEOUT 0
+ %define HAVE_SYMVER_ASM_LABEL 1
+ %define HAVE_SYMVER_GNU_ASM 1
+ %define HAVE_VFP_ARGS 0
+@@ -359,8 +359,8 @@
+ %define HAVE_STRUCT_STAT_ST_MTIM_TV_NSEC 1
+ %define HAVE_STRUCT_V4L2_FRMIVALENUM_DISCRETE 0
+ %define HAVE_LIBDRM_GETFB2 0
+-%define HAVE_MAKEINFO 1
+-%define HAVE_MAKEINFO_HTML 1
++%define HAVE_MAKEINFO 0
++%define HAVE_MAKEINFO_HTML 0
+ %define HAVE_OPENCL_D3D11 0
+ %define HAVE_OPENCL_DRM_ARM 0
+ %define HAVE_OPENCL_DRM_BEIGNET 0
 @@ -410,7 +410,7 @@
  %define CONFIG_LIBXAVS2 0
  %define CONFIG_LIBXVID 0
@@ -237,7 +747,25 @@ index ed0869c87..20da33027 100644
  %define CONFIG_OPENSSL 0
  %define CONFIG_LIBTLS 0
  %define CONFIG_GMP 0
-@@ -994,7 +994,7 @@
+@@ -634,7 +634,7 @@
+ %define CONFIG_HUFFYUVENCDSP 0
+ %define CONFIG_IDCTDSP 0
+ %define CONFIG_IIRFILTER 0
+-%define CONFIG_MDCT15 1
++%define CONFIG_MDCT15 0
+ %define CONFIG_INTRAX8 0
+ %define CONFIG_ISO_MEDIA 1
+ %define CONFIG_IVIDSP 0
+@@ -667,7 +667,7 @@
+ %define CONFIG_RTPENC_CHAIN 0
+ %define CONFIG_RV34DSP 0
+ %define CONFIG_SCENE_SAD 0
+-%define CONFIG_SINEWIN 1
++%define CONFIG_SINEWIN 0
+ %define CONFIG_SNAPPY 0
+ %define CONFIG_SRTP 0
+ %define CONFIG_STARTCODE 1
+@@ -998,7 +998,7 @@
  %define CONFIG_ZEROCODEC_DECODER 0
  %define CONFIG_ZLIB_DECODER 0
  %define CONFIG_ZMBV_DECODER 0
@@ -246,7 +774,7 @@ index ed0869c87..20da33027 100644
  %define CONFIG_AAC_FIXED_DECODER 0
  %define CONFIG_AAC_LATM_DECODER 0
  %define CONFIG_AC3_DECODER 0
-@@ -1220,7 +1220,7 @@
+@@ -1226,7 +1226,7 @@
  %define CONFIG_LIBCODEC2_DECODER 0
  %define CONFIG_LIBDAV1D_DECODER 0
  %define CONFIG_LIBDAVS2_DECODER 0
@@ -256,9 +784,53 @@ index ed0869c87..20da33027 100644
  %define CONFIG_LIBGSM_MS_DECODER 0
  %define CONFIG_LIBILBC_DECODER 0
 diff --git a/third_party/ffmpeg/chromium/config/Chrome/linux/x64/config.h b/third_party/ffmpeg/chromium/config/Chrome/linux/x64/config.h
-index 013b8ae2f..13d2241a0 100644
+index 40a746aa5e..b08748d8d6 100644
 --- a/third_party/ffmpeg/chromium/config/Chrome/linux/x64/config.h
 +++ b/third_party/ffmpeg/chromium/config/Chrome/linux/x64/config.h
+@@ -1,12 +1,12 @@
+ /* Automatically generated by configure - do not modify! */
+ #ifndef FFMPEG_CONFIG_H
+ #define FFMPEG_CONFIG_H
+-/* #define FFMPEG_CONFIGURATION "--disable-everything --disable-all --disable-doc --disable-htmlpages --disable-manpages --disable-podpages --disable-txtpages --disable-static --enable-avcodec --enable-avformat --enable-avutil --enable-fft --enable-rdft --enable-static --enable-libopus --disable-debug --disable-bzlib --disable-error-resilience --disable-iconv --disable-lzo --disable-network --disable-schannel --disable-sdl2 --disable-symver --disable-xlib --disable-zlib --disable-securetransport --disable-faan --disable-alsa --disable-autodetect --enable-decoder='vorbis,libopus,flac' --enable-decoder='pcm_u8,pcm_s16le,pcm_s24le,pcm_s32le,pcm_f32le,mp3' --enable-decoder='pcm_s16be,pcm_s24be,pcm_mulaw,pcm_alaw' --enable-demuxer='ogg,matroska,wav,flac,mp3,mov' --enable-parser='opus,vorbis,flac,mpegaudio,vp9' --extra-cflags=-I/mnt/src/chromium/src/third_party/opus/src/include --disable-linux-perf --x86asmexe=nasm --optflags='\"-O2\"' --enable-decoder='theora,vp8' --enable-parser='vp3,vp8' --enable-lto --enable-pic --cc=clang --cxx=clang++ --ld=clang --extra-ldflags='-fuse-ld=lld' --enable-decoder='aac,h264' --enable-demuxer=aac --enable-parser='aac,h264'" -- elide long configuration string from binary */
++/* #define FFMPEG_CONFIGURATION "--disable-everything --disable-all --disable-doc --disable-htmlpages --disable-manpages --disable-podpages --disable-txtpages --disable-static --enable-avcodec --enable-avformat --enable-avutil --enable-fft --enable-rdft --enable-static --enable-libopus --disable-debug --disable-bzlib --disable-error-resilience --disable-iconv --disable-lzo --disable-network --disable-schannel --disable-sdl2 --disable-symver --disable-xlib --disable-zlib --disable-securetransport --disable-faan --disable-alsa --disable-autodetect --enable-decoder='vorbis,libopus,flac' --enable-decoder='pcm_u8,pcm_s16le,pcm_s24le,pcm_s32le,pcm_f32le,mp3' --enable-decoder='pcm_s16be,pcm_s24be,pcm_mulaw,pcm_alaw' --enable-demuxer='ogg,matroska,wav,flac,mp3,mov' --enable-parser='opus,vorbis,flac,mpegaudio,vp9' --extra-cflags=-I/chromium/third_party/opus/src/include --disable-linux-perf --x86asmexe=nasm --optflags='\"-O2\"' --enable-decoder='theora,vp8' --enable-parser='vp3,vp8' --enable-lto --enable-pic --cc=clang --cxx=clang++ --ld=clang --extra-ldflags='-fuse-ld=lld' --enable-demuxer=aac --enable-parser=aac --enable-libfdk-aac --enable-decoder=libfdk_aac --disable-decoder=aac --enable-decoder=h264 --enable-parser=h264" -- elide long configuration string from binary */
+ #define FFMPEG_LICENSE "LGPL version 2.1 or later"
+ #define CONFIG_THIS_YEAR 2020
+ #define FFMPEG_DATADIR "/usr/local/share/ffmpeg"
+ #define AVCONV_DATADIR "/usr/local/share/ffmpeg"
+-#define CC_IDENT "clang version 12.0.0 (https://github.com/llvm/llvm-project/ d0abc757495349fd053beeaea81cd954c2e457e7)"
++#define CC_IDENT "clang version 12.0.0 (https://github.com/llvm/llvm-project/ 418f18c6cdfe56e77669e2f4d3df3bca1020156d)"
+ #define av_restrict restrict
+ #define EXTERN_PREFIX ""
+ #define EXTERN_ASM 
+@@ -233,7 +233,7 @@
+ #define HAVE_TERMIOS_H 1
+ #define HAVE_UDPLITE_H 0
+ #define HAVE_UNISTD_H 1
+-#define HAVE_VALGRIND_VALGRIND_H 0 /* #define HAVE_VALGRIND_VALGRIND_H 1 -- forced to 0. See https://crbug.com/590440 */
++#define HAVE_VALGRIND_VALGRIND_H 0 /* #define HAVE_VALGRIND_VALGRIND_H 0 -- forced to 0. See https://crbug.com/590440 */
+ #define HAVE_WINDOWS_H 0
+ #define HAVE_WINSOCK2_H 0
+ #define HAVE_INTRINSICS_NEON 0
+@@ -348,7 +348,7 @@
+ #define HAVE_INLINE_ASM_LABELS 1
+ #define HAVE_INLINE_ASM_NONLOCAL_LABELS 1
+ #define HAVE_PRAGMA_DEPRECATED 1
+-#define HAVE_RSYNC_CONTIMEOUT 1
++#define HAVE_RSYNC_CONTIMEOUT 0
+ #define HAVE_SYMVER_ASM_LABEL 1
+ #define HAVE_SYMVER_GNU_ASM 1
+ #define HAVE_VFP_ARGS 0
+@@ -374,8 +374,8 @@
+ #define HAVE_STRUCT_STAT_ST_MTIM_TV_NSEC 1
+ #define HAVE_STRUCT_V4L2_FRMIVALENUM_DISCRETE 0
+ #define HAVE_LIBDRM_GETFB2 0
+-#define HAVE_MAKEINFO 1
+-#define HAVE_MAKEINFO_HTML 1
++#define HAVE_MAKEINFO 0
++#define HAVE_MAKEINFO_HTML 0
+ #define HAVE_OPENCL_D3D11 0
+ #define HAVE_OPENCL_DRM_ARM 0
+ #define HAVE_OPENCL_DRM_BEIGNET 0
 @@ -425,7 +425,7 @@
  #define CONFIG_LIBXAVS2 0
  #define CONFIG_LIBXVID 0
@@ -268,7 +840,25 @@ index 013b8ae2f..13d2241a0 100644
  #define CONFIG_OPENSSL 0
  #define CONFIG_LIBTLS 0
  #define CONFIG_GMP 0
-@@ -1009,7 +1009,7 @@
+@@ -649,7 +649,7 @@
+ #define CONFIG_HUFFYUVENCDSP 0
+ #define CONFIG_IDCTDSP 0
+ #define CONFIG_IIRFILTER 0
+-#define CONFIG_MDCT15 1
++#define CONFIG_MDCT15 0
+ #define CONFIG_INTRAX8 0
+ #define CONFIG_ISO_MEDIA 1
+ #define CONFIG_IVIDSP 0
+@@ -682,7 +682,7 @@
+ #define CONFIG_RTPENC_CHAIN 0
+ #define CONFIG_RV34DSP 0
+ #define CONFIG_SCENE_SAD 0
+-#define CONFIG_SINEWIN 1
++#define CONFIG_SINEWIN 0
+ #define CONFIG_SNAPPY 0
+ #define CONFIG_SRTP 0
+ #define CONFIG_STARTCODE 1
+@@ -1013,7 +1013,7 @@
  #define CONFIG_ZEROCODEC_DECODER 0
  #define CONFIG_ZLIB_DECODER 0
  #define CONFIG_ZMBV_DECODER 0
@@ -277,7 +867,7 @@ index 013b8ae2f..13d2241a0 100644
  #define CONFIG_AAC_FIXED_DECODER 0
  #define CONFIG_AAC_LATM_DECODER 0
  #define CONFIG_AC3_DECODER 0
-@@ -1235,7 +1235,7 @@
+@@ -1241,7 +1241,7 @@
  #define CONFIG_LIBCODEC2_DECODER 0
  #define CONFIG_LIBDAV1D_DECODER 0
  #define CONFIG_LIBDAVS2_DECODER 0
@@ -287,22 +877,74 @@ index 013b8ae2f..13d2241a0 100644
  #define CONFIG_LIBGSM_MS_DECODER 0
  #define CONFIG_LIBILBC_DECODER 0
 diff --git a/third_party/ffmpeg/chromium/config/Chrome/linux/x64/libavcodec/codec_list.c b/third_party/ffmpeg/chromium/config/Chrome/linux/x64/libavcodec/codec_list.c
-index 49f757b2d..7e49e07bb 100644
+index 49f757b2d8..e6e4d9d4f8 100644
 --- a/third_party/ffmpeg/chromium/config/Chrome/linux/x64/libavcodec/codec_list.c
 +++ b/third_party/ffmpeg/chromium/config/Chrome/linux/x64/libavcodec/codec_list.c
-@@ -3,7 +3,7 @@ static const AVCodec * const codec_list[] = {
+@@ -3,7 +3,6 @@ static const AVCodec * const codec_list[] = {
      &ff_theora_decoder,
      &ff_vp3_decoder,
      &ff_vp8_decoder,
 -    &ff_aac_decoder,
-+    &ff_libfdk_aac_decoder,
      &ff_flac_decoder,
      &ff_mp3_decoder,
      &ff_vorbis_decoder,
-diff --git a/third_party/ffmpeg/chromium/config/Chromium/linux/arm-neon/config.h b/third_party/ffmpeg/chromium/config/Chromium/linux/arm-neon/config.h
-index 7d8cdd037..cdc20335c 100644
---- a/third_party/ffmpeg/chromium/config/Chromium/linux/arm-neon/config.h
-+++ b/third_party/ffmpeg/chromium/config/Chromium/linux/arm-neon/config.h
+@@ -16,5 +15,6 @@ static const AVCodec * const codec_list[] = {
+     &ff_pcm_s24le_decoder,
+     &ff_pcm_s32le_decoder,
+     &ff_pcm_u8_decoder,
++    &ff_libfdk_aac_decoder,
+     &ff_libopus_decoder,
+     NULL };
+diff --git a/third_party/ffmpeg/chromium/config/Chrome/linux/x64/libavutil/ffversion.h b/third_party/ffmpeg/chromium/config/Chrome/linux/x64/libavutil/ffversion.h
+index 0f5c7b1d74..bc43b980d5 100644
+--- a/third_party/ffmpeg/chromium/config/Chrome/linux/x64/libavutil/ffversion.h
++++ b/third_party/ffmpeg/chromium/config/Chrome/linux/x64/libavutil/ffversion.h
+@@ -1,5 +1,5 @@
+ /* Automatically generated by version.sh, do not manually edit! */
+ #ifndef AVUTIL_FFVERSION_H
+ #define AVUTIL_FFVERSION_H
+-#define FFMPEG_VERSION "N-100481-g0493b979df"
++#define FFMPEG_VERSION "4.3.git"
+ #endif /* AVUTIL_FFVERSION_H */
+diff --git a/third_party/ffmpeg/chromium/config/ChromeOS/linux/arm64/config.h b/third_party/ffmpeg/chromium/config/ChromeOS/linux/arm64/config.h
+index 6541487c5e..b9d1818ad9 100644
+--- a/third_party/ffmpeg/chromium/config/ChromeOS/linux/arm64/config.h
++++ b/third_party/ffmpeg/chromium/config/ChromeOS/linux/arm64/config.h
+@@ -1,12 +1,12 @@
+ /* Automatically generated by configure - do not modify! */
+ #ifndef FFMPEG_CONFIG_H
+ #define FFMPEG_CONFIG_H
+-/* #define FFMPEG_CONFIGURATION "--disable-everything --disable-all --disable-doc --disable-htmlpages --disable-manpages --disable-podpages --disable-txtpages --disable-static --enable-avcodec --enable-avformat --enable-avutil --enable-fft --enable-rdft --enable-static --enable-libopus --disable-debug --disable-bzlib --disable-iconv --disable-lzo --disable-network --disable-schannel --disable-sdl2 --disable-symver --disable-xlib --disable-zlib --disable-securetransport --disable-faan --disable-alsa --disable-autodetect --enable-decoder='vorbis,libopus,flac' --enable-decoder='pcm_u8,pcm_s16le,pcm_s24le,pcm_s32le,pcm_f32le,mp3' --enable-decoder='pcm_s16be,pcm_s24be,pcm_mulaw,pcm_alaw' --enable-demuxer='ogg,matroska,wav,flac,mp3,mov' --enable-parser='opus,vorbis,flac,mpegaudio,vp9' --extra-cflags=-I/mnt/src/chromium/src/third_party/opus/src/include --disable-linux-perf --x86asmexe=nasm --optflags='\"-O2\"' --enable-decoder='theora,vp8' --enable-parser='vp3,vp8' --enable-cross-compile --cross-prefix=/usr/bin/aarch64-linux-gnu- --target-os=linux --extra-cflags='--target=aarch64-linux-gnu' --extra-ldflags='--target=aarch64-linux-gnu' --sysroot=/mnt/src/chromium/src/build/linux/debian_sid_arm64-sysroot --arch=aarch64 --enable-armv8 --extra-cflags='-march=armv8-a' --enable-pic --cc=clang --cxx=clang++ --ld=clang --extra-ldflags='-fuse-ld=lld' --enable-decoder='aac,h264' --enable-demuxer=aac --enable-parser='aac,h264' --enable-decoder=mpeg4 --enable-parser='h263,mpeg4video' --enable-demuxer=avi --enable-demuxer=amr --enable-decoder='amrnb,amrwb' --enable-decoder=gsm_ms --enable-parser=gsm" -- elide long configuration string from binary */
++/* #define FFMPEG_CONFIGURATION "--disable-everything --disable-all --disable-doc --disable-htmlpages --disable-manpages --disable-podpages --disable-txtpages --disable-static --enable-avcodec --enable-avformat --enable-avutil --enable-fft --enable-rdft --enable-static --enable-libopus --disable-debug --disable-bzlib --disable-iconv --disable-lzo --disable-network --disable-schannel --disable-sdl2 --disable-symver --disable-xlib --disable-zlib --disable-securetransport --disable-faan --disable-alsa --disable-autodetect --enable-decoder='vorbis,libopus,flac' --enable-decoder='pcm_u8,pcm_s16le,pcm_s24le,pcm_s32le,pcm_f32le,mp3' --enable-decoder='pcm_s16be,pcm_s24be,pcm_mulaw,pcm_alaw' --enable-demuxer='ogg,matroska,wav,flac,mp3,mov' --enable-parser='opus,vorbis,flac,mpegaudio,vp9' --extra-cflags=-I/chromium/third_party/opus/src/include --disable-linux-perf --x86asmexe=nasm --optflags='\"-O2\"' --enable-decoder='theora,vp8' --enable-parser='vp3,vp8' --enable-cross-compile --cross-prefix=/usr/bin/aarch64-linux-gnu- --target-os=linux --extra-cflags='--target=aarch64-linux-gnu' --extra-ldflags='--target=aarch64-linux-gnu' --sysroot=/chromium/build/linux/debian_sid_arm64-sysroot --arch=aarch64 --enable-armv8 --extra-cflags='-march=armv8-a' --enable-pic --cc=clang --cxx=clang++ --ld=clang --extra-ldflags='-fuse-ld=lld' --enable-demuxer=aac --enable-parser=aac --enable-libfdk-aac --enable-decoder=libfdk_aac --disable-decoder=aac --enable-decoder=h264 --enable-parser=h264 --enable-decoder=mpeg4 --enable-parser='h263,mpeg4video' --enable-demuxer=avi --enable-demuxer=amr --enable-decoder='amrnb,amrwb' --enable-decoder=gsm_ms --enable-parser=gsm" -- elide long configuration string from binary */
+ #define FFMPEG_LICENSE "LGPL version 2.1 or later"
+ #define CONFIG_THIS_YEAR 2020
+ #define FFMPEG_DATADIR "/usr/local/share/ffmpeg"
+ #define AVCONV_DATADIR "/usr/local/share/ffmpeg"
+-#define CC_IDENT "clang version 12.0.0 (https://github.com/llvm/llvm-project/ d0abc757495349fd053beeaea81cd954c2e457e7)"
++#define CC_IDENT "clang version 12.0.0 (https://github.com/llvm/llvm-project/ 418f18c6cdfe56e77669e2f4d3df3bca1020156d)"
+ #define av_restrict restrict
+ #define EXTERN_PREFIX ""
+ #define EXTERN_ASM 
+@@ -348,7 +348,7 @@
+ #define HAVE_INLINE_ASM_LABELS 1
+ #define HAVE_INLINE_ASM_NONLOCAL_LABELS 1
+ #define HAVE_PRAGMA_DEPRECATED 1
+-#define HAVE_RSYNC_CONTIMEOUT 1
++#define HAVE_RSYNC_CONTIMEOUT 0
+ #define HAVE_SYMVER_ASM_LABEL 1
+ #define HAVE_SYMVER_GNU_ASM 1
+ /* #define HAVE_VFP_ARGS 0 -- softfp/hardfp selection is done by the chrome build */
+@@ -374,8 +374,8 @@
+ #define HAVE_STRUCT_STAT_ST_MTIM_TV_NSEC 1
+ #define HAVE_STRUCT_V4L2_FRMIVALENUM_DISCRETE 0
+ #define HAVE_LIBDRM_GETFB2 0
+-#define HAVE_MAKEINFO 1
+-#define HAVE_MAKEINFO_HTML 1
++#define HAVE_MAKEINFO 0
++#define HAVE_MAKEINFO_HTML 0
+ #define HAVE_OPENCL_D3D11 0
+ #define HAVE_OPENCL_DRM_ARM 0
+ #define HAVE_OPENCL_DRM_BEIGNET 0
 @@ -425,7 +425,7 @@
  #define CONFIG_LIBXAVS2 0
  #define CONFIG_LIBXVID 0
@@ -312,7 +954,34 @@ index 7d8cdd037..cdc20335c 100644
  #define CONFIG_OPENSSL 0
  #define CONFIG_LIBTLS 0
  #define CONFIG_GMP 0
-@@ -1235,7 +1235,7 @@
+@@ -649,7 +649,7 @@
+ #define CONFIG_HUFFYUVENCDSP 0
+ #define CONFIG_IDCTDSP 1
+ #define CONFIG_IIRFILTER 0
+-#define CONFIG_MDCT15 1
++#define CONFIG_MDCT15 0
+ #define CONFIG_INTRAX8 0
+ #define CONFIG_ISO_MEDIA 1
+ #define CONFIG_IVIDSP 0
+@@ -682,7 +682,7 @@
+ #define CONFIG_RTPENC_CHAIN 0
+ #define CONFIG_RV34DSP 0
+ #define CONFIG_SCENE_SAD 0
+-#define CONFIG_SINEWIN 1
++#define CONFIG_SINEWIN 0
+ #define CONFIG_SNAPPY 0
+ #define CONFIG_SRTP 0
+ #define CONFIG_STARTCODE 1
+@@ -1013,7 +1013,7 @@
+ #define CONFIG_ZEROCODEC_DECODER 0
+ #define CONFIG_ZLIB_DECODER 0
+ #define CONFIG_ZMBV_DECODER 0
+-#define CONFIG_AAC_DECODER 1
++#define CONFIG_AAC_DECODER 0
+ #define CONFIG_AAC_FIXED_DECODER 0
+ #define CONFIG_AAC_LATM_DECODER 0
+ #define CONFIG_AC3_DECODER 0
+@@ -1241,7 +1241,7 @@
  #define CONFIG_LIBCODEC2_DECODER 0
  #define CONFIG_LIBDAV1D_DECODER 0
  #define CONFIG_LIBDAVS2_DECODER 0
@@ -321,174 +990,69 @@ index 7d8cdd037..cdc20335c 100644
  #define CONFIG_LIBGSM_DECODER 0
  #define CONFIG_LIBGSM_MS_DECODER 0
  #define CONFIG_LIBILBC_DECODER 0
-@@ -1553,7 +1553,7 @@
- #define CONFIG_WMV3_NVDEC_HWACCEL 0
- #define CONFIG_WMV3_VAAPI_HWACCEL 0
- #define CONFIG_WMV3_VDPAU_HWACCEL 0
--#define CONFIG_AAC_PARSER 0
-+#define CONFIG_AAC_PARSER 1
- #define CONFIG_AAC_LATM_PARSER 0
- #define CONFIG_AC3_PARSER 0
- #define CONFIG_ADX_PARSER 0
-@@ -2096,7 +2096,7 @@
- #define CONFIG_AFIFO_FILTER 0
- #define CONFIG_FIFO_FILTER 0
- #define CONFIG_AA_DEMUXER 0
--#define CONFIG_AAC_DEMUXER 0
-+#define CONFIG_AAC_DEMUXER 1
- #define CONFIG_AC3_DEMUXER 0
- #define CONFIG_ACM_DEMUXER 0
- #define CONFIG_ACT_DEMUXER 0
-diff --git a/third_party/ffmpeg/chromium/config/Chromium/linux/arm-neon/libavcodec/codec_list.c b/third_party/ffmpeg/chromium/config/Chromium/linux/arm-neon/libavcodec/codec_list.c
-index 9407bd277..e055ba602 100644
---- a/third_party/ffmpeg/chromium/config/Chromium/linux/arm-neon/libavcodec/codec_list.c
-+++ b/third_party/ffmpeg/chromium/config/Chromium/linux/arm-neon/libavcodec/codec_list.c
-@@ -4,6 +4,7 @@ static const AVCodec * const codec_list[] = {
+diff --git a/third_party/ffmpeg/chromium/config/ChromeOS/linux/arm64/libavcodec/codec_list.c b/third_party/ffmpeg/chromium/config/ChromeOS/linux/arm64/libavcodec/codec_list.c
+index 8f4b18388c..56f244fa6a 100644
+--- a/third_party/ffmpeg/chromium/config/ChromeOS/linux/arm64/libavcodec/codec_list.c
++++ b/third_party/ffmpeg/chromium/config/ChromeOS/linux/arm64/libavcodec/codec_list.c
+@@ -5,7 +5,6 @@ static const AVCodec * const codec_list[] = {
+     &ff_theora_decoder,
+     &ff_vp3_decoder,
      &ff_vp8_decoder,
+-    &ff_aac_decoder,
+     &ff_amrnb_decoder,
+     &ff_amrwb_decoder,
      &ff_flac_decoder,
-     &ff_mp3_decoder,
+@@ -21,5 +20,6 @@ static const AVCodec * const codec_list[] = {
+     &ff_pcm_s24le_decoder,
+     &ff_pcm_s32le_decoder,
+     &ff_pcm_u8_decoder,
 +    &ff_libfdk_aac_decoder,
-     &ff_vorbis_decoder,
-     &ff_pcm_alaw_decoder,
-     &ff_pcm_f32le_decoder,
-diff --git a/third_party/ffmpeg/chromium/config/Chromium/linux/arm-neon/libavformat/demuxer_list.c b/third_party/ffmpeg/chromium/config/Chromium/linux/arm-neon/libavformat/demuxer_list.c
-index 1908ba19e..920b22bfa 100644
---- a/third_party/ffmpeg/chromium/config/Chromium/linux/arm-neon/libavformat/demuxer_list.c
-+++ b/third_party/ffmpeg/chromium/config/Chromium/linux/arm-neon/libavformat/demuxer_list.c
-@@ -1,4 +1,5 @@
- static const AVInputFormat * const demuxer_list[] = {
-+    &ff_aac_demuxer,
-     &ff_flac_demuxer,
-     &ff_matroska_demuxer,
-     &ff_mov_demuxer,
-diff --git a/third_party/ffmpeg/chromium/config/Chromium/linux/arm/config.h b/third_party/ffmpeg/chromium/config/Chromium/linux/arm/config.h
-index 3704d42ee..a4e822696 100644
---- a/third_party/ffmpeg/chromium/config/Chromium/linux/arm/config.h
-+++ b/third_party/ffmpeg/chromium/config/Chromium/linux/arm/config.h
-@@ -425,7 +425,7 @@
- #define CONFIG_LIBXAVS2 0
- #define CONFIG_LIBXVID 0
- #define CONFIG_DECKLINK 0
--#define CONFIG_LIBFDK_AAC 0
-+#define CONFIG_LIBFDK_AAC 1
- #define CONFIG_OPENSSL 0
- #define CONFIG_LIBTLS 0
- #define CONFIG_GMP 0
-@@ -1235,7 +1235,7 @@
- #define CONFIG_LIBCODEC2_DECODER 0
- #define CONFIG_LIBDAV1D_DECODER 0
- #define CONFIG_LIBDAVS2_DECODER 0
--#define CONFIG_LIBFDK_AAC_DECODER 0
-+#define CONFIG_LIBFDK_AAC_DECODER 1
- #define CONFIG_LIBGSM_DECODER 0
- #define CONFIG_LIBGSM_MS_DECODER 0
- #define CONFIG_LIBILBC_DECODER 0
-@@ -1553,7 +1553,7 @@
- #define CONFIG_WMV3_NVDEC_HWACCEL 0
- #define CONFIG_WMV3_VAAPI_HWACCEL 0
- #define CONFIG_WMV3_VDPAU_HWACCEL 0
--#define CONFIG_AAC_PARSER 0
-+#define CONFIG_AAC_PARSER 1
- #define CONFIG_AAC_LATM_PARSER 0
- #define CONFIG_AC3_PARSER 0
- #define CONFIG_ADX_PARSER 0
-@@ -2096,7 +2096,7 @@
- #define CONFIG_AFIFO_FILTER 0
- #define CONFIG_FIFO_FILTER 0
- #define CONFIG_AA_DEMUXER 0
--#define CONFIG_AAC_DEMUXER 0
-+#define CONFIG_AAC_DEMUXER 1
- #define CONFIG_AC3_DEMUXER 0
- #define CONFIG_ACM_DEMUXER 0
- #define CONFIG_ACT_DEMUXER 0
-diff --git a/third_party/ffmpeg/chromium/config/Chromium/linux/arm/libavcodec/codec_list.c b/third_party/ffmpeg/chromium/config/Chromium/linux/arm/libavcodec/codec_list.c
-index 9407bd277..e055ba602 100644
---- a/third_party/ffmpeg/chromium/config/Chromium/linux/arm/libavcodec/codec_list.c
-+++ b/third_party/ffmpeg/chromium/config/Chromium/linux/arm/libavcodec/codec_list.c
-@@ -4,6 +4,7 @@ static const AVCodec * const codec_list[] = {
-     &ff_vp8_decoder,
-     &ff_flac_decoder,
-     &ff_mp3_decoder,
-+    &ff_libfdk_aac_decoder,
-     &ff_vorbis_decoder,
-     &ff_pcm_alaw_decoder,
-     &ff_pcm_f32le_decoder,
-diff --git a/third_party/ffmpeg/chromium/config/Chromium/linux/arm/libavformat/demuxer_list.c b/third_party/ffmpeg/chromium/config/Chromium/linux/arm/libavformat/demuxer_list.c
-index 1908ba19e..920b22bfa 100644
---- a/third_party/ffmpeg/chromium/config/Chromium/linux/arm/libavformat/demuxer_list.c
-+++ b/third_party/ffmpeg/chromium/config/Chromium/linux/arm/libavformat/demuxer_list.c
-@@ -1,4 +1,5 @@
- static const AVInputFormat * const demuxer_list[] = {
-+    &ff_aac_demuxer,
-     &ff_flac_demuxer,
-     &ff_matroska_demuxer,
-     &ff_mov_demuxer,
-diff --git a/third_party/ffmpeg/chromium/config/Chromium/linux/arm64/config.h b/third_party/ffmpeg/chromium/config/Chromium/linux/arm64/config.h
-index 0cf795c73..5a5727da7 100644
---- a/third_party/ffmpeg/chromium/config/Chromium/linux/arm64/config.h
-+++ b/third_party/ffmpeg/chromium/config/Chromium/linux/arm64/config.h
-@@ -425,7 +425,7 @@
- #define CONFIG_LIBXAVS2 0
- #define CONFIG_LIBXVID 0
- #define CONFIG_DECKLINK 0
--#define CONFIG_LIBFDK_AAC 0
-+#define CONFIG_LIBFDK_AAC 1
- #define CONFIG_OPENSSL 0
- #define CONFIG_LIBTLS 0
- #define CONFIG_GMP 0
-@@ -1235,7 +1235,7 @@
- #define CONFIG_LIBCODEC2_DECODER 0
- #define CONFIG_LIBDAV1D_DECODER 0
- #define CONFIG_LIBDAVS2_DECODER 0
--#define CONFIG_LIBFDK_AAC_DECODER 0
-+#define CONFIG_LIBFDK_AAC_DECODER 1
- #define CONFIG_LIBGSM_DECODER 0
- #define CONFIG_LIBGSM_MS_DECODER 0
- #define CONFIG_LIBILBC_DECODER 0
-@@ -1553,7 +1553,7 @@
- #define CONFIG_WMV3_NVDEC_HWACCEL 0
- #define CONFIG_WMV3_VAAPI_HWACCEL 0
- #define CONFIG_WMV3_VDPAU_HWACCEL 0
--#define CONFIG_AAC_PARSER 0
-+#define CONFIG_AAC_PARSER 1
- #define CONFIG_AAC_LATM_PARSER 0
- #define CONFIG_AC3_PARSER 0
- #define CONFIG_ADX_PARSER 0
-@@ -2096,7 +2096,7 @@
- #define CONFIG_AFIFO_FILTER 0
- #define CONFIG_FIFO_FILTER 0
- #define CONFIG_AA_DEMUXER 0
--#define CONFIG_AAC_DEMUXER 0
-+#define CONFIG_AAC_DEMUXER 1
- #define CONFIG_AC3_DEMUXER 0
- #define CONFIG_ACM_DEMUXER 0
- #define CONFIG_ACT_DEMUXER 0
-diff --git a/third_party/ffmpeg/chromium/config/Chromium/linux/arm64/libavcodec/codec_list.c b/third_party/ffmpeg/chromium/config/Chromium/linux/arm64/libavcodec/codec_list.c
-index 9407bd277..e055ba602 100644
---- a/third_party/ffmpeg/chromium/config/Chromium/linux/arm64/libavcodec/codec_list.c
-+++ b/third_party/ffmpeg/chromium/config/Chromium/linux/arm64/libavcodec/codec_list.c
-@@ -4,6 +4,7 @@ static const AVCodec * const codec_list[] = {
-     &ff_vp8_decoder,
-     &ff_flac_decoder,
-     &ff_mp3_decoder,
-+    &ff_libfdk_aac_decoder,
-     &ff_vorbis_decoder,
-     &ff_pcm_alaw_decoder,
-     &ff_pcm_f32le_decoder,
-diff --git a/third_party/ffmpeg/chromium/config/Chromium/linux/arm64/libavformat/demuxer_list.c b/third_party/ffmpeg/chromium/config/Chromium/linux/arm64/libavformat/demuxer_list.c
-index 1908ba19e..920b22bfa 100644
---- a/third_party/ffmpeg/chromium/config/Chromium/linux/arm64/libavformat/demuxer_list.c
-+++ b/third_party/ffmpeg/chromium/config/Chromium/linux/arm64/libavformat/demuxer_list.c
-@@ -1,4 +1,5 @@
- static const AVInputFormat * const demuxer_list[] = {
-+    &ff_aac_demuxer,
-     &ff_flac_demuxer,
-     &ff_matroska_demuxer,
-     &ff_mov_demuxer,
-diff --git a/third_party/ffmpeg/chromium/config/Chromium/linux/x64/config.asm b/third_party/ffmpeg/chromium/config/Chromium/linux/x64/config.asm
-index 0c8b1546c..8b746b159 100644
---- a/third_party/ffmpeg/chromium/config/Chromium/linux/x64/config.asm
-+++ b/third_party/ffmpeg/chromium/config/Chromium/linux/x64/config.asm
+     &ff_libopus_decoder,
+     NULL };
+diff --git a/third_party/ffmpeg/chromium/config/ChromeOS/linux/arm64/libavutil/ffversion.h b/third_party/ffmpeg/chromium/config/ChromeOS/linux/arm64/libavutil/ffversion.h
+index 0f5c7b1d74..bc43b980d5 100644
+--- a/third_party/ffmpeg/chromium/config/ChromeOS/linux/arm64/libavutil/ffversion.h
++++ b/third_party/ffmpeg/chromium/config/ChromeOS/linux/arm64/libavutil/ffversion.h
+@@ -1,5 +1,5 @@
+ /* Automatically generated by version.sh, do not manually edit! */
+ #ifndef AVUTIL_FFVERSION_H
+ #define AVUTIL_FFVERSION_H
+-#define FFMPEG_VERSION "N-100481-g0493b979df"
++#define FFMPEG_VERSION "4.3.git"
+ #endif /* AVUTIL_FFVERSION_H */
+diff --git a/third_party/ffmpeg/chromium/config/ChromeOS/linux/x64/config.asm b/third_party/ffmpeg/chromium/config/ChromeOS/linux/x64/config.asm
+index 09968868e0..ad119e5e47 100644
+--- a/third_party/ffmpeg/chromium/config/ChromeOS/linux/x64/config.asm
++++ b/third_party/ffmpeg/chromium/config/ChromeOS/linux/x64/config.asm
+@@ -218,7 +218,7 @@
+ %define HAVE_TERMIOS_H 1
+ %define HAVE_UDPLITE_H 0
+ %define HAVE_UNISTD_H 1
+-%define HAVE_VALGRIND_VALGRIND_H 0 ; %define HAVE_VALGRIND_VALGRIND_H 1 -- forced to 0. See https://crbug.com/590440
++%define HAVE_VALGRIND_VALGRIND_H 0 ; %define HAVE_VALGRIND_VALGRIND_H 0 -- forced to 0. See https://crbug.com/590440
+ %define HAVE_WINDOWS_H 0
+ %define HAVE_WINSOCK2_H 0
+ %define HAVE_INTRINSICS_NEON 0
+@@ -333,7 +333,7 @@
+ %define HAVE_INLINE_ASM_LABELS 1
+ %define HAVE_INLINE_ASM_NONLOCAL_LABELS 1
+ %define HAVE_PRAGMA_DEPRECATED 1
+-%define HAVE_RSYNC_CONTIMEOUT 1
++%define HAVE_RSYNC_CONTIMEOUT 0
+ %define HAVE_SYMVER_ASM_LABEL 1
+ %define HAVE_SYMVER_GNU_ASM 1
+ %define HAVE_VFP_ARGS 0
+@@ -359,8 +359,8 @@
+ %define HAVE_STRUCT_STAT_ST_MTIM_TV_NSEC 1
+ %define HAVE_STRUCT_V4L2_FRMIVALENUM_DISCRETE 0
+ %define HAVE_LIBDRM_GETFB2 0
+-%define HAVE_MAKEINFO 1
+-%define HAVE_MAKEINFO_HTML 1
++%define HAVE_MAKEINFO 0
++%define HAVE_MAKEINFO_HTML 0
+ %define HAVE_OPENCL_D3D11 0
+ %define HAVE_OPENCL_DRM_ARM 0
+ %define HAVE_OPENCL_DRM_BEIGNET 0
 @@ -410,7 +410,7 @@
  %define CONFIG_LIBXAVS2 0
  %define CONFIG_LIBXVID 0
@@ -498,7 +1062,34 @@ index 0c8b1546c..8b746b159 100644
  %define CONFIG_OPENSSL 0
  %define CONFIG_LIBTLS 0
  %define CONFIG_GMP 0
-@@ -1220,7 +1220,7 @@
+@@ -634,7 +634,7 @@
+ %define CONFIG_HUFFYUVENCDSP 0
+ %define CONFIG_IDCTDSP 1
+ %define CONFIG_IIRFILTER 0
+-%define CONFIG_MDCT15 1
++%define CONFIG_MDCT15 0
+ %define CONFIG_INTRAX8 0
+ %define CONFIG_ISO_MEDIA 1
+ %define CONFIG_IVIDSP 0
+@@ -667,7 +667,7 @@
+ %define CONFIG_RTPENC_CHAIN 0
+ %define CONFIG_RV34DSP 0
+ %define CONFIG_SCENE_SAD 0
+-%define CONFIG_SINEWIN 1
++%define CONFIG_SINEWIN 0
+ %define CONFIG_SNAPPY 0
+ %define CONFIG_SRTP 0
+ %define CONFIG_STARTCODE 1
+@@ -998,7 +998,7 @@
+ %define CONFIG_ZEROCODEC_DECODER 0
+ %define CONFIG_ZLIB_DECODER 0
+ %define CONFIG_ZMBV_DECODER 0
+-%define CONFIG_AAC_DECODER 1
++%define CONFIG_AAC_DECODER 0
+ %define CONFIG_AAC_FIXED_DECODER 0
+ %define CONFIG_AAC_LATM_DECODER 0
+ %define CONFIG_AC3_DECODER 0
+@@ -1226,7 +1226,7 @@
  %define CONFIG_LIBCODEC2_DECODER 0
  %define CONFIG_LIBDAV1D_DECODER 0
  %define CONFIG_LIBDAVS2_DECODER 0
@@ -507,28 +1098,54 @@ index 0c8b1546c..8b746b159 100644
  %define CONFIG_LIBGSM_DECODER 0
  %define CONFIG_LIBGSM_MS_DECODER 0
  %define CONFIG_LIBILBC_DECODER 0
-@@ -1538,7 +1538,7 @@
- %define CONFIG_WMV3_NVDEC_HWACCEL 0
- %define CONFIG_WMV3_VAAPI_HWACCEL 0
- %define CONFIG_WMV3_VDPAU_HWACCEL 0
--%define CONFIG_AAC_PARSER 0
-+%define CONFIG_AAC_PARSER 1
- %define CONFIG_AAC_LATM_PARSER 0
- %define CONFIG_AC3_PARSER 0
- %define CONFIG_ADX_PARSER 0
-@@ -2081,7 +2081,7 @@
- %define CONFIG_AFIFO_FILTER 0
- %define CONFIG_FIFO_FILTER 0
- %define CONFIG_AA_DEMUXER 0
--%define CONFIG_AAC_DEMUXER 0
-+%define CONFIG_AAC_DEMUXER 1
- %define CONFIG_AC3_DEMUXER 0
- %define CONFIG_ACM_DEMUXER 0
- %define CONFIG_ACT_DEMUXER 0
-diff --git a/third_party/ffmpeg/chromium/config/Chromium/linux/x64/config.h b/third_party/ffmpeg/chromium/config/Chromium/linux/x64/config.h
-index 8ef23d3b5..3f3f672c0 100644
---- a/third_party/ffmpeg/chromium/config/Chromium/linux/x64/config.h
-+++ b/third_party/ffmpeg/chromium/config/Chromium/linux/x64/config.h
+diff --git a/third_party/ffmpeg/chromium/config/ChromeOS/linux/x64/config.h b/third_party/ffmpeg/chromium/config/ChromeOS/linux/x64/config.h
+index 6967b30698..c90fd84676 100644
+--- a/third_party/ffmpeg/chromium/config/ChromeOS/linux/x64/config.h
++++ b/third_party/ffmpeg/chromium/config/ChromeOS/linux/x64/config.h
+@@ -1,12 +1,12 @@
+ /* Automatically generated by configure - do not modify! */
+ #ifndef FFMPEG_CONFIG_H
+ #define FFMPEG_CONFIG_H
+-/* #define FFMPEG_CONFIGURATION "--disable-everything --disable-all --disable-doc --disable-htmlpages --disable-manpages --disable-podpages --disable-txtpages --disable-static --enable-avcodec --enable-avformat --enable-avutil --enable-fft --enable-rdft --enable-static --enable-libopus --disable-debug --disable-bzlib --disable-iconv --disable-lzo --disable-network --disable-schannel --disable-sdl2 --disable-symver --disable-xlib --disable-zlib --disable-securetransport --disable-faan --disable-alsa --disable-autodetect --enable-decoder='vorbis,libopus,flac' --enable-decoder='pcm_u8,pcm_s16le,pcm_s24le,pcm_s32le,pcm_f32le,mp3' --enable-decoder='pcm_s16be,pcm_s24be,pcm_mulaw,pcm_alaw' --enable-demuxer='ogg,matroska,wav,flac,mp3,mov' --enable-parser='opus,vorbis,flac,mpegaudio,vp9' --extra-cflags=-I/mnt/src/chromium/src/third_party/opus/src/include --disable-linux-perf --x86asmexe=nasm --optflags='\"-O2\"' --enable-decoder='theora,vp8' --enable-parser='vp3,vp8' --enable-lto --enable-pic --cc=clang --cxx=clang++ --ld=clang --extra-ldflags='-fuse-ld=lld' --enable-decoder='aac,h264' --enable-demuxer=aac --enable-parser='aac,h264' --enable-decoder=mpeg4 --enable-parser='h263,mpeg4video' --enable-demuxer=avi --enable-demuxer=amr --enable-decoder='amrnb,amrwb' --enable-decoder=gsm_ms --enable-parser=gsm" -- elide long configuration string from binary */
++/* #define FFMPEG_CONFIGURATION "--disable-everything --disable-all --disable-doc --disable-htmlpages --disable-manpages --disable-podpages --disable-txtpages --disable-static --enable-avcodec --enable-avformat --enable-avutil --enable-fft --enable-rdft --enable-static --enable-libopus --disable-debug --disable-bzlib --disable-iconv --disable-lzo --disable-network --disable-schannel --disable-sdl2 --disable-symver --disable-xlib --disable-zlib --disable-securetransport --disable-faan --disable-alsa --disable-autodetect --enable-decoder='vorbis,libopus,flac' --enable-decoder='pcm_u8,pcm_s16le,pcm_s24le,pcm_s32le,pcm_f32le,mp3' --enable-decoder='pcm_s16be,pcm_s24be,pcm_mulaw,pcm_alaw' --enable-demuxer='ogg,matroska,wav,flac,mp3,mov' --enable-parser='opus,vorbis,flac,mpegaudio,vp9' --extra-cflags=-I/chromium/third_party/opus/src/include --disable-linux-perf --x86asmexe=nasm --optflags='\"-O2\"' --enable-decoder='theora,vp8' --enable-parser='vp3,vp8' --enable-lto --enable-pic --cc=clang --cxx=clang++ --ld=clang --extra-ldflags='-fuse-ld=lld' --enable-demuxer=aac --enable-parser=aac --enable-libfdk-aac --enable-decoder=libfdk_aac --disable-decoder=aac --enable-decoder=h264 --enable-parser=h264 --enable-decoder=mpeg4 --enable-parser='h263,mpeg4video' --enable-demuxer=avi --enable-demuxer=amr --enable-decoder='amrnb,amrwb' --enable-decoder=gsm_ms --enable-parser=gsm" -- elide long configuration string from binary */
+ #define FFMPEG_LICENSE "LGPL version 2.1 or later"
+ #define CONFIG_THIS_YEAR 2020
+ #define FFMPEG_DATADIR "/usr/local/share/ffmpeg"
+ #define AVCONV_DATADIR "/usr/local/share/ffmpeg"
+-#define CC_IDENT "clang version 12.0.0 (https://github.com/llvm/llvm-project/ d0abc757495349fd053beeaea81cd954c2e457e7)"
++#define CC_IDENT "clang version 12.0.0 (https://github.com/llvm/llvm-project/ 418f18c6cdfe56e77669e2f4d3df3bca1020156d)"
+ #define av_restrict restrict
+ #define EXTERN_PREFIX ""
+ #define EXTERN_ASM 
+@@ -233,7 +233,7 @@
+ #define HAVE_TERMIOS_H 1
+ #define HAVE_UDPLITE_H 0
+ #define HAVE_UNISTD_H 1
+-#define HAVE_VALGRIND_VALGRIND_H 0 /* #define HAVE_VALGRIND_VALGRIND_H 1 -- forced to 0. See https://crbug.com/590440 */
++#define HAVE_VALGRIND_VALGRIND_H 0 /* #define HAVE_VALGRIND_VALGRIND_H 0 -- forced to 0. See https://crbug.com/590440 */
+ #define HAVE_WINDOWS_H 0
+ #define HAVE_WINSOCK2_H 0
+ #define HAVE_INTRINSICS_NEON 0
+@@ -348,7 +348,7 @@
+ #define HAVE_INLINE_ASM_LABELS 1
+ #define HAVE_INLINE_ASM_NONLOCAL_LABELS 1
+ #define HAVE_PRAGMA_DEPRECATED 1
+-#define HAVE_RSYNC_CONTIMEOUT 1
++#define HAVE_RSYNC_CONTIMEOUT 0
+ #define HAVE_SYMVER_ASM_LABEL 1
+ #define HAVE_SYMVER_GNU_ASM 1
+ #define HAVE_VFP_ARGS 0
+@@ -374,8 +374,8 @@
+ #define HAVE_STRUCT_STAT_ST_MTIM_TV_NSEC 1
+ #define HAVE_STRUCT_V4L2_FRMIVALENUM_DISCRETE 0
+ #define HAVE_LIBDRM_GETFB2 0
+-#define HAVE_MAKEINFO 1
+-#define HAVE_MAKEINFO_HTML 1
++#define HAVE_MAKEINFO 0
++#define HAVE_MAKEINFO_HTML 0
+ #define HAVE_OPENCL_D3D11 0
+ #define HAVE_OPENCL_DRM_ARM 0
+ #define HAVE_OPENCL_DRM_BEIGNET 0
 @@ -425,7 +425,7 @@
  #define CONFIG_LIBXAVS2 0
  #define CONFIG_LIBXVID 0
@@ -538,7 +1155,34 @@ index 8ef23d3b5..3f3f672c0 100644
  #define CONFIG_OPENSSL 0
  #define CONFIG_LIBTLS 0
  #define CONFIG_GMP 0
-@@ -1235,7 +1235,7 @@
+@@ -649,7 +649,7 @@
+ #define CONFIG_HUFFYUVENCDSP 0
+ #define CONFIG_IDCTDSP 1
+ #define CONFIG_IIRFILTER 0
+-#define CONFIG_MDCT15 1
++#define CONFIG_MDCT15 0
+ #define CONFIG_INTRAX8 0
+ #define CONFIG_ISO_MEDIA 1
+ #define CONFIG_IVIDSP 0
+@@ -682,7 +682,7 @@
+ #define CONFIG_RTPENC_CHAIN 0
+ #define CONFIG_RV34DSP 0
+ #define CONFIG_SCENE_SAD 0
+-#define CONFIG_SINEWIN 1
++#define CONFIG_SINEWIN 0
+ #define CONFIG_SNAPPY 0
+ #define CONFIG_SRTP 0
+ #define CONFIG_STARTCODE 1
+@@ -1013,7 +1013,7 @@
+ #define CONFIG_ZEROCODEC_DECODER 0
+ #define CONFIG_ZLIB_DECODER 0
+ #define CONFIG_ZMBV_DECODER 0
+-#define CONFIG_AAC_DECODER 1
++#define CONFIG_AAC_DECODER 0
+ #define CONFIG_AAC_FIXED_DECODER 0
+ #define CONFIG_AAC_LATM_DECODER 0
+ #define CONFIG_AC3_DECODER 0
+@@ -1241,7 +1241,7 @@
  #define CONFIG_LIBCODEC2_DECODER 0
  #define CONFIG_LIBDAV1D_DECODER 0
  #define CONFIG_LIBDAVS2_DECODER 0
@@ -547,7 +1191,130 @@ index 8ef23d3b5..3f3f672c0 100644
  #define CONFIG_LIBGSM_DECODER 0
  #define CONFIG_LIBGSM_MS_DECODER 0
  #define CONFIG_LIBILBC_DECODER 0
-@@ -1553,7 +1553,7 @@
+diff --git a/third_party/ffmpeg/chromium/config/ChromeOS/linux/x64/libavcodec/codec_list.c b/third_party/ffmpeg/chromium/config/ChromeOS/linux/x64/libavcodec/codec_list.c
+index 8f4b18388c..56f244fa6a 100644
+--- a/third_party/ffmpeg/chromium/config/ChromeOS/linux/x64/libavcodec/codec_list.c
++++ b/third_party/ffmpeg/chromium/config/ChromeOS/linux/x64/libavcodec/codec_list.c
+@@ -5,7 +5,6 @@ static const AVCodec * const codec_list[] = {
+     &ff_theora_decoder,
+     &ff_vp3_decoder,
+     &ff_vp8_decoder,
+-    &ff_aac_decoder,
+     &ff_amrnb_decoder,
+     &ff_amrwb_decoder,
+     &ff_flac_decoder,
+@@ -21,5 +20,6 @@ static const AVCodec * const codec_list[] = {
+     &ff_pcm_s24le_decoder,
+     &ff_pcm_s32le_decoder,
+     &ff_pcm_u8_decoder,
++    &ff_libfdk_aac_decoder,
+     &ff_libopus_decoder,
+     NULL };
+diff --git a/third_party/ffmpeg/chromium/config/ChromeOS/linux/x64/libavutil/ffversion.h b/third_party/ffmpeg/chromium/config/ChromeOS/linux/x64/libavutil/ffversion.h
+index 0f5c7b1d74..bc43b980d5 100644
+--- a/third_party/ffmpeg/chromium/config/ChromeOS/linux/x64/libavutil/ffversion.h
++++ b/third_party/ffmpeg/chromium/config/ChromeOS/linux/x64/libavutil/ffversion.h
+@@ -1,5 +1,5 @@
+ /* Automatically generated by version.sh, do not manually edit! */
+ #ifndef AVUTIL_FFVERSION_H
+ #define AVUTIL_FFVERSION_H
+-#define FFMPEG_VERSION "N-100481-g0493b979df"
++#define FFMPEG_VERSION "4.3.git"
+ #endif /* AVUTIL_FFVERSION_H */
+diff --git a/third_party/ffmpeg/chromium/config/Chromium/linux/arm64/config.h b/third_party/ffmpeg/chromium/config/Chromium/linux/arm64/config.h
+index 3d152af12a..f6d8fba3ea 100644
+--- a/third_party/ffmpeg/chromium/config/Chromium/linux/arm64/config.h
++++ b/third_party/ffmpeg/chromium/config/Chromium/linux/arm64/config.h
+@@ -1,12 +1,12 @@
+ /* Automatically generated by configure - do not modify! */
+ #ifndef FFMPEG_CONFIG_H
+ #define FFMPEG_CONFIG_H
+-/* #define FFMPEG_CONFIGURATION "--disable-everything --disable-all --disable-doc --disable-htmlpages --disable-manpages --disable-podpages --disable-txtpages --disable-static --enable-avcodec --enable-avformat --enable-avutil --enable-fft --enable-rdft --enable-static --enable-libopus --disable-debug --disable-bzlib --disable-error-resilience --disable-iconv --disable-lzo --disable-network --disable-schannel --disable-sdl2 --disable-symver --disable-xlib --disable-zlib --disable-securetransport --disable-faan --disable-alsa --disable-autodetect --enable-decoder='vorbis,libopus,flac' --enable-decoder='pcm_u8,pcm_s16le,pcm_s24le,pcm_s32le,pcm_f32le,mp3' --enable-decoder='pcm_s16be,pcm_s24be,pcm_mulaw,pcm_alaw' --enable-demuxer='ogg,matroska,wav,flac,mp3,mov' --enable-parser='opus,vorbis,flac,mpegaudio,vp9' --extra-cflags=-I/mnt/src/chromium/src/third_party/opus/src/include --disable-linux-perf --x86asmexe=nasm --optflags='\"-O2\"' --enable-decoder='theora,vp8' --enable-parser='vp3,vp8' --enable-cross-compile --cross-prefix=/usr/bin/aarch64-linux-gnu- --target-os=linux --extra-cflags='--target=aarch64-linux-gnu' --extra-ldflags='--target=aarch64-linux-gnu' --sysroot=/mnt/src/chromium/src/build/linux/debian_sid_arm64-sysroot --arch=aarch64 --enable-armv8 --extra-cflags='-march=armv8-a' --enable-pic --cc=clang --cxx=clang++ --ld=clang --extra-ldflags='-fuse-ld=lld'" -- elide long configuration string from binary */
++/* #define FFMPEG_CONFIGURATION "--disable-everything --disable-all --disable-doc --disable-htmlpages --disable-manpages --disable-podpages --disable-txtpages --disable-static --enable-avcodec --enable-avformat --enable-avutil --enable-fft --enable-rdft --enable-static --enable-libopus --disable-debug --disable-bzlib --disable-error-resilience --disable-iconv --disable-lzo --disable-network --disable-schannel --disable-sdl2 --disable-symver --disable-xlib --disable-zlib --disable-securetransport --disable-faan --disable-alsa --disable-autodetect --enable-decoder='vorbis,libopus,flac' --enable-decoder='pcm_u8,pcm_s16le,pcm_s24le,pcm_s32le,pcm_f32le,mp3' --enable-decoder='pcm_s16be,pcm_s24be,pcm_mulaw,pcm_alaw' --enable-demuxer='ogg,matroska,wav,flac,mp3,mov' --enable-parser='opus,vorbis,flac,mpegaudio,vp9' --extra-cflags=-I/chromium/third_party/opus/src/include --disable-linux-perf --x86asmexe=nasm --optflags='\"-O2\"' --enable-decoder='theora,vp8' --enable-parser='vp3,vp8' --enable-cross-compile --cross-prefix=/usr/bin/aarch64-linux-gnu- --target-os=linux --extra-cflags='--target=aarch64-linux-gnu' --extra-ldflags='--target=aarch64-linux-gnu' --sysroot=/chromium/build/linux/debian_sid_arm64-sysroot --arch=aarch64 --enable-armv8 --extra-cflags='-march=armv8-a' --enable-pic --cc=clang --cxx=clang++ --ld=clang --extra-ldflags='-fuse-ld=lld' --enable-demuxer=aac --enable-parser=aac --enable-libfdk-aac --enable-decoder=libfdk_aac --disable-decoder=aac --enable-libopenh264 --enable-decoder=libopenh264 --disable-decoder=h264" -- elide long configuration string from binary */
+ #define FFMPEG_LICENSE "LGPL version 2.1 or later"
+ #define CONFIG_THIS_YEAR 2020
+ #define FFMPEG_DATADIR "/usr/local/share/ffmpeg"
+ #define AVCONV_DATADIR "/usr/local/share/ffmpeg"
+-#define CC_IDENT "clang version 12.0.0 (https://github.com/llvm/llvm-project/ d0abc757495349fd053beeaea81cd954c2e457e7)"
++#define CC_IDENT "clang version 12.0.0 (https://github.com/llvm/llvm-project/ 418f18c6cdfe56e77669e2f4d3df3bca1020156d)"
+ #define av_restrict restrict
+ #define EXTERN_PREFIX ""
+ #define EXTERN_ASM 
+@@ -348,7 +348,7 @@
+ #define HAVE_INLINE_ASM_LABELS 1
+ #define HAVE_INLINE_ASM_NONLOCAL_LABELS 1
+ #define HAVE_PRAGMA_DEPRECATED 1
+-#define HAVE_RSYNC_CONTIMEOUT 1
++#define HAVE_RSYNC_CONTIMEOUT 0
+ #define HAVE_SYMVER_ASM_LABEL 1
+ #define HAVE_SYMVER_GNU_ASM 1
+ /* #define HAVE_VFP_ARGS 0 -- softfp/hardfp selection is done by the chrome build */
+@@ -374,8 +374,8 @@
+ #define HAVE_STRUCT_STAT_ST_MTIM_TV_NSEC 1
+ #define HAVE_STRUCT_V4L2_FRMIVALENUM_DISCRETE 0
+ #define HAVE_LIBDRM_GETFB2 0
+-#define HAVE_MAKEINFO 1
+-#define HAVE_MAKEINFO_HTML 1
++#define HAVE_MAKEINFO 0
++#define HAVE_MAKEINFO_HTML 0
+ #define HAVE_OPENCL_D3D11 0
+ #define HAVE_OPENCL_DRM_ARM 0
+ #define HAVE_OPENCL_DRM_BEIGNET 0
+@@ -425,7 +425,7 @@
+ #define CONFIG_LIBXAVS2 0
+ #define CONFIG_LIBXVID 0
+ #define CONFIG_DECKLINK 0
+-#define CONFIG_LIBFDK_AAC 0
++#define CONFIG_LIBFDK_AAC 1
+ #define CONFIG_OPENSSL 0
+ #define CONFIG_LIBTLS 0
+ #define CONFIG_GMP 0
+@@ -468,7 +468,7 @@
+ #define CONFIG_LIBMP3LAME 0
+ #define CONFIG_LIBMYSOFA 0
+ #define CONFIG_LIBOPENCV 0
+-#define CONFIG_LIBOPENH264 0
++#define CONFIG_LIBOPENH264 1
+ #define CONFIG_LIBOPENJPEG 0
+ #define CONFIG_LIBOPENMPT 0
+ #define CONFIG_LIBOPENVINO 0
+@@ -609,7 +609,7 @@
+ #define CONFIG_PROTOCOLS 0
+ #define CONFIG_AANDCTTABLES 0
+ #define CONFIG_AC3DSP 0
+-#define CONFIG_ADTS_HEADER 0
++#define CONFIG_ADTS_HEADER 1
+ #define CONFIG_ATSC_A53 0
+ #define CONFIG_AUDIO_FRAME_QUEUE 0
+ #define CONFIG_AUDIODSP 0
+@@ -709,7 +709,7 @@
+ #define CONFIG_EXTRACT_EXTRADATA_BSF 0
+ #define CONFIG_FILTER_UNITS_BSF 0
+ #define CONFIG_H264_METADATA_BSF 0
+-#define CONFIG_H264_MP4TOANNEXB_BSF 0
++#define CONFIG_H264_MP4TOANNEXB_BSF 1
+ #define CONFIG_H264_REDUNDANT_PPS_BSF 0
+ #define CONFIG_HAPQA_EXTRACT_BSF 0
+ #define CONFIG_HEVC_METADATA_BSF 0
+@@ -1241,7 +1241,7 @@
+ #define CONFIG_LIBCODEC2_DECODER 0
+ #define CONFIG_LIBDAV1D_DECODER 0
+ #define CONFIG_LIBDAVS2_DECODER 0
+-#define CONFIG_LIBFDK_AAC_DECODER 0
++#define CONFIG_LIBFDK_AAC_DECODER 1
+ #define CONFIG_LIBGSM_DECODER 0
+ #define CONFIG_LIBGSM_MS_DECODER 0
+ #define CONFIG_LIBILBC_DECODER 0
+@@ -1260,7 +1260,7 @@
+ #define CONFIG_IDF_DECODER 0
+ #define CONFIG_LIBAOM_AV1_DECODER 0
+ #define CONFIG_AV1_DECODER 0
+-#define CONFIG_LIBOPENH264_DECODER 0
++#define CONFIG_LIBOPENH264_DECODER 1
+ #define CONFIG_H264_CUVID_DECODER 0
+ #define CONFIG_HEVC_CUVID_DECODER 0
+ #define CONFIG_HEVC_MEDIACODEC_DECODER 0
+@@ -1561,7 +1561,7 @@
  #define CONFIG_WMV3_NVDEC_HWACCEL 0
  #define CONFIG_WMV3_VAAPI_HWACCEL 0
  #define CONFIG_WMV3_VDPAU_HWACCEL 0
@@ -556,29 +1323,325 @@ index 8ef23d3b5..3f3f672c0 100644
  #define CONFIG_AAC_LATM_PARSER 0
  #define CONFIG_AC3_PARSER 0
  #define CONFIG_ADX_PARSER 0
-@@ -2096,7 +2096,7 @@
+@@ -2105,7 +2105,7 @@
  #define CONFIG_AFIFO_FILTER 0
  #define CONFIG_FIFO_FILTER 0
  #define CONFIG_AA_DEMUXER 0
 -#define CONFIG_AAC_DEMUXER 0
 +#define CONFIG_AAC_DEMUXER 1
+ #define CONFIG_AAX_DEMUXER 0
  #define CONFIG_AC3_DEMUXER 0
  #define CONFIG_ACM_DEMUXER 0
- #define CONFIG_ACT_DEMUXER 0
+diff --git a/third_party/ffmpeg/chromium/config/Chromium/linux/arm64/libavcodec/bsf_list.c b/third_party/ffmpeg/chromium/config/Chromium/linux/arm64/libavcodec/bsf_list.c
+index d31ece942a..d6f12718cf 100644
+--- a/third_party/ffmpeg/chromium/config/Chromium/linux/arm64/libavcodec/bsf_list.c
++++ b/third_party/ffmpeg/chromium/config/Chromium/linux/arm64/libavcodec/bsf_list.c
+@@ -1,3 +1,4 @@
+ static const AVBitStreamFilter * const bitstream_filters[] = {
++    &ff_h264_mp4toannexb_bsf,
+     &ff_null_bsf,
+     NULL };
+diff --git a/third_party/ffmpeg/chromium/config/Chromium/linux/arm64/libavcodec/codec_list.c b/third_party/ffmpeg/chromium/config/Chromium/linux/arm64/libavcodec/codec_list.c
+index 9407bd2775..ecd6c02721 100644
+--- a/third_party/ffmpeg/chromium/config/Chromium/linux/arm64/libavcodec/codec_list.c
++++ b/third_party/ffmpeg/chromium/config/Chromium/linux/arm64/libavcodec/codec_list.c
+@@ -14,5 +14,7 @@ static const AVCodec * const codec_list[] = {
+     &ff_pcm_s24le_decoder,
+     &ff_pcm_s32le_decoder,
+     &ff_pcm_u8_decoder,
++    &ff_libfdk_aac_decoder,
+     &ff_libopus_decoder,
++    &ff_libopenh264_decoder,
+     NULL };
+diff --git a/third_party/ffmpeg/chromium/config/Chromium/linux/arm64/libavcodec/parser_list.c b/third_party/ffmpeg/chromium/config/Chromium/linux/arm64/libavcodec/parser_list.c
+index f81fbe8bbc..7b86e2b934 100644
+--- a/third_party/ffmpeg/chromium/config/Chromium/linux/arm64/libavcodec/parser_list.c
++++ b/third_party/ffmpeg/chromium/config/Chromium/linux/arm64/libavcodec/parser_list.c
+@@ -1,4 +1,5 @@
+ static const AVCodecParser * const parser_list[] = {
++    &ff_aac_parser,
+     &ff_flac_parser,
+     &ff_mpegaudio_parser,
+     &ff_opus_parser,
+diff --git a/third_party/ffmpeg/chromium/config/Chromium/linux/arm64/libavformat/demuxer_list.c b/third_party/ffmpeg/chromium/config/Chromium/linux/arm64/libavformat/demuxer_list.c
+index 1908ba19e7..920b22bfa7 100644
+--- a/third_party/ffmpeg/chromium/config/Chromium/linux/arm64/libavformat/demuxer_list.c
++++ b/third_party/ffmpeg/chromium/config/Chromium/linux/arm64/libavformat/demuxer_list.c
+@@ -1,4 +1,5 @@
+ static const AVInputFormat * const demuxer_list[] = {
++    &ff_aac_demuxer,
+     &ff_flac_demuxer,
+     &ff_matroska_demuxer,
+     &ff_mov_demuxer,
+diff --git a/third_party/ffmpeg/chromium/config/Chromium/linux/arm64/libavutil/ffversion.h b/third_party/ffmpeg/chromium/config/Chromium/linux/arm64/libavutil/ffversion.h
+index 0f5c7b1d74..bc43b980d5 100644
+--- a/third_party/ffmpeg/chromium/config/Chromium/linux/arm64/libavutil/ffversion.h
++++ b/third_party/ffmpeg/chromium/config/Chromium/linux/arm64/libavutil/ffversion.h
+@@ -1,5 +1,5 @@
+ /* Automatically generated by version.sh, do not manually edit! */
+ #ifndef AVUTIL_FFVERSION_H
+ #define AVUTIL_FFVERSION_H
+-#define FFMPEG_VERSION "N-100481-g0493b979df"
++#define FFMPEG_VERSION "4.3.git"
+ #endif /* AVUTIL_FFVERSION_H */
+diff --git a/third_party/ffmpeg/chromium/config/Chromium/linux/x64/config.asm b/third_party/ffmpeg/chromium/config/Chromium/linux/x64/config.asm
+index f425351612..2d0775ba38 100644
+--- a/third_party/ffmpeg/chromium/config/Chromium/linux/x64/config.asm
++++ b/third_party/ffmpeg/chromium/config/Chromium/linux/x64/config.asm
+@@ -218,7 +218,7 @@
+ %define HAVE_TERMIOS_H 1
+ %define HAVE_UDPLITE_H 0
+ %define HAVE_UNISTD_H 1
+-%define HAVE_VALGRIND_VALGRIND_H 0 ; %define HAVE_VALGRIND_VALGRIND_H 1 -- forced to 0. See https://crbug.com/590440
++%define HAVE_VALGRIND_VALGRIND_H 0 ; %define HAVE_VALGRIND_VALGRIND_H 0 -- forced to 0. See https://crbug.com/590440
+ %define HAVE_WINDOWS_H 0
+ %define HAVE_WINSOCK2_H 0
+ %define HAVE_INTRINSICS_NEON 0
+@@ -333,7 +333,7 @@
+ %define HAVE_INLINE_ASM_LABELS 1
+ %define HAVE_INLINE_ASM_NONLOCAL_LABELS 1
+ %define HAVE_PRAGMA_DEPRECATED 1
+-%define HAVE_RSYNC_CONTIMEOUT 1
++%define HAVE_RSYNC_CONTIMEOUT 0
+ %define HAVE_SYMVER_ASM_LABEL 1
+ %define HAVE_SYMVER_GNU_ASM 1
+ %define HAVE_VFP_ARGS 0
+@@ -359,8 +359,8 @@
+ %define HAVE_STRUCT_STAT_ST_MTIM_TV_NSEC 1
+ %define HAVE_STRUCT_V4L2_FRMIVALENUM_DISCRETE 0
+ %define HAVE_LIBDRM_GETFB2 0
+-%define HAVE_MAKEINFO 1
+-%define HAVE_MAKEINFO_HTML 1
++%define HAVE_MAKEINFO 0
++%define HAVE_MAKEINFO_HTML 0
+ %define HAVE_OPENCL_D3D11 0
+ %define HAVE_OPENCL_DRM_ARM 0
+ %define HAVE_OPENCL_DRM_BEIGNET 0
+@@ -410,7 +410,7 @@
+ %define CONFIG_LIBXAVS2 0
+ %define CONFIG_LIBXVID 0
+ %define CONFIG_DECKLINK 0
+-%define CONFIG_LIBFDK_AAC 0
++%define CONFIG_LIBFDK_AAC 1
+ %define CONFIG_OPENSSL 0
+ %define CONFIG_LIBTLS 0
+ %define CONFIG_GMP 0
+@@ -453,7 +453,7 @@
+ %define CONFIG_LIBMP3LAME 0
+ %define CONFIG_LIBMYSOFA 0
+ %define CONFIG_LIBOPENCV 0
+-%define CONFIG_LIBOPENH264 0
++%define CONFIG_LIBOPENH264 1
+ %define CONFIG_LIBOPENJPEG 0
+ %define CONFIG_LIBOPENMPT 0
+ %define CONFIG_LIBOPENVINO 0
+@@ -594,7 +594,7 @@
+ %define CONFIG_PROTOCOLS 0
+ %define CONFIG_AANDCTTABLES 0
+ %define CONFIG_AC3DSP 0
+-%define CONFIG_ADTS_HEADER 0
++%define CONFIG_ADTS_HEADER 1
+ %define CONFIG_ATSC_A53 0
+ %define CONFIG_AUDIO_FRAME_QUEUE 0
+ %define CONFIG_AUDIODSP 0
+@@ -694,7 +694,7 @@
+ %define CONFIG_EXTRACT_EXTRADATA_BSF 0
+ %define CONFIG_FILTER_UNITS_BSF 0
+ %define CONFIG_H264_METADATA_BSF 0
+-%define CONFIG_H264_MP4TOANNEXB_BSF 0
++%define CONFIG_H264_MP4TOANNEXB_BSF 1
+ %define CONFIG_H264_REDUNDANT_PPS_BSF 0
+ %define CONFIG_HAPQA_EXTRACT_BSF 0
+ %define CONFIG_HEVC_METADATA_BSF 0
+@@ -1226,7 +1226,7 @@
+ %define CONFIG_LIBCODEC2_DECODER 0
+ %define CONFIG_LIBDAV1D_DECODER 0
+ %define CONFIG_LIBDAVS2_DECODER 0
+-%define CONFIG_LIBFDK_AAC_DECODER 0
++%define CONFIG_LIBFDK_AAC_DECODER 1
+ %define CONFIG_LIBGSM_DECODER 0
+ %define CONFIG_LIBGSM_MS_DECODER 0
+ %define CONFIG_LIBILBC_DECODER 0
+@@ -1245,7 +1245,7 @@
+ %define CONFIG_IDF_DECODER 0
+ %define CONFIG_LIBAOM_AV1_DECODER 0
+ %define CONFIG_AV1_DECODER 0
+-%define CONFIG_LIBOPENH264_DECODER 0
++%define CONFIG_LIBOPENH264_DECODER 1
+ %define CONFIG_H264_CUVID_DECODER 0
+ %define CONFIG_HEVC_CUVID_DECODER 0
+ %define CONFIG_HEVC_MEDIACODEC_DECODER 0
+@@ -1546,7 +1546,7 @@
+ %define CONFIG_WMV3_NVDEC_HWACCEL 0
+ %define CONFIG_WMV3_VAAPI_HWACCEL 0
+ %define CONFIG_WMV3_VDPAU_HWACCEL 0
+-%define CONFIG_AAC_PARSER 0
++%define CONFIG_AAC_PARSER 1
+ %define CONFIG_AAC_LATM_PARSER 0
+ %define CONFIG_AC3_PARSER 0
+ %define CONFIG_ADX_PARSER 0
+@@ -2090,7 +2090,7 @@
+ %define CONFIG_AFIFO_FILTER 0
+ %define CONFIG_FIFO_FILTER 0
+ %define CONFIG_AA_DEMUXER 0
+-%define CONFIG_AAC_DEMUXER 0
++%define CONFIG_AAC_DEMUXER 1
+ %define CONFIG_AAX_DEMUXER 0
+ %define CONFIG_AC3_DEMUXER 0
+ %define CONFIG_ACM_DEMUXER 0
+diff --git a/third_party/ffmpeg/chromium/config/Chromium/linux/x64/config.h b/third_party/ffmpeg/chromium/config/Chromium/linux/x64/config.h
+index b04ca4da02..70692915cb 100644
+--- a/third_party/ffmpeg/chromium/config/Chromium/linux/x64/config.h
++++ b/third_party/ffmpeg/chromium/config/Chromium/linux/x64/config.h
+@@ -1,12 +1,12 @@
+ /* Automatically generated by configure - do not modify! */
+ #ifndef FFMPEG_CONFIG_H
+ #define FFMPEG_CONFIG_H
+-/* #define FFMPEG_CONFIGURATION "--disable-everything --disable-all --disable-doc --disable-htmlpages --disable-manpages --disable-podpages --disable-txtpages --disable-static --enable-avcodec --enable-avformat --enable-avutil --enable-fft --enable-rdft --enable-static --enable-libopus --disable-debug --disable-bzlib --disable-error-resilience --disable-iconv --disable-lzo --disable-network --disable-schannel --disable-sdl2 --disable-symver --disable-xlib --disable-zlib --disable-securetransport --disable-faan --disable-alsa --disable-autodetect --enable-decoder='vorbis,libopus,flac' --enable-decoder='pcm_u8,pcm_s16le,pcm_s24le,pcm_s32le,pcm_f32le,mp3' --enable-decoder='pcm_s16be,pcm_s24be,pcm_mulaw,pcm_alaw' --enable-demuxer='ogg,matroska,wav,flac,mp3,mov' --enable-parser='opus,vorbis,flac,mpegaudio,vp9' --extra-cflags=-I/mnt/src/chromium/src/third_party/opus/src/include --disable-linux-perf --x86asmexe=nasm --optflags='\"-O2\"' --enable-decoder='theora,vp8' --enable-parser='vp3,vp8' --enable-lto --enable-pic --cc=clang --cxx=clang++ --ld=clang --extra-ldflags='-fuse-ld=lld'" -- elide long configuration string from binary */
++/* #define FFMPEG_CONFIGURATION "--disable-everything --disable-all --disable-doc --disable-htmlpages --disable-manpages --disable-podpages --disable-txtpages --disable-static --enable-avcodec --enable-avformat --enable-avutil --enable-fft --enable-rdft --enable-static --enable-libopus --disable-debug --disable-bzlib --disable-error-resilience --disable-iconv --disable-lzo --disable-network --disable-schannel --disable-sdl2 --disable-symver --disable-xlib --disable-zlib --disable-securetransport --disable-faan --disable-alsa --disable-autodetect --enable-decoder='vorbis,libopus,flac' --enable-decoder='pcm_u8,pcm_s16le,pcm_s24le,pcm_s32le,pcm_f32le,mp3' --enable-decoder='pcm_s16be,pcm_s24be,pcm_mulaw,pcm_alaw' --enable-demuxer='ogg,matroska,wav,flac,mp3,mov' --enable-parser='opus,vorbis,flac,mpegaudio,vp9' --extra-cflags=-I/chromium/third_party/opus/src/include --disable-linux-perf --x86asmexe=nasm --optflags='\"-O2\"' --enable-decoder='theora,vp8' --enable-parser='vp3,vp8' --enable-lto --enable-pic --cc=clang --cxx=clang++ --ld=clang --extra-ldflags='-fuse-ld=lld' --enable-demuxer=aac --enable-parser=aac --enable-libfdk-aac --enable-decoder=libfdk_aac --disable-decoder=aac --enable-libopenh264 --enable-decoder=libopenh264 --disable-decoder=h264" -- elide long configuration string from binary */
+ #define FFMPEG_LICENSE "LGPL version 2.1 or later"
+ #define CONFIG_THIS_YEAR 2020
+ #define FFMPEG_DATADIR "/usr/local/share/ffmpeg"
+ #define AVCONV_DATADIR "/usr/local/share/ffmpeg"
+-#define CC_IDENT "clang version 12.0.0 (https://github.com/llvm/llvm-project/ d0abc757495349fd053beeaea81cd954c2e457e7)"
++#define CC_IDENT "clang version 12.0.0 (https://github.com/llvm/llvm-project/ 418f18c6cdfe56e77669e2f4d3df3bca1020156d)"
+ #define av_restrict restrict
+ #define EXTERN_PREFIX ""
+ #define EXTERN_ASM 
+@@ -233,7 +233,7 @@
+ #define HAVE_TERMIOS_H 1
+ #define HAVE_UDPLITE_H 0
+ #define HAVE_UNISTD_H 1
+-#define HAVE_VALGRIND_VALGRIND_H 0 /* #define HAVE_VALGRIND_VALGRIND_H 1 -- forced to 0. See https://crbug.com/590440 */
++#define HAVE_VALGRIND_VALGRIND_H 0 /* #define HAVE_VALGRIND_VALGRIND_H 0 -- forced to 0. See https://crbug.com/590440 */
+ #define HAVE_WINDOWS_H 0
+ #define HAVE_WINSOCK2_H 0
+ #define HAVE_INTRINSICS_NEON 0
+@@ -348,7 +348,7 @@
+ #define HAVE_INLINE_ASM_LABELS 1
+ #define HAVE_INLINE_ASM_NONLOCAL_LABELS 1
+ #define HAVE_PRAGMA_DEPRECATED 1
+-#define HAVE_RSYNC_CONTIMEOUT 1
++#define HAVE_RSYNC_CONTIMEOUT 0
+ #define HAVE_SYMVER_ASM_LABEL 1
+ #define HAVE_SYMVER_GNU_ASM 1
+ #define HAVE_VFP_ARGS 0
+@@ -374,8 +374,8 @@
+ #define HAVE_STRUCT_STAT_ST_MTIM_TV_NSEC 1
+ #define HAVE_STRUCT_V4L2_FRMIVALENUM_DISCRETE 0
+ #define HAVE_LIBDRM_GETFB2 0
+-#define HAVE_MAKEINFO 1
+-#define HAVE_MAKEINFO_HTML 1
++#define HAVE_MAKEINFO 0
++#define HAVE_MAKEINFO_HTML 0
+ #define HAVE_OPENCL_D3D11 0
+ #define HAVE_OPENCL_DRM_ARM 0
+ #define HAVE_OPENCL_DRM_BEIGNET 0
+@@ -425,7 +425,7 @@
+ #define CONFIG_LIBXAVS2 0
+ #define CONFIG_LIBXVID 0
+ #define CONFIG_DECKLINK 0
+-#define CONFIG_LIBFDK_AAC 0
++#define CONFIG_LIBFDK_AAC 1
+ #define CONFIG_OPENSSL 0
+ #define CONFIG_LIBTLS 0
+ #define CONFIG_GMP 0
+@@ -468,7 +468,7 @@
+ #define CONFIG_LIBMP3LAME 0
+ #define CONFIG_LIBMYSOFA 0
+ #define CONFIG_LIBOPENCV 0
+-#define CONFIG_LIBOPENH264 0
++#define CONFIG_LIBOPENH264 1
+ #define CONFIG_LIBOPENJPEG 0
+ #define CONFIG_LIBOPENMPT 0
+ #define CONFIG_LIBOPENVINO 0
+@@ -609,7 +609,7 @@
+ #define CONFIG_PROTOCOLS 0
+ #define CONFIG_AANDCTTABLES 0
+ #define CONFIG_AC3DSP 0
+-#define CONFIG_ADTS_HEADER 0
++#define CONFIG_ADTS_HEADER 1
+ #define CONFIG_ATSC_A53 0
+ #define CONFIG_AUDIO_FRAME_QUEUE 0
+ #define CONFIG_AUDIODSP 0
+@@ -709,7 +709,7 @@
+ #define CONFIG_EXTRACT_EXTRADATA_BSF 0
+ #define CONFIG_FILTER_UNITS_BSF 0
+ #define CONFIG_H264_METADATA_BSF 0
+-#define CONFIG_H264_MP4TOANNEXB_BSF 0
++#define CONFIG_H264_MP4TOANNEXB_BSF 1
+ #define CONFIG_H264_REDUNDANT_PPS_BSF 0
+ #define CONFIG_HAPQA_EXTRACT_BSF 0
+ #define CONFIG_HEVC_METADATA_BSF 0
+@@ -1241,7 +1241,7 @@
+ #define CONFIG_LIBCODEC2_DECODER 0
+ #define CONFIG_LIBDAV1D_DECODER 0
+ #define CONFIG_LIBDAVS2_DECODER 0
+-#define CONFIG_LIBFDK_AAC_DECODER 0
++#define CONFIG_LIBFDK_AAC_DECODER 1
+ #define CONFIG_LIBGSM_DECODER 0
+ #define CONFIG_LIBGSM_MS_DECODER 0
+ #define CONFIG_LIBILBC_DECODER 0
+@@ -1260,7 +1260,7 @@
+ #define CONFIG_IDF_DECODER 0
+ #define CONFIG_LIBAOM_AV1_DECODER 0
+ #define CONFIG_AV1_DECODER 0
+-#define CONFIG_LIBOPENH264_DECODER 0
++#define CONFIG_LIBOPENH264_DECODER 1
+ #define CONFIG_H264_CUVID_DECODER 0
+ #define CONFIG_HEVC_CUVID_DECODER 0
+ #define CONFIG_HEVC_MEDIACODEC_DECODER 0
+@@ -1561,7 +1561,7 @@
+ #define CONFIG_WMV3_NVDEC_HWACCEL 0
+ #define CONFIG_WMV3_VAAPI_HWACCEL 0
+ #define CONFIG_WMV3_VDPAU_HWACCEL 0
+-#define CONFIG_AAC_PARSER 0
++#define CONFIG_AAC_PARSER 1
+ #define CONFIG_AAC_LATM_PARSER 0
+ #define CONFIG_AC3_PARSER 0
+ #define CONFIG_ADX_PARSER 0
+@@ -2105,7 +2105,7 @@
+ #define CONFIG_AFIFO_FILTER 0
+ #define CONFIG_FIFO_FILTER 0
+ #define CONFIG_AA_DEMUXER 0
+-#define CONFIG_AAC_DEMUXER 0
++#define CONFIG_AAC_DEMUXER 1
+ #define CONFIG_AAX_DEMUXER 0
+ #define CONFIG_AC3_DEMUXER 0
+ #define CONFIG_ACM_DEMUXER 0
+diff --git a/third_party/ffmpeg/chromium/config/Chromium/linux/x64/libavcodec/bsf_list.c b/third_party/ffmpeg/chromium/config/Chromium/linux/x64/libavcodec/bsf_list.c
+index d31ece942a..d6f12718cf 100644
+--- a/third_party/ffmpeg/chromium/config/Chromium/linux/x64/libavcodec/bsf_list.c
++++ b/third_party/ffmpeg/chromium/config/Chromium/linux/x64/libavcodec/bsf_list.c
+@@ -1,3 +1,4 @@
+ static const AVBitStreamFilter * const bitstream_filters[] = {
++    &ff_h264_mp4toannexb_bsf,
+     &ff_null_bsf,
+     NULL };
 diff --git a/third_party/ffmpeg/chromium/config/Chromium/linux/x64/libavcodec/codec_list.c b/third_party/ffmpeg/chromium/config/Chromium/linux/x64/libavcodec/codec_list.c
-index 9407bd277..e055ba602 100644
+index 9407bd2775..ecd6c02721 100644
 --- a/third_party/ffmpeg/chromium/config/Chromium/linux/x64/libavcodec/codec_list.c
 +++ b/third_party/ffmpeg/chromium/config/Chromium/linux/x64/libavcodec/codec_list.c
-@@ -4,6 +4,7 @@ static const AVCodec * const codec_list[] = {
-     &ff_vp8_decoder,
-     &ff_flac_decoder,
-     &ff_mp3_decoder,
+@@ -14,5 +14,7 @@ static const AVCodec * const codec_list[] = {
+     &ff_pcm_s24le_decoder,
+     &ff_pcm_s32le_decoder,
+     &ff_pcm_u8_decoder,
 +    &ff_libfdk_aac_decoder,
-     &ff_vorbis_decoder,
-     &ff_pcm_alaw_decoder,
-     &ff_pcm_f32le_decoder,
+     &ff_libopus_decoder,
++    &ff_libopenh264_decoder,
+     NULL };
+diff --git a/third_party/ffmpeg/chromium/config/Chromium/linux/x64/libavcodec/parser_list.c b/third_party/ffmpeg/chromium/config/Chromium/linux/x64/libavcodec/parser_list.c
+index f81fbe8bbc..7b86e2b934 100644
+--- a/third_party/ffmpeg/chromium/config/Chromium/linux/x64/libavcodec/parser_list.c
++++ b/third_party/ffmpeg/chromium/config/Chromium/linux/x64/libavcodec/parser_list.c
+@@ -1,4 +1,5 @@
+ static const AVCodecParser * const parser_list[] = {
++    &ff_aac_parser,
+     &ff_flac_parser,
+     &ff_mpegaudio_parser,
+     &ff_opus_parser,
 diff --git a/third_party/ffmpeg/chromium/config/Chromium/linux/x64/libavformat/demuxer_list.c b/third_party/ffmpeg/chromium/config/Chromium/linux/x64/libavformat/demuxer_list.c
-index 1908ba19e..920b22bfa 100644
+index 1908ba19e7..920b22bfa7 100644
 --- a/third_party/ffmpeg/chromium/config/Chromium/linux/x64/libavformat/demuxer_list.c
 +++ b/third_party/ffmpeg/chromium/config/Chromium/linux/x64/libavformat/demuxer_list.c
 @@ -1,4 +1,5 @@
@@ -587,22 +1650,40 @@ index 1908ba19e..920b22bfa 100644
      &ff_flac_demuxer,
      &ff_matroska_demuxer,
      &ff_mov_demuxer,
+diff --git a/third_party/ffmpeg/chromium/config/Chromium/linux/x64/libavutil/ffversion.h b/third_party/ffmpeg/chromium/config/Chromium/linux/x64/libavutil/ffversion.h
+index 0f5c7b1d74..bc43b980d5 100644
+--- a/third_party/ffmpeg/chromium/config/Chromium/linux/x64/libavutil/ffversion.h
++++ b/third_party/ffmpeg/chromium/config/Chromium/linux/x64/libavutil/ffversion.h
+@@ -1,5 +1,5 @@
+ /* Automatically generated by version.sh, do not manually edit! */
+ #ifndef AVUTIL_FFVERSION_H
+ #define AVUTIL_FFVERSION_H
+-#define FFMPEG_VERSION "N-100481-g0493b979df"
++#define FFMPEG_VERSION "4.3.git"
+ #endif /* AVUTIL_FFVERSION_H */
 diff --git a/third_party/ffmpeg/chromium/scripts/build_ffmpeg.py b/third_party/ffmpeg/chromium/scripts/build_ffmpeg.py
-index 75333a2c9..7218d99ed 100755
+index 75333a2c9f..ae8cf3a69c 100755
 --- a/third_party/ffmpeg/chromium/scripts/build_ffmpeg.py
 +++ b/third_party/ffmpeg/chromium/scripts/build_ffmpeg.py
-@@ -910,11 +910,20 @@ def ConfigureAndBuild(target_arch, target_os, host_os, host_arch, parallel_jobs,
+@@ -910,11 +910,27 @@ def ConfigureAndBuild(target_arch, target_os, host_os, host_arch, parallel_jobs,
            '--ar=cygwin-wrapper lib',
        ])
  
-+  # Depend on royalty-free libfdk-aac for AAC support.
 +  if target_os == 'linux':
++    # Depend on royalty-free libfdk-aac for AAC support.
 +    configure_flags['Common'].extend([
-+        # Build against libfdk-aac and enable it always.
-+        '--enable-libfdk-aac',
-+        '--enable-decoder=libfdk_aac',
 +        '--enable-demuxer=aac',
 +        '--enable-parser=aac',
++        '--enable-libfdk-aac',
++        '--enable-decoder=libfdk_aac',
++        '--disable-decoder=aac',
++    ])
++
++    # Depend on openh264 for open H.264 support.
++    configure_flags['Chromium'].extend([
++        '--enable-libopenh264',
++        '--enable-decoder=libopenh264',
++        '--disable-decoder=h264',
 +    ])
 +
    # Google Chrome & ChromeOS specific configuration.
@@ -615,27 +1696,127 @@ index 75333a2c9..7218d99ed 100755
    ])
  
    # Google ChromeOS specific configuration.
+diff --git a/third_party/ffmpeg/chromium/scripts/generate_gn.py b/third_party/ffmpeg/chromium/scripts/generate_gn.py
+index 0f606dfaef..fec9bb1beb 100755
+--- a/third_party/ffmpeg/chromium/scripts/generate_gn.py
++++ b/third_party/ffmpeg/chromium/scripts/generate_gn.py
+@@ -665,6 +665,7 @@ LICENSE_WHITELIST = [
+     'LGPL (v2.1 or later) GENERATED FILE',
+     'MIT/X11 (BSD like)',
+     'Public domain LGPL (v2.1 or later)',
++    'ISC',
+ ]
+ 
+ # Files permitted to report an UNKNOWN license. All files mentioned here should
+@@ -827,7 +828,7 @@ def FixObjectBasenameCollisions(disjoint_sets,
+   If upstream changes the name such that the collision no longer exists, we
+   detect the presence of a renamed file in all_sources which is overridden and
+   warn that it should be removed.
+-  
++
+   This will return a tuple of two sets.  The first is a list of all currently
+   renamed files, in their renamed form.  The second is a list of renamed files
+   that we have in the working directory, but no longer need."""
 diff --git a/third_party/ffmpeg/ffmpeg_generated.gni b/third_party/ffmpeg/ffmpeg_generated.gni
-index 9aab52870..c26f6f237 100644
+index 71f17d1735..04d5a00841 100644
 --- a/third_party/ffmpeg/ffmpeg_generated.gni
 +++ b/third_party/ffmpeg/ffmpeg_generated.gni
-@@ -52,6 +52,7 @@ if ((is_android && current_cpu == "arm" && arm_use_neon) || (is_android && curre
+@@ -1,4 +1,4 @@
+-# Copyright 2020 The Chromium Authors. All rights reserved.
++# Copyright 2021 The Chromium Authors. All rights reserved.
+ # Use of this source code is governed by a BSD-style license that can be
+ # found in the LICENSE file.
+ 
+@@ -14,17 +14,24 @@ ffmpeg_asm_sources = []
+ 
+ use_linux_config = is_linux || is_chromeos || is_fuchsia
+ 
+-if ((is_android && current_cpu == "arm" && arm_use_neon) || (is_android && current_cpu == "arm64") || (is_android && current_cpu == "x64") || (is_android && current_cpu == "x86") || (is_mac) || (is_win) || (use_linux_config)) {
++if ((use_linux_config && current_cpu == "arm64") || (use_linux_config && current_cpu == "x64")) {
+   ffmpeg_c_sources += [
++    "libavcodec/aac_ac3_parser.c",
++    "libavcodec/aac_parser.c",
+     "libavcodec/ac3_parser.c",
+     "libavcodec/ac3tab.c",
++    "libavcodec/adts_header.c",
+     "libavcodec/adts_parser.c",
+     "libavcodec/allcodecs.c",
+     "libavcodec/autorename_libavcodec_flacdec.c",
+     "libavcodec/autorename_libavcodec_flacdsp.c",
++    "libavcodec/autorename_libavcodec_hpeldsp.c",
+     "libavcodec/autorename_libavcodec_mpegaudiodsp.c",
+     "libavcodec/autorename_libavcodec_utils.c",
++    "libavcodec/autorename_libavcodec_videodsp.c",
+     "libavcodec/autorename_libavcodec_vorbisdsp.c",
++    "libavcodec/autorename_libavcodec_vp3dsp.c",
++    "libavcodec/autorename_libavcodec_vp8dsp.c",
+     "libavcodec/avdct.c",
+     "libavcodec/avfft.c",
+     "libavcodec/avpacket.c",
+@@ -50,8 +57,10 @@ if ((is_android && current_cpu == "arm" && arm_use_neon) || (is_android && curre
+     "libavcodec/flac_parser.c",
+     "libavcodec/flacdata.c",
      "libavcodec/golomb.c",
++    "libavcodec/h264pred.c",
      "libavcodec/imgconvert.c",
      "libavcodec/jni.c",
 +    "libavcodec/libfdk-aacdec.c",
      "libavcodec/libopus.c",
      "libavcodec/libopusdec.c",
      "libavcodec/mathtables.c",
-@@ -219,18 +220,16 @@ if ((current_cpu == "arm64" && ffmpeg_branding == "Chrome") || (current_cpu == "
-   ffmpeg_c_sources += [
-     "libavcodec/aac_ac3_parser.c",
-     "libavcodec/aac_parser.c",
+@@ -90,9 +99,16 @@ if ((is_android && current_cpu == "arm" && arm_use_neon) || (is_android && curre
+     "libavcodec/vorbis_data.c",
+     "libavcodec/vorbis_parser.c",
+     "libavcodec/vorbisdec.c",
++    "libavcodec/vp3.c",
++    "libavcodec/vp3_parser.c",
++    "libavcodec/vp56rac.c",
++    "libavcodec/vp8.c",
++    "libavcodec/vp8_parser.c",
+     "libavcodec/vp9_parser.c",
+     "libavcodec/xiph.c",
++    "libavformat/aacdec.c",
+     "libavformat/allformats.c",
++    "libavformat/apetag.c",
+     "libavformat/autorename_libavformat_options.c",
+     "libavformat/autorename_libavformat_pcm.c",
+     "libavformat/autorename_libavformat_utils.c",
+@@ -105,6 +121,7 @@ if ((is_android && current_cpu == "arm" && arm_use_neon) || (is_android && curre
+     "libavformat/format.c",
+     "libavformat/id3v1.c",
+     "libavformat/id3v2.c",
++    "libavformat/img2.c",
+     "libavformat/isom.c",
+     "libavformat/matroska.c",
+     "libavformat/matroskadec.c",
+@@ -195,44 +212,7 @@ if ((is_android && current_cpu == "arm" && arm_use_neon) || (is_android && curre
+   ]
+ }
+ 
+-if ((is_mac) || (is_win) || (use_linux_config)) {
+-  ffmpeg_c_sources += [
+-    "libavcodec/autorename_libavcodec_hpeldsp.c",
+-    "libavcodec/autorename_libavcodec_videodsp.c",
+-    "libavcodec/autorename_libavcodec_vp3dsp.c",
+-    "libavcodec/autorename_libavcodec_vp8dsp.c",
+-    "libavcodec/h264pred.c",
+-    "libavcodec/vp3.c",
+-    "libavcodec/vp3_parser.c",
+-    "libavcodec/vp56rac.c",
+-    "libavcodec/vp8.c",
+-    "libavcodec/vp8_parser.c",
+-  ]
+-}
+-
+-if ((current_cpu == "arm64" && ffmpeg_branding == "Chrome") || (current_cpu == "x64" && ffmpeg_branding == "Chrome") || (is_android && current_cpu == "arm" && arm_use_neon && ffmpeg_branding == "Chrome") || (is_android && current_cpu == "x86" && ffmpeg_branding == "Chrome") || (is_mac && ffmpeg_branding == "Chrome") || (is_win && ffmpeg_branding == "Chrome") || (use_linux_config && ffmpeg_branding == "Chrome") || (use_linux_config && ffmpeg_branding == "ChromeOS")) {
+-  ffmpeg_c_sources += [
+-    "libavcodec/aac_ac3_parser.c",
+-    "libavcodec/aac_parser.c",
 -    "libavcodec/aacps_float.c",
 -    "libavcodec/aacpsdsp_float.c",
 -    "libavcodec/aacsbr.c",
 -    "libavcodec/aactab.c",
-     "libavcodec/adts_header.c",
+-    "libavcodec/adts_header.c",
 -    "libavcodec/autorename_libavcodec_aacdec.c",
 -    "libavcodec/autorename_libavcodec_mdct15.c",
 -    "libavcodec/autorename_libavcodec_sbrdsp.c",
@@ -643,19 +1824,156 @@ index 9aab52870..c26f6f237 100644
 -    "libavcodec/kbdwin.c",
 -    "libavcodec/sinewin.c",
 -    "libavcodec/sinewin_fixed.c",
-+    "libavformat/aacdec.c",
-+    "libavformat/apetag.c",
-+    "libavformat/img2.c",
-+  ]
-+}
-+
-+# EndlessOS: Modified to also build the AAC demuxer for the "free" version
-+if ((use_linux_config && ffmpeg_branding == "Chromium")) {
-+  ffmpeg_c_sources += [
-     "libavformat/aacdec.c",
-     "libavformat/apetag.c",
-     "libavformat/img2.c",
-@@ -367,22 +366,6 @@ if ((is_android && current_cpu == "mips64el") || (is_android && current_cpu == "
+-    "libavformat/aacdec.c",
+-    "libavformat/apetag.c",
+-    "libavformat/img2.c",
+-  ]
+-}
+-
+-if ((is_mac && ffmpeg_branding == "Chrome") || (is_win && ffmpeg_branding == "Chrome") || (use_linux_config && ffmpeg_branding == "Chrome") || (use_linux_config && ffmpeg_branding == "ChromeOS")) {
++if ((use_linux_config && current_cpu == "arm64" && ffmpeg_branding == "Chrome") || (use_linux_config && current_cpu == "arm64" && ffmpeg_branding == "ChromeOS") || (use_linux_config && current_cpu == "x64" && ffmpeg_branding == "Chrome") || (use_linux_config && current_cpu == "x64" && ffmpeg_branding == "ChromeOS")) {
+   ffmpeg_c_sources += [
+     "libavcodec/atsc_a53.c",
+     "libavcodec/cabac.c",
+@@ -259,120 +239,97 @@ if ((is_mac && ffmpeg_branding == "Chrome") || (is_win && ffmpeg_branding == "Ch
+   ]
+ }
+ 
+-if ((is_android && current_cpu == "x64") || (is_android && current_cpu == "x86") || (is_mac && current_cpu == "x64") || (is_win && current_cpu == "x64") || (is_win && current_cpu == "x86") || (use_linux_config && current_cpu == "x64") || (use_linux_config && current_cpu == "x86")) {
+-  ffmpeg_c_sources += [
+-    "libavcodec/x86/autorename_libavcodec_x86_vorbisdsp_init.c",
+-    "libavcodec/x86/constants.c",
+-    "libavcodec/x86/dct_init.c",
+-    "libavcodec/x86/fft_init.c",
+-    "libavcodec/x86/flacdsp_init.c",
+-    "libavcodec/x86/mpegaudiodsp.c",
+-    "libavutil/x86/autorename_libavutil_x86_cpu.c",
+-    "libavutil/x86/autorename_libavutil_x86_float_dsp_init.c",
+-    "libavutil/x86/fixed_dsp_init.c",
+-    "libavutil/x86/imgutils_init.c",
+-    "libavutil/x86/lls_init.c",
+-  ]
+-}
+-
+-if ((is_android && current_cpu == "arm64") || (is_mac && current_cpu == "arm64") || (is_win && current_cpu == "arm64") || (use_linux_config && current_cpu == "arm64")) {
++if (use_linux_config && current_cpu == "arm64") {
+   ffmpeg_c_sources += [
++    "libavcodec/aarch64/autorename_libavcodec_aarch64_videodsp_init.c",
++    "libavcodec/aarch64/autorename_libavcodec_aarch64_vorbisdsp_init.c",
+     "libavcodec/aarch64/fft_init_aarch64.c",
++    "libavcodec/aarch64/h264pred_init.c",
++    "libavcodec/aarch64/hpeldsp_init_aarch64.c",
+     "libavcodec/aarch64/mpegaudiodsp_init.c",
+-    "libavcodec/aarch64/vorbisdsp_init.c",
++    "libavcodec/aarch64/vp8dsp_init_aarch64.c",
+     "libavutil/aarch64/autorename_libavutil_aarch64_cpu.c",
+-    "libavutil/aarch64/float_dsp_init.c",
++    "libavutil/aarch64/autorename_libavutil_aarch64_float_dsp_init.c",
+   ]
+   ffmpeg_gas_sources += [
+-    "libavcodec/aarch64/autorename_libavcodec_aarch64_fft_neon.S",
+-    "libavcodec/aarch64/autorename_libavcodec_aarch64_mdct_neon.S",
+-    "libavcodec/aarch64/autorename_libavcodec_aarch64_vorbisdsp_neon.S",
++    "libavcodec/aarch64/autorename_libavcodec_aarch64_videodsp.S",
++    "libavcodec/aarch64/fft_neon.S",
++    "libavcodec/aarch64/h264pred_neon.S",
++    "libavcodec/aarch64/hpeldsp_neon.S",
++    "libavcodec/aarch64/mdct_neon.S",
+     "libavcodec/aarch64/mpegaudiodsp_neon.S",
+-    "libavutil/aarch64/autorename_libavutil_aarch64_float_dsp_neon.S",
++    "libavcodec/aarch64/vorbisdsp_neon.S",
++    "libavcodec/aarch64/vp8dsp_neon.S",
++    "libavutil/aarch64/float_dsp_neon.S",
+   ]
+ }
+ 
+-if ((is_android && current_cpu == "arm" && arm_use_neon) || (use_linux_config && current_cpu == "arm" && arm_use_neon) || (use_linux_config && current_cpu == "arm")) {
++if ((use_linux_config && current_cpu == "arm64" && ffmpeg_branding == "Chrome") || (use_linux_config && current_cpu == "arm64" && ffmpeg_branding == "ChromeOS")) {
+   ffmpeg_c_sources += [
+-    "libavcodec/arm/fft_fixed_init_arm.c",
+-    "libavcodec/arm/fft_init_arm.c",
+-    "libavcodec/arm/flacdsp_init_arm.c",
+-    "libavcodec/arm/mpegaudiodsp_init_arm.c",
+-    "libavcodec/arm/rdft_init_arm.c",
+-    "libavcodec/arm/vorbisdsp_init_arm.c",
+-    "libavutil/arm/autorename_libavutil_arm_cpu.c",
+-    "libavutil/arm/float_dsp_init_arm.c",
+-    "libavutil/arm/float_dsp_init_vfp.c",
++    "libavcodec/aarch64/h264chroma_init_aarch64.c",
++    "libavcodec/aarch64/h264dsp_init_aarch64.c",
++    "libavcodec/aarch64/h264qpel_init_aarch64.c",
+   ]
+   ffmpeg_gas_sources += [
+-    "libavcodec/arm/fft_vfp.S",
+-    "libavcodec/arm/flacdsp_arm.S",
+-    "libavcodec/arm/mdct_vfp.S",
+-    "libavcodec/arm/mpegaudiodsp_fixed_armv6.S",
+-    "libavutil/arm/float_dsp_vfp.S",
++    "libavcodec/aarch64/h264cmc_neon.S",
++    "libavcodec/aarch64/h264dsp_neon.S",
++    "libavcodec/aarch64/h264idct_neon.S",
++    "libavcodec/aarch64/h264qpel_neon.S",
+   ]
+ }
+ 
+-if ((is_android && current_cpu == "x64") || (is_mac && current_cpu == "x64") || (is_win && current_cpu == "x64") || (is_win && current_cpu == "x86") || (use_linux_config && current_cpu == "x64") || (use_linux_config && current_cpu == "x86")) {
+-  ffmpeg_asm_sources += [
+-    "libavcodec/x86/dct32.asm",
+-    "libavcodec/x86/fft.asm",
+-    "libavcodec/x86/flacdsp.asm",
+-    "libavcodec/x86/imdct36.asm",
+-    "libavcodec/x86/vorbisdsp.asm",
+-    "libavutil/x86/cpuid.asm",
+-    "libavutil/x86/fixed_dsp.asm",
+-    "libavutil/x86/float_dsp.asm",
+-    "libavutil/x86/imgutils.asm",
+-    "libavutil/x86/lls.asm",
+-  ]
+-}
+-
+-if ((is_mac && current_cpu == "x64") || (is_win && current_cpu == "x64") || (is_win && current_cpu == "x86") || (use_linux_config && current_cpu == "x64") || (use_linux_config && current_cpu == "x86")) {
++if (use_linux_config && current_cpu == "x64") {
+   ffmpeg_c_sources += [
+-    "libavcodec/x86/autorename_libavcodec_x86_videodsp_init.c",
++    "libavcodec/x86/constants.c",
++    "libavcodec/x86/dct_init.c",
++    "libavcodec/x86/fft_init.c",
++    "libavcodec/x86/flacdsp_init.c",
+     "libavcodec/x86/h264_intrapred_init.c",
+     "libavcodec/x86/hpeldsp_init.c",
+     "libavcodec/x86/hpeldsp_vp3_init.c",
++    "libavcodec/x86/mpegaudiodsp.c",
++    "libavcodec/x86/videodsp_init.c",
++    "libavcodec/x86/vorbisdsp_init.c",
+     "libavcodec/x86/vp3dsp_init.c",
+     "libavcodec/x86/vp8dsp_init.c",
++    "libavutil/x86/cpu.c",
++    "libavutil/x86/fixed_dsp_init.c",
++    "libavutil/x86/float_dsp_init.c",
++    "libavutil/x86/imgutils_init.c",
++    "libavutil/x86/lls_init.c",
+   ]
+   ffmpeg_asm_sources += [
+-    "libavcodec/x86/autorename_libavcodec_x86_videodsp.asm",
++    "libavcodec/x86/dct32.asm",
++    "libavcodec/x86/fft.asm",
++    "libavcodec/x86/flacdsp.asm",
+     "libavcodec/x86/fpel.asm",
+     "libavcodec/x86/h264_intrapred.asm",
+     "libavcodec/x86/h264_intrapred_10bit.asm",
+     "libavcodec/x86/hpeldsp.asm",
+     "libavcodec/x86/hpeldsp_vp3.asm",
++    "libavcodec/x86/imdct36.asm",
++    "libavcodec/x86/videodsp.asm",
++    "libavcodec/x86/vorbisdsp.asm",
+     "libavcodec/x86/vp3dsp.asm",
+     "libavcodec/x86/vp8dsp.asm",
+     "libavcodec/x86/vp8dsp_loopfilter.asm",
++    "libavutil/x86/cpuid.asm",
++    "libavutil/x86/fixed_dsp.asm",
++    "libavutil/x86/float_dsp.asm",
++    "libavutil/x86/imgutils.asm",
++    "libavutil/x86/lls.asm",
    ]
  }
  
@@ -667,6 +1985,16 @@ index 9aab52870..c26f6f237 100644
 -  ]
 -}
 -
+-if ((is_android && current_cpu == "arm" && arm_use_neon) || (is_android && current_cpu == "arm64") || (is_android && current_cpu == "x64") || (is_android && current_cpu == "x86")) {
++if ((use_linux_config && current_cpu == "arm64" && ffmpeg_branding == "Chromium") || (use_linux_config && current_cpu == "x64" && ffmpeg_branding == "Chromium")) {
+   ffmpeg_c_sources += [
+-    "compat/strtod.c",
++    "libavcodec/h264_mp4toannexb_bsf.c",
++    "libavcodec/libopenh264.c",
++    "libavcodec/libopenh264dec.c",
+   ]
+ }
+ 
 -if ((current_cpu == "x64" && ffmpeg_branding == "Chrome") || (is_win && current_cpu == "x86" && ffmpeg_branding == "Chrome") || (use_linux_config && current_cpu == "x64" && ffmpeg_branding == "ChromeOS") || (use_linux_config && current_cpu == "x86" && ffmpeg_branding == "Chrome") || (use_linux_config && current_cpu == "x86" && ffmpeg_branding == "ChromeOS")) {
 -  ffmpeg_asm_sources += [
 -    "libavcodec/x86/aacpsdsp.asm",
@@ -675,13 +2003,62 @@ index 9aab52870..c26f6f237 100644
 -  ]
 -}
 -
- if (use_linux_config && ffmpeg_branding == "ChromeOS") {
+-if (use_linux_config && ffmpeg_branding == "ChromeOS") {
++if ((use_linux_config && current_cpu == "arm64" && ffmpeg_branding == "ChromeOS") || (use_linux_config && current_cpu == "x64" && ffmpeg_branding == "ChromeOS")) {
    ffmpeg_c_sources += [
      "libavcodec/acelp_filters.c",
-@@ -490,17 +473,6 @@ if ((is_mac && current_cpu == "arm64") || (is_win && current_cpu == "arm64") ||
+     "libavcodec/acelp_pitch_delay.c",
+@@ -424,112 +381,7 @@ if (use_linux_config && ffmpeg_branding == "ChromeOS") {
    ]
  }
  
+-if ((use_linux_config && current_cpu == "arm" && arm_use_neon) || (use_linux_config && current_cpu == "arm")) {
+-  ffmpeg_c_sources += [
+-    "libavcodec/arm/h264pred_init_arm.c",
+-    "libavcodec/arm/hpeldsp_init_arm.c",
+-    "libavcodec/arm/hpeldsp_init_armv6.c",
+-    "libavcodec/arm/videodsp_init_arm.c",
+-    "libavcodec/arm/videodsp_init_armv5te.c",
+-    "libavcodec/arm/vp3dsp_init_arm.c",
+-    "libavcodec/arm/vp8dsp_init_arm.c",
+-    "libavcodec/arm/vp8dsp_init_armv6.c",
+-  ]
+-  ffmpeg_gas_sources += [
+-    "libavcodec/arm/hpeldsp_arm.S",
+-    "libavcodec/arm/hpeldsp_armv6.S",
+-    "libavcodec/arm/videodsp_armv5te.S",
+-    "libavcodec/arm/vp8_armv6.S",
+-    "libavcodec/arm/vp8dsp_armv6.S",
+-  ]
+-}
+-
+-if ((use_linux_config && current_cpu == "mips64el") || (use_linux_config && current_cpu == "mipsel")) {
+-  ffmpeg_c_sources += [
+-    "libavcodec/mips/autorename_libavcodec_mips_videodsp_init.c",
+-    "libavcodec/mips/h264pred_init_mips.c",
+-    "libavcodec/mips/hpeldsp_init_mips.c",
+-    "libavcodec/mips/vp3dsp_init_mips.c",
+-    "libavcodec/mips/vp8dsp_init_mips.c",
+-    "libavutil/mips/cpu.c",
+-    "libavutil/mips/float_dsp_mips.c",
+-  ]
+-}
+-
+-if ((is_mac && current_cpu == "arm64") || (is_win && current_cpu == "arm64") || (use_linux_config && current_cpu == "arm64")) {
+-  ffmpeg_c_sources += [
+-    "libavcodec/aarch64/h264pred_init.c",
+-    "libavcodec/aarch64/hpeldsp_init_aarch64.c",
+-    "libavcodec/aarch64/videodsp_init.c",
+-    "libavcodec/aarch64/vp8dsp_init_aarch64.c",
+-  ]
+-  ffmpeg_gas_sources += [
+-    "libavcodec/aarch64/autorename_libavcodec_aarch64_h264pred_neon.S",
+-    "libavcodec/aarch64/autorename_libavcodec_aarch64_hpeldsp_neon.S",
+-    "libavcodec/aarch64/autorename_libavcodec_aarch64_vp8dsp_neon.S",
+-    "libavcodec/aarch64/videodsp.S",
+-  ]
+-}
+-
 -if ((current_cpu == "arm64" && ffmpeg_branding == "Chrome") || (use_linux_config && current_cpu == "arm64" && ffmpeg_branding == "ChromeOS")) {
 -  ffmpeg_c_sources += [
 -    "libavcodec/aarch64/aacpsdsp_init_aarch64.c",
@@ -693,13 +2070,20 @@ index 9aab52870..c26f6f237 100644
 -  ]
 -}
 -
- if ((is_mac && current_cpu == "arm64" && ffmpeg_branding == "Chrome") || (is_win && current_cpu == "arm64" && ffmpeg_branding == "Chrome") || (use_linux_config && current_cpu == "arm64" && ffmpeg_branding == "Chrome") || (use_linux_config && current_cpu == "arm64" && ffmpeg_branding == "ChromeOS")) {
-   ffmpeg_c_sources += [
-     "libavcodec/aarch64/h264chroma_init_aarch64.c",
-@@ -515,13 +487,6 @@ if ((is_mac && current_cpu == "arm64" && ffmpeg_branding == "Chrome") || (is_win
-   ]
- }
- 
+-if ((is_mac && current_cpu == "arm64" && ffmpeg_branding == "Chrome") || (is_win && current_cpu == "arm64" && ffmpeg_branding == "Chrome") || (use_linux_config && current_cpu == "arm64" && ffmpeg_branding == "Chrome") || (use_linux_config && current_cpu == "arm64" && ffmpeg_branding == "ChromeOS")) {
+-  ffmpeg_c_sources += [
+-    "libavcodec/aarch64/h264chroma_init_aarch64.c",
+-    "libavcodec/aarch64/h264dsp_init_aarch64.c",
+-    "libavcodec/aarch64/h264qpel_init_aarch64.c",
+-  ]
+-  ffmpeg_gas_sources += [
+-    "libavcodec/aarch64/autorename_libavcodec_aarch64_h264cmc_neon.S",
+-    "libavcodec/aarch64/autorename_libavcodec_aarch64_h264dsp_neon.S",
+-    "libavcodec/aarch64/autorename_libavcodec_aarch64_h264idct_neon.S",
+-    "libavcodec/aarch64/autorename_libavcodec_aarch64_h264qpel_neon.S",
+-  ]
+-}
+-
 -if ((is_android && current_cpu == "arm" && arm_use_neon && ffmpeg_branding == "Chrome") || (use_linux_config && current_cpu == "arm" && arm_use_neon && ffmpeg_branding == "Chrome") || (use_linux_config && current_cpu == "arm" && arm_use_neon && ffmpeg_branding == "ChromeOS") || (use_linux_config && current_cpu == "arm" && ffmpeg_branding == "Chrome") || (use_linux_config && current_cpu == "arm" && ffmpeg_branding == "ChromeOS")) {
 -  ffmpeg_c_sources += [
 -    "libavcodec/arm/aacpsdsp_init_arm.c",
@@ -707,13 +2091,66 @@ index 9aab52870..c26f6f237 100644
 -  ]
 -}
 -
- if ((is_android && current_cpu == "arm" && arm_use_neon) || (use_linux_config && current_cpu == "arm" && arm_use_neon)) {
+-if ((is_android && current_cpu == "arm" && arm_use_neon) || (use_linux_config && current_cpu == "arm" && arm_use_neon)) {
+-  ffmpeg_c_sources += [
+-    "libavutil/arm/float_dsp_init_neon.c",
+-  ]
+-  ffmpeg_gas_sources += [
+-    "libavcodec/arm/fft_fixed_neon.S",
+-    "libavcodec/arm/fft_neon.S",
+-    "libavcodec/arm/mdct_fixed_neon.S",
+-    "libavcodec/arm/mdct_neon.S",
+-    "libavcodec/arm/rdft_neon.S",
+-    "libavcodec/arm/vorbisdsp_neon.S",
+-    "libavutil/arm/float_dsp_neon.S",
+-  ]
+-}
+-
+-if ((use_linux_config && current_cpu == "arm" && arm_use_neon && ffmpeg_branding == "Chrome") || (use_linux_config && current_cpu == "arm" && arm_use_neon && ffmpeg_branding == "ChromeOS") || (use_linux_config && current_cpu == "arm" && ffmpeg_branding == "Chrome") || (use_linux_config && current_cpu == "arm" && ffmpeg_branding == "ChromeOS")) {
+-  ffmpeg_c_sources += [
+-    "libavcodec/arm/h264chroma_init_arm.c",
+-    "libavcodec/arm/h264dsp_init_arm.c",
+-    "libavcodec/arm/h264qpel_init_arm.c",
+-  ]
+-  ffmpeg_gas_sources += [
+-    "libavcodec/arm/startcode_armv6.S",
+-  ]
+-}
+-
+-if ((is_mac && current_cpu == "x64" && ffmpeg_branding == "Chrome") || (is_win && current_cpu == "x64" && ffmpeg_branding == "Chrome") || (is_win && current_cpu == "x86" && ffmpeg_branding == "Chrome") || (use_linux_config && current_cpu == "x64" && ffmpeg_branding == "Chrome") || (use_linux_config && current_cpu == "x64" && ffmpeg_branding == "ChromeOS") || (use_linux_config && current_cpu == "x86" && ffmpeg_branding == "Chrome") || (use_linux_config && current_cpu == "x86" && ffmpeg_branding == "ChromeOS")) {
++if ((use_linux_config && current_cpu == "x64" && ffmpeg_branding == "Chrome") || (use_linux_config && current_cpu == "x64" && ffmpeg_branding == "ChromeOS")) {
    ffmpeg_c_sources += [
-     "libavutil/arm/float_dsp_init_neon.c",
-@@ -597,13 +562,6 @@ if (use_linux_config && current_cpu == "arm" && arm_use_neon) {
+     "libavcodec/x86/h264_qpel.c",
+     "libavcodec/x86/h264chroma_init.c",
+@@ -550,98 +402,19 @@ if ((is_mac && current_cpu == "x64" && ffmpeg_branding == "Chrome") || (is_win &
    ]
  }
  
+-if ((use_linux_config && current_cpu == "mips64el" && ffmpeg_branding == "Chrome") || (use_linux_config && current_cpu == "mips64el" && ffmpeg_branding == "ChromeOS") || (use_linux_config && current_cpu == "mipsel" && ffmpeg_branding == "Chrome") || (use_linux_config && current_cpu == "mipsel" && ffmpeg_branding == "ChromeOS")) {
+-  ffmpeg_c_sources += [
+-    "libavcodec/mips/aacdec_mips.c",
+-    "libavcodec/mips/aacpsdsp_mips.c",
+-    "libavcodec/mips/aacsbr_mips.c",
+-    "libavcodec/mips/h264chroma_init_mips.c",
+-    "libavcodec/mips/h264dsp_init_mips.c",
+-    "libavcodec/mips/h264qpel_init_mips.c",
+-    "libavcodec/mips/sbrdsp_mips.c",
+-  ]
+-}
+-
+-if (use_linux_config && current_cpu == "arm" && arm_use_neon) {
+-  ffmpeg_c_sources += [
+-    "libavcodec/arm/hpeldsp_init_neon.c",
+-    "libavcodec/arm/vp8dsp_init_neon.c",
+-  ]
+-  ffmpeg_gas_sources += [
+-    "libavcodec/arm/h264pred_neon.S",
+-    "libavcodec/arm/hpeldsp_neon.S",
+-    "libavcodec/arm/vp3dsp_neon.S",
+-    "libavcodec/arm/vp8dsp_neon.S",
+-  ]
+-}
+-
 -if ((is_android && current_cpu == "arm" && arm_use_neon && ffmpeg_branding == "Chrome") || (use_linux_config && current_cpu == "arm" && arm_use_neon && ffmpeg_branding == "Chrome") || (use_linux_config && current_cpu == "arm" && arm_use_neon && ffmpeg_branding == "ChromeOS")) {
 -  ffmpeg_gas_sources += [
 -    "libavcodec/arm/aacpsdsp_neon.S",
@@ -721,9 +2158,146 @@ index 9aab52870..c26f6f237 100644
 -  ]
 -}
 -
- if ((use_linux_config && current_cpu == "arm" && arm_use_neon && ffmpeg_branding == "ChromeOS") || (use_linux_config && current_cpu == "arm" && ffmpeg_branding == "ChromeOS")) {
+-if ((use_linux_config && current_cpu == "arm" && arm_use_neon && ffmpeg_branding == "ChromeOS") || (use_linux_config && current_cpu == "arm" && ffmpeg_branding == "ChromeOS")) {
+-  ffmpeg_c_sources += [
+-    "libavcodec/arm/blockdsp_init_arm.c",
+-    "libavcodec/arm/idctdsp_init_arm.c",
+-    "libavcodec/arm/idctdsp_init_armv5te.c",
+-    "libavcodec/arm/idctdsp_init_armv6.c",
+-    "libavcodec/arm/me_cmp_init_arm.c",
+-    "libavcodec/arm/mpegvideo_arm.c",
+-    "libavcodec/arm/mpegvideo_armv5te.c",
+-    "libavcodec/arm/pixblockdsp_init_arm.c",
+-  ]
+-  ffmpeg_gas_sources += [
+-    "libavcodec/arm/idctdsp_arm.S",
+-    "libavcodec/arm/idctdsp_armv6.S",
+-    "libavcodec/arm/jrevdct_arm.S",
+-    "libavcodec/arm/me_cmp_armv6.S",
+-    "libavcodec/arm/mpegvideo_armv5te_s.S",
+-    "libavcodec/arm/pixblockdsp_armv6.S",
+-    "libavcodec/arm/simple_idct_arm.S",
+-    "libavcodec/arm/simple_idct_armv5te.S",
+-    "libavcodec/arm/simple_idct_armv6.S",
+-  ]
+-}
+-
+-if ((use_linux_config && current_cpu == "arm" && arm_use_neon && ffmpeg_branding == "ChromeOS") || (use_linux_config && current_cpu == "arm64" && ffmpeg_branding == "ChromeOS")) {
++if (use_linux_config && current_cpu == "arm64" && ffmpeg_branding == "ChromeOS") {
    ffmpeg_c_sources += [
-     "libavcodec/arm/blockdsp_init_arm.c",
++    "libavcodec/aarch64/idctdsp_init_aarch64.c",
++    "libavcodec/aarch64/pixblockdsp_init_aarch64.c",
+     "libavcodec/neon/autorename_libavcodec_neon_mpegvideo.c",
+   ]
+-}
+-
+-if ((use_linux_config && current_cpu == "arm" && arm_use_neon && ffmpeg_branding == "Chrome") || (use_linux_config && current_cpu == "arm" && arm_use_neon && ffmpeg_branding == "ChromeOS")) {
+   ffmpeg_gas_sources += [
+-    "libavcodec/arm/h264cmc_neon.S",
+-    "libavcodec/arm/h264dsp_neon.S",
+-    "libavcodec/arm/h264idct_neon.S",
+-    "libavcodec/arm/h264qpel_neon.S",
+-  ]
+-}
+-
+-if (use_linux_config && current_cpu == "mips64el") {
+-  ffmpeg_c_sources += [
+-    "libavcodec/mips/fft_mips.c",
+-    "libavcodec/mips/mpegaudiodsp_mips_float.c",
++    "libavcodec/aarch64/pixblockdsp_neon.S",
++    "libavcodec/aarch64/simple_idct_neon.S",
+   ]
+ }
+ 
+-if ((use_linux_config && current_cpu == "mips64el" && ffmpeg_branding == "ChromeOS") || (use_linux_config && current_cpu == "mipsel" && ffmpeg_branding == "ChromeOS")) {
+-  ffmpeg_c_sources += [
+-    "libavcodec/mips/blockdsp_init_mips.c",
+-    "libavcodec/mips/h263dsp_init_mips.c",
+-    "libavcodec/mips/idctdsp_init_mips.c",
+-    "libavcodec/mips/me_cmp_init_mips.c",
+-    "libavcodec/mips/mpegvideo_init_mips.c",
+-    "libavcodec/mips/pixblockdsp_init_mips.c",
+-    "libavcodec/mips/qpeldsp_init_mips.c",
+-    "libavcodec/mips/xvididct_init_mips.c",
+-  ]
+-}
+-
+-if ((use_linux_config && current_cpu == "x64" && ffmpeg_branding == "ChromeOS") || (use_linux_config && current_cpu == "x86" && ffmpeg_branding == "ChromeOS")) {
++if (use_linux_config && current_cpu == "x64" && ffmpeg_branding == "ChromeOS") {
+   ffmpeg_c_sources += [
+     "libavcodec/x86/blockdsp_init.c",
+     "libavcodec/x86/fdct.c",
+@@ -668,38 +441,3 @@ if ((use_linux_config && current_cpu == "x64" && ffmpeg_branding == "ChromeOS")
+   ]
+ }
+ 
+-if (use_linux_config && current_cpu == "arm64" && ffmpeg_branding == "ChromeOS") {
+-  ffmpeg_c_sources += [
+-    "libavcodec/aarch64/idctdsp_init_aarch64.c",
+-    "libavcodec/aarch64/pixblockdsp_init_aarch64.c",
+-  ]
+-  ffmpeg_gas_sources += [
+-    "libavcodec/aarch64/autorename_libavcodec_aarch64_pixblockdsp_neon.S",
+-    "libavcodec/aarch64/autorename_libavcodec_aarch64_simple_idct_neon.S",
+-  ]
+-}
+-
+-if (use_linux_config && current_cpu == "arm" && arm_use_neon && ffmpeg_branding == "ChromeOS") {
+-  ffmpeg_c_sources += [
+-    "libavcodec/arm/blockdsp_init_neon.c",
+-    "libavcodec/arm/idctdsp_init_neon.c",
+-  ]
+-  ffmpeg_gas_sources += [
+-    "libavcodec/arm/blockdsp_neon.S",
+-    "libavcodec/arm/idctdsp_neon.S",
+-    "libavcodec/arm/mpegvideo_neon.S",
+-    "libavcodec/arm/pixblockdsp_neon.S",
+-    "libavcodec/arm/simple_idct_neon.S",
+-  ]
+-}
+-
+-if (use_linux_config && current_cpu == "mips64el" && ffmpeg_branding == "ChromeOS") {
+-  ffmpeg_c_sources += [
+-    "libavcodec/mips/acelp_filters_mips.c",
+-    "libavcodec/mips/acelp_vectors_mips.c",
+-    "libavcodec/mips/amrwbdec_mips.c",
+-    "libavcodec/mips/celp_filters_mips.c",
+-    "libavcodec/mips/celp_math_mips.c",
+-  ]
+-}
+-
+diff --git a/third_party/ffmpeg/libavcodec/aarch64/autorename_libavcodec_aarch64_videodsp.S b/third_party/ffmpeg/libavcodec/aarch64/autorename_libavcodec_aarch64_videodsp.S
+new file mode 100644
+index 0000000000..46e896c206
+--- /dev/null
++++ b/third_party/ffmpeg/libavcodec/aarch64/autorename_libavcodec_aarch64_videodsp.S
+@@ -0,0 +1,2 @@
++// File automatically generated. See crbug.com/495833.
++#include "videodsp.S"
+diff --git a/third_party/ffmpeg/libavcodec/aarch64/autorename_libavcodec_aarch64_videodsp_init.c b/third_party/ffmpeg/libavcodec/aarch64/autorename_libavcodec_aarch64_videodsp_init.c
+new file mode 100644
+index 0000000000..f49bf19a7b
+--- /dev/null
++++ b/third_party/ffmpeg/libavcodec/aarch64/autorename_libavcodec_aarch64_videodsp_init.c
+@@ -0,0 +1,2 @@
++// File automatically generated. See crbug.com/495833.
++#include "videodsp_init.c"
+diff --git a/third_party/ffmpeg/libavcodec/aarch64/autorename_libavcodec_aarch64_vorbisdsp_init.c b/third_party/ffmpeg/libavcodec/aarch64/autorename_libavcodec_aarch64_vorbisdsp_init.c
+new file mode 100644
+index 0000000000..e1b3dc8deb
+--- /dev/null
++++ b/third_party/ffmpeg/libavcodec/aarch64/autorename_libavcodec_aarch64_vorbisdsp_init.c
+@@ -0,0 +1,2 @@
++// File automatically generated. See crbug.com/495833.
++#include "vorbisdsp_init.c"
+diff --git a/third_party/ffmpeg/libavutil/aarch64/autorename_libavutil_aarch64_float_dsp_init.c b/third_party/ffmpeg/libavutil/aarch64/autorename_libavutil_aarch64_float_dsp_init.c
+new file mode 100644
+index 0000000000..2982badd57
+--- /dev/null
++++ b/third_party/ffmpeg/libavutil/aarch64/autorename_libavutil_aarch64_float_dsp_init.c
+@@ -0,0 +1,2 @@
++// File automatically generated. See crbug.com/495833.
++#include "float_dsp_init.c"
 -- 
-2.26.2
+2.29.2
 

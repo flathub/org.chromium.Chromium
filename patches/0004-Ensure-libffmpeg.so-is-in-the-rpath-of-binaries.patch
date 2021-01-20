@@ -1,14 +1,14 @@
-From b49dcc4badb5411922f0f39115baaedf1dffc123 Mon Sep 17 00:00:00 2001
+From 6b554ea6aaab2945f86d0a3b3fd4b5165087d817 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Thu, 1 Oct 2020 16:39:00 -0500
-Subject: [PATCH 5/5] Ensure libffmpeg.so is in the rpath of binaries
+Subject: [PATCH 4/4] Ensure libffmpeg.so is in the rpath of binaries
 
 ---
  third_party/ffmpeg/BUILD.gn | 6 ++++++
  1 file changed, 6 insertions(+)
 
 diff --git a/third_party/ffmpeg/BUILD.gn b/third_party/ffmpeg/BUILD.gn
-index 337e45cb3..305f10d48 100755
+index 337e45cb3f..305f10d487 100755
 --- a/third_party/ffmpeg/BUILD.gn
 +++ b/third_party/ffmpeg/BUILD.gn
 @@ -463,6 +463,12 @@ if (is_component_ffmpeg) {
@@ -25,5 +25,5 @@ index 337e45cb3..305f10d48 100755
  } else {
    source_set("ffmpeg") {
 -- 
-2.26.2
+2.29.2
 

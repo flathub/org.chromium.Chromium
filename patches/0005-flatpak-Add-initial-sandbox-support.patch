@@ -1,7 +1,7 @@
-From d3959eb4525af4226a283e3199d6fbe8f5f8f3b5 Mon Sep 17 00:00:00 2001
+From caed1db3433905d06f95b6a09bf0bc3d62e0cddd Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Tue, 17 Mar 2020 13:18:27 -0500
-Subject: [PATCH 06/22] flatpak: Add initial sandbox support
+Subject: [PATCH 05/23] flatpak: Add initial sandbox support
 
 ---
  .gitignore                                    |   1 +
@@ -29,10 +29,10 @@ Subject: [PATCH 06/22] flatpak: Add initial sandbox support
  create mode 100644 sandbox/linux/services/flatpak_sandbox.h
 
 diff --git a/.gitignore b/.gitignore
-index 79990a08deeb4..adf8d0e89b997 100644
+index 076813f6027ba..27fa9ac46855c 100644
 --- a/.gitignore
 +++ b/.gitignore
-@@ -60,6 +60,7 @@ v8.log
+@@ -62,6 +62,7 @@ v8.log
  vs-chromium-project.txt
  /.clangd/
  /.clangd-index/
@@ -41,7 +41,7 @@ index 79990a08deeb4..adf8d0e89b997 100644
  /.externalToolBuilders/
  /.settings/
 diff --git a/base/threading/thread_restrictions.h b/base/threading/thread_restrictions.h
-index c6965dc89fe37..f8acdf5ef5326 100644
+index ac19eaecc4cc3..853e82826009f 100644
 --- a/base/threading/thread_restrictions.h
 +++ b/base/threading/thread_restrictions.h
 @@ -272,6 +272,10 @@ namespace resource_coordinator {
@@ -63,14 +63,14 @@ index c6965dc89fe37..f8acdf5ef5326 100644
    friend class web::WebSubThread;
    friend class weblayer::BrowserContextImpl;
    friend class weblayer::ContentBrowserClientImpl;
-@@ -467,6 +472,7 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitives {
+@@ -468,6 +473,7 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitives {
    friend class rlz_lib::FinancialPing;
    friend class shell_integration_linux::
        LaunchXdgUtilityScopedAllowBaseSyncPrimitives;
 +  friend class sandbox::FlatpakSandbox;
    friend class syncer::HttpBridge;
    friend class syncer::GetLocalChangesRequest;
-   friend class syncer::ModelSafeWorker;
+   friend class webrtc::DesktopConfigurationMonitor;
 diff --git a/chrome/browser/resources/sandbox_internals/sandbox_internals.js b/chrome/browser/resources/sandbox_internals/sandbox_internals.js
 index dbee2331bc411..58b4b5373a2ad 100644
 --- a/chrome/browser/resources/sandbox_internals/sandbox_internals.js
@@ -278,7 +278,7 @@ index 56e7fae0b8f49..66a9661d69888 100644
    }
    opening_channel_ = false;
 diff --git a/content/zygote/zygote_linux.cc b/content/zygote/zygote_linux.cc
-index 95d5a82c25082..3cf22b2efa7b4 100644
+index b6d8e5a29c55e..ded8da1dcfbab 100644
 --- a/content/zygote/zygote_linux.cc
 +++ b/content/zygote/zygote_linux.cc
 @@ -115,7 +115,7 @@ bool Zygote::ProcessRequests() {
@@ -315,7 +315,7 @@ index d186e71979700..f86e0257821d4 100644
    // ---------------------------------------------------------------------------
    // Requests from the browser...
 diff --git a/content/zygote/zygote_main_linux.cc b/content/zygote/zygote_main_linux.cc
-index 07a6eeab44fa2..3596e8793c38a 100644
+index 82923d4a85df3..cf4765841786a 100644
 --- a/content/zygote/zygote_main_linux.cc
 +++ b/content/zygote/zygote_main_linux.cc
 @@ -34,6 +34,7 @@
@@ -378,7 +378,7 @@ index 07a6eeab44fa2..3596e8793c38a 100644
                  base::GlobalDescriptors::Descriptor(
                      static_cast<uint32_t>(kSandboxIPCChannel), GetSandboxFD()));
 diff --git a/sandbox/linux/BUILD.gn b/sandbox/linux/BUILD.gn
-index 4fd639fd0fa3f..0957bf410d833 100644
+index e9a94b46125e3..770ce3b6edfea 100644
 --- a/sandbox/linux/BUILD.gn
 +++ b/sandbox/linux/BUILD.gn
 @@ -329,6 +329,10 @@ if (is_linux || is_chromeos) {
@@ -1295,10 +1295,10 @@ index 4b32dc48c27cd..fb6f41e7ed822 100644
    std::unique_ptr<SetuidSandboxClient> setuid_sandbox_client_;
  #if BUILDFLAG(USING_SANITIZER)
 diff --git a/services/service_manager/service_process_launcher.cc b/services/service_manager/service_process_launcher.cc
-index c424df90cea69..4c63253a3d79d 100644
+index 6424ec699886b..c8e0502b436f6 100644
 --- a/services/service_manager/service_process_launcher.cc
 +++ b/services/service_manager/service_process_launcher.cc
-@@ -37,6 +37,7 @@
+@@ -38,6 +38,7 @@
  #include "services/service_manager/switches.h"
  
  #if defined(OS_LINUX) || defined(OS_CHROMEOS)
@@ -1306,7 +1306,7 @@ index c424df90cea69..4c63253a3d79d 100644
  #include "sandbox/linux/services/namespace_sandbox.h"
  #endif
  
-@@ -270,8 +271,15 @@ void ServiceProcessLauncher::ProcessState::StopInBackground() {
+@@ -271,8 +272,15 @@ void ServiceProcessLauncher::ProcessState::StopInBackground() {
      return;
  
    int rv = -1;
@@ -1325,5 +1325,5 @@ index c424df90cea69..4c63253a3d79d 100644
  }
  
 -- 
-2.26.2
+2.29.2
 
