@@ -1,7 +1,7 @@
-From 16f011ddfe5b6b137f49e7dc599cc631f25f5f58 Mon Sep 17 00:00:00 2001
+From fc9d68dfb49f2b0f4ef3a6931f9988c985b089e6 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Wed, 11 Nov 2020 16:54:18 -0600
-Subject: [PATCH 17/22] [webusb] Properly handle lack of platform support
+Subject: [PATCH 16/23] [webusb] Properly handle lack of platform support
 
 This avoids crashes and infinite device service startup loops when the
 platform does not have a USB service, which can occur on builds without
@@ -24,10 +24,10 @@ index 4bc06f664534c..0c8844b73985c 100644
  }
  
 diff --git a/services/device/usb/mojo/device_manager_impl.cc b/services/device/usb/mojo/device_manager_impl.cc
-index f388efa43223d..02b382c6923c0 100644
+index 950ab9c0744ec..35b5c1e5cbe35 100644
 --- a/services/device/usb/mojo/device_manager_impl.cc
 +++ b/services/device/usb/mojo/device_manager_impl.cc
-@@ -45,29 +45,40 @@ DeviceManagerImpl::~DeviceManagerImpl() = default;
+@@ -46,23 +46,31 @@ DeviceManagerImpl::~DeviceManagerImpl() = default;
  
  void DeviceManagerImpl::AddReceiver(
      mojo::PendingReceiver<mojom::UsbDeviceManager> receiver) {
@@ -67,9 +67,10 @@ index f388efa43223d..02b382c6923c0 100644
  }
  
  void DeviceManagerImpl::GetDevice(
-     const std::string& guid,
+@@ -223,6 +231,9 @@ void DeviceManagerImpl::GetDeviceInternal(
      mojo::PendingReceiver<mojom::UsbDevice> device_receiver,
-     mojo::PendingRemote<mojom::UsbDeviceClient> device_client) {
+     mojo::PendingRemote<mojom::UsbDeviceClient> device_client,
+     bool allow_security_key_requests) {
 +  if (!usb_service_)
 +    return;
 +
@@ -77,5 +78,5 @@ index f388efa43223d..02b382c6923c0 100644
    if (!device)
      return;
 -- 
-2.26.2
+2.29.2
 

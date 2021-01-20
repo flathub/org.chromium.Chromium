@@ -1,7 +1,7 @@
-From fa387da2f416667b14de57686ab55489d3325677 Mon Sep 17 00:00:00 2001
+From 63b2a8f99ce783ee11dd9c73dd61da5dd95a4e25 Mon Sep 17 00:00:00 2001
 From: Mario Sanchez Prada <mario@endlessm.com>
 Date: Thu, 28 Jan 2016 13:53:08 +0000
-Subject: [PATCH 12/22] memory: Enable the tab discards feature
+Subject: [PATCH 11/23] memory: Enable the tab discards feature
 
 This allows manually discarding tabs from chrome://discards as well
 as automatic tab discards once a certain level of "memory pressure"
@@ -13,7 +13,7 @@ is reached, using Endless's implementation of MemoryPressureMonitor.
  1 file changed, 2 insertions(+), 1 deletion(-)
 
 diff --git a/chrome/browser/resource_coordinator/tab_manager.cc b/chrome/browser/resource_coordinator/tab_manager.cc
-index a85f262655796..b0371972d8532 100644
+index b679c643687c4..13b0e9b350684 100644
 --- a/chrome/browser/resource_coordinator/tab_manager.cc
 +++ b/chrome/browser/resource_coordinator/tab_manager.cc
 @@ -166,7 +166,8 @@ void TabManager::Start() {
@@ -27,5 +27,5 @@ index a85f262655796..b0371972d8532 100644
    // PerformanceManager.
    if (!base::FeatureList::IsEnabled(
 -- 
-2.26.2
+2.29.2
 

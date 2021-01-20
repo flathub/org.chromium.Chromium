@@ -1,7 +1,7 @@
-From 6f29fffce906db9ace522f6c84b540f80ea8b5d9 Mon Sep 17 00:00:00 2001
+From 55eea4f01b10f274468216dcc5d0c03135a04c16 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Thu, 19 Nov 2020 16:20:05 -0600
-Subject: [PATCH 22/22] Enable new-dtags on non-component builds
+Subject: [PATCH 21/23] Enable new-dtags on non-component builds
 
 ---
  build/config/gcc/BUILD.gn | 23 ++++++++++++++++-------
@@ -42,5 +42,5 @@ index 154b259b5faea..e8be9ca824ca7 100644
  }
  
 -- 
-2.26.2
+2.29.2
 

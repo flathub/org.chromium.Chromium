@@ -182,8 +182,8 @@ modules:
       - ./install.sh
     sources:
       - type: archive
-        url: https://commondatastorage.googleapis.com/chromium-browser-official/chromium-87.0.4280.141.tar.xz
-        sha256: 147591d7fc21e1a173701d28bbf35baddb91e64dd96ec16d8eee9a5113403375
+        url: https://commondatastorage.googleapis.com/chromium-browser-official/chromium-88.0.4324.96.tar.xz
+        sha256: 8995c5bb28559579f3bed51841420253637f912c425908fe5aa389ce40e9c79f
         x-checker-data:
           type: anitya
           project-id: 13344
@@ -192,27 +192,27 @@ modules:
         paths:
           - patches/0001-ffmpeg-Use-royalty-free-libfdk-aac-for-AAC-playback.patch
           - patches/0002-ffmpeg-Handle-transient-decode-errors-arising-from-l.patch
-          - patches/0003-ffmpeg-Enable-support-for-using-OpenH264-for-H264-pl.patch
-          - patches/0004-Use-system-wide-node.patch
-          - patches/0005-Ensure-libffmpeg.so-is-in-the-rpath-of-binaries.patch
-          - patches/0006-flatpak-Add-initial-sandbox-support.patch
-          - patches/0007-flatpak-Expose-Widevine-into-the-sandbox.patch
-          - patches/0008-flatpak-Adjust-paths-for-the-sandbox.patch
-          - patches/0009-Import-chromium-71.0.3578.98-widevine-r3.patch.patch
-          - patches/0010-Enable-Chromecast-by-default.patch
-          - patches/0011-x11-Set-_NET_WM_BYPASS_COMPOSITOR-for-fullscreen.patch
-          - patches/0012-memory-Enable-the-tab-discards-feature.patch
-          - patches/0013-Enable-VAVDA-VAVEA-and-VAJDA-on-linux-with-VAAPI-onl.patch
-          - patches/0014-ffmpeg-Don-t-lie-about-AAC-and-H264-decoders-when-no.patch
-          - patches/0015-Remove-the-ability-to-create-desktop-shortcuts.patch
-          - patches/0016-webhid-Properly-handle-lack-of-platform-support.patch
-          - patches/0017-webusb-Properly-handle-lack-of-platform-support.patch
-          - patches/0018-Use-CHROME_WRAPPER-as-the-executable-on-restart.patch
-          - patches/0019-Add-support-for-the-XDG-file-chooser-portal.patch
-          - patches/0020-Add-OpenURI-portal-support-for-opening-directories.patch
-          - patches/0021-Remove-references-to-enable-dse-memoryssa.patch
-          - patches/0022-Enable-new-dtags-on-non-component-builds.patch
-          - patches/0023-Add-support-for-respecting-system-proxy-settings-whe.patch
+          - patches/0003-Use-system-wide-node.patch
+          - patches/0004-Ensure-libffmpeg.so-is-in-the-rpath-of-binaries.patch
+          - patches/0005-flatpak-Add-initial-sandbox-support.patch
+          - patches/0006-flatpak-Expose-Widevine-into-the-sandbox.patch
+          - patches/0007-flatpak-Adjust-paths-for-the-sandbox.patch
+          - patches/0008-Import-chromium-71.0.3578.98-widevine-r3.patch.patch
+          - patches/0009-Enable-Chromecast-by-default.patch
+          - patches/0010-x11-Set-_NET_WM_BYPASS_COMPOSITOR-for-fullscreen.patch
+          - patches/0011-memory-Enable-the-tab-discards-feature.patch
+          - patches/0012-Enable-accelerated-mjpeg-decode-on-Linux.patch
+          - patches/0013-ffmpeg-Don-t-lie-about-AAC-and-H264-decoders-when-no.patch
+          - patches/0014-Remove-the-ability-to-create-desktop-shortcuts.patch
+          - patches/0015-webhid-Properly-handle-lack-of-platform-support.patch
+          - patches/0016-webusb-Properly-handle-lack-of-platform-support.patch
+          - patches/0017-Use-CHROME_WRAPPER-as-the-executable-on-restart.patch
+          - patches/0018-Add-support-for-the-XDG-file-chooser-portal.patch
+          - patches/0019-Add-OpenURI-portal-support-for-opening-directories.patch
+          - patches/0020-Remove-references-to-enable-dse-memoryssa.patch
+          - patches/0021-Enable-new-dtags-on-non-component-builds.patch
+          - patches/0022-Add-support-for-respecting-system-proxy-settings-whe.patch
+          - patches/0023-Revert-Reland-build-In-LTO-links-run-just-one-link-a.patch
       - type: file
         path: org.chromium.Chromium.desktop
       - type: file

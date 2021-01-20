@@ -1,4 +1,36 @@
-Your Flatpak version does not support the expose-pids flag,
-which means that Chromium is unable to run. This generally
-happens if your distro's bubblewrap installation is setuid
-instead of using user namespaces.
+Your Flatpak version does not support a feature needed for this Chromium Flatpak
+to run. This generally happens when your distribution has unprivileged user
+namespaces disabled.
+
+========== FOR DEBIAN USERS ==========
+
+If the distro you are currently using is Debian Buster (10) or Sid, then this
+has already been fixed in the latest system updates. If you are using Buster,
+install the 'bubblewrap' and 'flatpak' from the buster-backports repository;
+guidance on setting up backports is available at the following URL:
+
+https://backports.debian.org/Instructions/
+
+For older Debian versions or other Debian-based distros, you can run the
+following commands as root (you can enter a root shell via 'sudo -i'):
+
+dpkg-statoverride --update --add root root 0750 /usr/bin/bwrap
+echo kernel.unprivileged_userns_clone=1 > /etc/sysctl.d/50-bubblewrap.conf
+sudo sysctl -w kernel.unprivileged_userns_clone=1
+
+========== FOR OTHER DISTROS =========
+
+If you installed a "hardened" security kernel, these also usually disable
+unprivileged user namespaces. They can be re-enabled by running the following
+as root (you can enter a root shell via 'sudo -i'):
+
+echo kernel.unprivileged_userns_clone=1 > /etc/sysctl.d/50-bubblewrap.conf
+sudo sysctl -w kernel.unprivileged_userns_clone=1
+
+If 'ls -l /usr/bin/bwrap' contains 'rws', then bwrap is also setuid. This can be
+removed, if present, via:
+
+sudo chmod u-s /usr/bin/bwrap
+
+However, note that the permissions may be overridden on the next update of your
+distro's bubblewrap package.

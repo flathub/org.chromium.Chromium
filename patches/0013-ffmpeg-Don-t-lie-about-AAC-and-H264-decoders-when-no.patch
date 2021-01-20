@@ -1,7 +1,7 @@
-From 694308d32ea8677678cb014e50346c8726be1dbe Mon Sep 17 00:00:00 2001
+From 0e106d5e5bdbf9d92e59a8f187990a696f036491 Mon Sep 17 00:00:00 2001
 From: Mario Sanchez Prada <mario@endlessm.com>
 Date: Tue, 25 Oct 2016 16:57:00 +0000
-Subject: [PATCH 14/22] ffmpeg: Don't lie about AAC and H264 decoders when not
+Subject: [PATCH 13/23] ffmpeg: Don't lie about AAC and H264 decoders when not
  available
 
 On Endless OS, we always build with USE_PROPRIETARY_CODECS defined
@@ -31,10 +31,10 @@ https://phabricator.endlessm.com/T30300
  2 files changed, 83 insertions(+), 7 deletions(-)
 
 diff --git a/media/base/BUILD.gn b/media/base/BUILD.gn
-index 676eb65140516..2ee265868bf3a 100644
+index f3ec9d91fd9f0..1b52bc734a626 100644
 --- a/media/base/BUILD.gn
 +++ b/media/base/BUILD.gn
-@@ -381,6 +381,10 @@ source_set("base") {
+@@ -386,6 +386,10 @@ source_set("base") {
        "//third_party/ffmpeg",
        "//third_party/ffmpeg:ffmpeg_features",
      ]
@@ -186,5 +186,5 @@ index 39d62476358b4..533154f4b45fb 100644
    CodecSet video_3gpp_codecs(aac);
    video_3gpp_codecs.emplace(H264);
 -- 
-2.26.2
+2.29.2
 
