@@ -14,7 +14,7 @@ https://backports.debian.org/Instructions/
 For older Debian versions or other Debian-based distros, you can run the
 following commands as root (you can enter a root shell via 'sudo -i'):
 
-dpkg-statoverride --update --add root root 0750 /usr/bin/bwrap
+dpkg-statoverride --update --add root root 0755 /usr/bin/bwrap
 echo kernel.unprivileged_userns_clone=1 > /etc/sysctl.d/50-bubblewrap.conf
 sudo sysctl -w kernel.unprivileged_userns_clone=1
 
