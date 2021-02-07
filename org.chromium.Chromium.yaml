@@ -86,6 +86,7 @@ modules:
         url: https://gitlab.gnome.org/GNOME/gtk.git
         tag: 3.24.23
 
+        commit: 016e8c55ab924c9ef4d32c8cb06253b1dc1be60d
   - name: gtk-settings
     buildsystem: simple
     build-commands:
@@ -166,6 +167,7 @@ modules:
         url: https://gitlab.freedesktop.org/pipewire/pipewire.git
         tag: 0.2.7
 
+        commit: 14c11c0fe4d366bad4cfecdee97b6652ff9ed63d
   - name: chromium
     buildsystem: simple
     build-options:
