@@ -184,8 +184,8 @@ modules:
       - ./install.sh
     sources:
       - type: archive
-        url: https://commondatastorage.googleapis.com/chromium-browser-official/chromium-88.0.4324.182.tar.xz
-        sha256: 30411fc3ec2d33df4c5cad41f21affa3823c80f7dbd394f6d68f9a1e81015b81
+        url: https://commondatastorage.googleapis.com/chromium-browser-official/chromium-89.0.4389.72.tar.xz
+        sha256: 946a0b65aad10e0f77a539103892099b7238310c733f25b41d58b76f6ac0bc4f
         x-checker-data:
           type: anitya
           project-id: 13344
@@ -215,6 +215,7 @@ modules:
           - patches/0021-Enable-new-dtags-on-non-component-builds.patch
           - patches/0022-Add-support-for-respecting-system-proxy-settings-whe.patch
           - patches/0023-Revert-Reland-build-In-LTO-links-run-just-one-link-a.patch
+          - patches/0024-Revert-base-Rename-SEQUENCE_CHECKER-capability-name.patch
       - type: file
         path: org.chromium.Chromium.desktop
       - type: file

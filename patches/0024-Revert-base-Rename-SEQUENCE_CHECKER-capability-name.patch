@@ -1,0 +1,115 @@
+From ff1c94680784ade6c70d174e6f7b40cb499db098 Mon Sep 17 00:00:00 2001
+From: Ryan Gonzalez <rymg19@gmail.com>
+Date: Wed, 3 Mar 2021 12:18:20 -0600
+Subject: [PATCH 24/24] Revert "[base]: Rename SEQUENCE_CHECKER capability
+ name."
+
+This reverts commit f19e574f37f573256b631d6ee86189c0bcb512b3.
+---
+ base/sequence_checker.h           | 13 +++++++------
+ base/sequence_checker_impl.h      |  7 +++----
+ base/sequence_checker_unittest.nc |  6 +++---
+ base/thread_annotations.h         |  6 ++++++
+ 4 files changed, 19 insertions(+), 13 deletions(-)
+
+diff --git a/base/sequence_checker.h b/base/sequence_checker.h
+index 7a2d0f5c5c6e0..a3e994541ac72 100644
+--- a/base/sequence_checker.h
++++ b/base/sequence_checker.h
+@@ -88,10 +88,9 @@ namespace base {
+ //
+ // Note: You should almost always use the SequenceChecker class (through the
+ // above macros) to get the right version for your build configuration.
+-// Note: This is marked with "context" capability in order to support
+-// thread_annotations.h.
+-class THREAD_ANNOTATION_ATTRIBUTE__(capability("context"))
+-    SequenceCheckerDoNothing {
++// Note: This is only a check, not a "lock". It is marked "LOCKABLE" only in
++// order to support thread_annotations.h.
++class LOCKABLE SequenceCheckerDoNothing {
+  public:
+   SequenceCheckerDoNothing() = default;
+ 
+@@ -108,9 +107,11 @@ class THREAD_ANNOTATION_ATTRIBUTE__(capability("context"))
+ };
+ 
+ #if DCHECK_IS_ON()
+-using SequenceChecker = SequenceCheckerImpl;
++class SequenceChecker : public SequenceCheckerImpl {
++};
+ #else
+-using SequenceChecker = SequenceCheckerDoNothing;
++class SequenceChecker : public SequenceCheckerDoNothing {
++};
+ #endif  // DCHECK_IS_ON()
+ 
+ class SCOPED_LOCKABLE ScopedValidateSequenceChecker {
+diff --git a/base/sequence_checker_impl.h b/base/sequence_checker_impl.h
+index 716f067effdbf..f472111ae2308 100644
+--- a/base/sequence_checker_impl.h
++++ b/base/sequence_checker_impl.h
+@@ -19,10 +19,9 @@ namespace base {
+ //
+ // Note: You should almost always use the SequenceChecker class to get the right
+ // version for your build configuration.
+-// Note: This is marked with "context" capability in order to support
+-// thread_annotations.h.
+-class THREAD_ANNOTATION_ATTRIBUTE__(capability("context"))
+-    BASE_EXPORT SequenceCheckerImpl {
++// Note: This is only a check, not a "lock". It is marked "LOCKABLE" only in
++// order to support thread_annotations.h.
++class LOCKABLE BASE_EXPORT SequenceCheckerImpl {
+  public:
+   SequenceCheckerImpl();
+ 
+diff --git a/base/sequence_checker_unittest.nc b/base/sequence_checker_unittest.nc
+index a282ffeba85d5..61b6bf00110b4 100644
+--- a/base/sequence_checker_unittest.nc
++++ b/base/sequence_checker_unittest.nc
+@@ -23,14 +23,14 @@ class SequenceAffine {
+   SEQUENCE_CHECKER(sequence_checker_);
+ };
+ 
+-#if defined(NCTEST_ACCESS_WITHOUT_CHECK)  // [r"fatal error: writing variable 'counter_' requires holding context 'sequence_checker_' exclusively"]
++#if defined(NCTEST_ACCESS_WITHOUT_CHECK)  // [r"fatal error: writing variable 'counter_' requires holding mutex 'sequence_checker_' exclusively"]
+ 
+ void SequenceAffine::BuggyIncrement() {
+   // Member access without sequence_checker_ assertion.
+   ++counter_;
+ }
+ 
+-#elif defined(NCTEST_CALL_WITHOUT_CHECK)  // [r"fatal error: calling function 'Increment' requires holding context 'sequence_checker_' exclusively"]
++#elif defined(NCTEST_CALL_WITHOUT_CHECK)  // [r"fatal error: calling function 'Increment' requires holding mutex 'sequence_checker_' exclusively"]
+ 
+ void SequenceAffine::BuggyIncrement() {
+   // Function call without sequence_checker_ assertion.
+@@ -40,4 +40,4 @@ void SequenceAffine::BuggyIncrement() {
+ 
+ #endif
+ 
+-}  // namespace
++}  // namespace
+\ No newline at end of file
+diff --git a/base/thread_annotations.h b/base/thread_annotations.h
+index 33dab46f89121..ca4daac7d498a 100644
+--- a/base/thread_annotations.h
++++ b/base/thread_annotations.h
+@@ -243,9 +243,15 @@ inline T& ts_unchecked_read(T& v) NO_THREAD_SAFETY_ANALYSIS {
+ #if DCHECK_IS_ON()
+ 
+ // Equivalent to GUARDED_BY for SequenceChecker/ThreadChecker. Currently,
++// clang's error message "requires holding mutex" is misleading. Usage of this
++// macro is discouraged until the message is updated.
++// TODO(etiennep): Update comment above once clang's error message is updated.
+ #define GUARDED_BY_CONTEXT(name) GUARDED_BY(name)
+ 
+ // Equivalent to EXCLUSIVE_LOCKS_REQUIRED for SequenceChecker/ThreadChecker.
++// Currently, clang's error message "requires holding mutex" is misleading.
++// Usage of this macro is discouraged until the message is updated.
++// TODO(etiennep): Update comment above once clang's error message is updated.
+ #define VALID_CONTEXT_REQUIRED(name) EXCLUSIVE_LOCKS_REQUIRED(name)
+ 
+ #else  // DCHECK_IS_ON()
+-- 
+2.29.2
+

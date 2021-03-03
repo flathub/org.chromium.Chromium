@@ -1,18 +1,18 @@
-From fc9d68dfb49f2b0f4ef3a6931f9988c985b089e6 Mon Sep 17 00:00:00 2001
+From 0cd9656529014323ca5edc24b3cfbff5c4e26768 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Wed, 11 Nov 2020 16:54:18 -0600
-Subject: [PATCH 16/23] [webusb] Properly handle lack of platform support
+Subject: [PATCH 16/24] [webusb] Properly handle lack of platform support
 
 This avoids crashes and infinite device service startup loops when the
 platform does not have a USB service, which can occur on builds without
 udev.
 ---
  chrome/browser/usb/web_usb_detector.cc        |  1 +
- .../device/usb/mojo/device_manager_impl.cc    | 27 +++++++++++++------
- 2 files changed, 20 insertions(+), 8 deletions(-)
+ .../device/usb/mojo/device_manager_impl.cc    | 40 ++++++++++++-------
+ 2 files changed, 27 insertions(+), 14 deletions(-)
 
 diff --git a/chrome/browser/usb/web_usb_detector.cc b/chrome/browser/usb/web_usb_detector.cc
-index 4bc06f664534c..0c8844b73985c 100644
+index 6e28665b92112..6f6f432fbe478 100644
 --- a/chrome/browser/usb/web_usb_detector.cc
 +++ b/chrome/browser/usb/web_usb_detector.cc
 @@ -275,6 +275,7 @@ void WebUsbDetector::OnDeviceManagerConnectionError() {
@@ -24,10 +24,10 @@ index 4bc06f664534c..0c8844b73985c 100644
  }
  
 diff --git a/services/device/usb/mojo/device_manager_impl.cc b/services/device/usb/mojo/device_manager_impl.cc
-index 950ab9c0744ec..35b5c1e5cbe35 100644
+index 10eea22b5f9ef..06ed19691a4f6 100644
 --- a/services/device/usb/mojo/device_manager_impl.cc
 +++ b/services/device/usb/mojo/device_manager_impl.cc
-@@ -46,23 +46,31 @@ DeviceManagerImpl::~DeviceManagerImpl() = default;
+@@ -46,29 +46,38 @@ DeviceManagerImpl::~DeviceManagerImpl() = default;
  
  void DeviceManagerImpl::AddReceiver(
      mojo::PendingReceiver<mojom::UsbDeviceManager> receiver) {
@@ -39,35 +39,48 @@ index 950ab9c0744ec..35b5c1e5cbe35 100644
  void DeviceManagerImpl::EnumerateDevicesAndSetClient(
      mojo::PendingAssociatedRemote<mojom::UsbDeviceManagerClient> client,
      EnumerateDevicesAndSetClientCallback callback) {
--  usb_service_->GetDevices(base::BindOnce(
--      &DeviceManagerImpl::OnGetDevices, weak_factory_.GetWeakPtr(),
--      /*options=*/nullptr, std::move(client), std::move(callback)));
+-  usb_service_->GetDevices(
+-      /*allow_restricted_devices=*/false,
+-      base::BindOnce(&DeviceManagerImpl::OnGetDevices,
+-                     weak_factory_.GetWeakPtr(),
+-                     /*options=*/nullptr, std::move(client),
+-                     /*is_vm_sharing_client=*/false, std::move(callback)));
 +  if (usb_service_) {
-+    usb_service_->GetDevices(base::BindOnce(
-+        &DeviceManagerImpl::OnGetDevices, weak_factory_.GetWeakPtr(),
-+        /*options=*/nullptr, std::move(client), std::move(callback)));
++    usb_service_->GetDevices(
++        /*allow_restricted_devices=*/false,
++        base::BindOnce(&DeviceManagerImpl::OnGetDevices,
++                       weak_factory_.GetWeakPtr(),
++                       /*options=*/nullptr, std::move(client),
++                       /*is_vm_sharing_client=*/false, std::move(callback)));
 +  } else {
-+    OnGetDevices(nullptr, std::move(client), std::move(callback), {});
++    OnGetDevices(nullptr, std::move(client), /*is_vm_sharing_client=*/false,
++                 std::move(callback), {});
 +  }
  }
  
  void DeviceManagerImpl::GetDevices(mojom::UsbEnumerationOptionsPtr options,
                                     GetDevicesCallback callback) {
--  usb_service_->GetDevices(base::BindOnce(
--      &DeviceManagerImpl::OnGetDevices, weak_factory_.GetWeakPtr(),
--      std::move(options), mojo::NullAssociatedRemote(), std::move(callback)));
+-  usb_service_->GetDevices(
+-      /*allow_restricted_devices=*/false,
+-      base::BindOnce(&DeviceManagerImpl::OnGetDevices,
+-                     weak_factory_.GetWeakPtr(), std::move(options),
+-                     mojo::NullAssociatedRemote(),
+-                     /*is_vm_sharing_client=*/false, std::move(callback)));
 +  if (usb_service_) {
-+    usb_service_->GetDevices(base::BindOnce(
-+        &DeviceManagerImpl::OnGetDevices, weak_factory_.GetWeakPtr(),
-+        std::move(options), mojo::NullAssociatedRemote(), std::move(callback)));
++    usb_service_->GetDevices(
++        /*allow_restricted_devices=*/false,
++        base::BindOnce(&DeviceManagerImpl::OnGetDevices,
++                       weak_factory_.GetWeakPtr(), std::move(options),
++                       mojo::NullAssociatedRemote(),
++                       /*is_vm_sharing_client=*/false, std::move(callback)));
 +  } else {
 +    OnGetDevices(std::move(options), mojo::NullAssociatedRemote(),
-+                 std::move(callback), {});
++                 /*is_vm_sharing_client=*/false, std::move(callback), {});
 +  }
  }
  
  void DeviceManagerImpl::GetDevice(
-@@ -223,6 +231,9 @@ void DeviceManagerImpl::GetDeviceInternal(
+@@ -274,6 +283,9 @@ void DeviceManagerImpl::GetDeviceInternal(
      mojo::PendingReceiver<mojom::UsbDevice> device_receiver,
      mojo::PendingRemote<mojom::UsbDeviceClient> device_client,
      bool allow_security_key_requests) {

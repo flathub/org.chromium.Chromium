@@ -1,7 +1,7 @@
-From caed1db3433905d06f95b6a09bf0bc3d62e0cddd Mon Sep 17 00:00:00 2001
+From 6c8bdf84df2da131cfe6a848d6a257aeae059979 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Tue, 17 Mar 2020 13:18:27 -0500
-Subject: [PATCH 05/23] flatpak: Add initial sandbox support
+Subject: [PATCH 05/24] flatpak: Add initial sandbox support
 
 ---
  .gitignore                                    |   1 +
@@ -29,7 +29,7 @@ Subject: [PATCH 05/23] flatpak: Add initial sandbox support
  create mode 100644 sandbox/linux/services/flatpak_sandbox.h
 
 diff --git a/.gitignore b/.gitignore
-index 076813f6027ba..27fa9ac46855c 100644
+index f6164b328aa4a..5e08625dfe664 100644
 --- a/.gitignore
 +++ b/.gitignore
 @@ -62,6 +62,7 @@ v8.log
@@ -41,10 +41,10 @@ index 076813f6027ba..27fa9ac46855c 100644
  /.externalToolBuilders/
  /.settings/
 diff --git a/base/threading/thread_restrictions.h b/base/threading/thread_restrictions.h
-index ac19eaecc4cc3..853e82826009f 100644
+index c0cc548d9f8e5..f987a8331f3b4 100644
 --- a/base/threading/thread_restrictions.h
 +++ b/base/threading/thread_restrictions.h
-@@ -272,6 +272,10 @@ namespace resource_coordinator {
+@@ -284,6 +284,10 @@ namespace resource_coordinator {
  class TabManagerDelegate;
  }
  
@@ -55,15 +55,15 @@ index ac19eaecc4cc3..853e82826009f 100644
  namespace service_manager {
  class ServiceProcessLauncher;
  }
-@@ -398,6 +402,7 @@ class BASE_EXPORT ScopedAllowBlocking {
-   friend class printing::LocalPrinterHandlerDefault;
+@@ -414,6 +418,7 @@ class BASE_EXPORT ScopedAllowBlocking {
    friend class printing::PrintJobWorker;
+   friend class remoting::ScopedBypassIOThreadRestrictions;  // crbug.com/1144161
    friend class resource_coordinator::TabManagerDelegate;  // crbug.com/778703
 +  friend class sandbox::FlatpakSandbox;
    friend class web::WebSubThread;
    friend class weblayer::BrowserContextImpl;
    friend class weblayer::ContentBrowserClientImpl;
-@@ -468,6 +473,7 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitives {
+@@ -486,6 +491,7 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitives {
    friend class rlz_lib::FinancialPing;
    friend class shell_integration_linux::
        LaunchXdgUtilityScopedAllowBaseSyncPrimitives;
@@ -72,10 +72,10 @@ index ac19eaecc4cc3..853e82826009f 100644
    friend class syncer::GetLocalChangesRequest;
    friend class webrtc::DesktopConfigurationMonitor;
 diff --git a/chrome/browser/resources/sandbox_internals/sandbox_internals.js b/chrome/browser/resources/sandbox_internals/sandbox_internals.js
-index dbee2331bc411..58b4b5373a2ad 100644
+index 4fa81a019090b..aaeba2d7d0ee7 100644
 --- a/chrome/browser/resources/sandbox_internals/sandbox_internals.js
 +++ b/chrome/browser/resources/sandbox_internals/sandbox_internals.js
-@@ -142,6 +142,7 @@ function androidHandler() {
+@@ -139,6 +139,7 @@ function androidHandler() {
  function linuxHandler() {
    const suidSandbox = loadTimeData.getBoolean('suid');
    const nsSandbox = loadTimeData.getBoolean('userNs');
@@ -83,7 +83,7 @@ index dbee2331bc411..58b4b5373a2ad 100644
  
    let layer1SandboxType = 'None';
    let layer1SandboxCssClass = StatusClass.BAD;
-@@ -151,6 +152,9 @@ function linuxHandler() {
+@@ -148,6 +149,9 @@ function linuxHandler() {
    } else if (nsSandbox) {
      layer1SandboxType = 'Namespace';
      layer1SandboxCssClass = StatusClass.GOOD;
@@ -234,10 +234,10 @@ index 21b8323eb4965..c69d687f8e871 100644
  
    // This lock protects the |zygote_pids_| set.
 diff --git a/content/common/child_process_host_impl.cc b/content/common/child_process_host_impl.cc
-index 56e7fae0b8f49..66a9661d69888 100644
+index fe07a994d68a3..845a3efba0b7d 100644
 --- a/content/common/child_process_host_impl.cc
 +++ b/content/common/child_process_host_impl.cc
-@@ -39,6 +39,7 @@
+@@ -40,6 +40,7 @@
  
  #if defined(OS_LINUX) || defined(OS_CHROMEOS)
  #include "base/linux_util.h"
@@ -245,7 +245,7 @@ index 56e7fae0b8f49..66a9661d69888 100644
  #elif defined(OS_MAC)
  #include "base/mac/foundation_util.h"
  #include "content/common/mac_helpers.h"
-@@ -74,7 +75,12 @@ base::FilePath ChildProcessHost::GetChildPath(int flags) {
+@@ -75,7 +76,12 @@ base::FilePath ChildProcessHost::GetChildPath(int flags) {
  #if defined(OS_LINUX) || defined(OS_CHROMEOS)
    // Use /proc/self/exe rather than our known binary path so updates
    // can't swap out the binary from underneath us.
@@ -259,7 +259,7 @@ index 56e7fae0b8f49..66a9661d69888 100644
      child_path = base::FilePath(base::kProcSelfExe);
  #endif
  
-@@ -299,7 +305,7 @@ bool ChildProcessHostImpl::OnMessageReceived(const IPC::Message& msg) {
+@@ -302,7 +308,7 @@ bool ChildProcessHostImpl::OnMessageReceived(const IPC::Message& msg) {
    }
  
    if (!handled) {
@@ -268,7 +268,7 @@ index 56e7fae0b8f49..66a9661d69888 100644
    }
  
  #if BUILDFLAG(IPC_MESSAGE_LOG_ENABLED)
-@@ -313,7 +319,7 @@ void ChildProcessHostImpl::OnChannelConnected(int32_t peer_pid) {
+@@ -316,7 +322,7 @@ void ChildProcessHostImpl::OnChannelConnected(int32_t peer_pid) {
    if (!peer_process_.IsValid()) {
      peer_process_ = base::Process::OpenWithExtraPrivileges(peer_pid);
      if (!peer_process_.IsValid())
@@ -278,10 +278,10 @@ index 56e7fae0b8f49..66a9661d69888 100644
    }
    opening_channel_ = false;
 diff --git a/content/zygote/zygote_linux.cc b/content/zygote/zygote_linux.cc
-index b6d8e5a29c55e..ded8da1dcfbab 100644
+index f2512d63bc43e..a2d95816b650a 100644
 --- a/content/zygote/zygote_linux.cc
 +++ b/content/zygote/zygote_linux.cc
-@@ -115,7 +115,7 @@ bool Zygote::ProcessRequests() {
+@@ -116,7 +116,7 @@ bool Zygote::ProcessRequests() {
    PCHECK(sigaddset(&sigset, SIGCHLD) == 0);
    PCHECK(sigprocmask(SIG_BLOCK, &sigset, &orig_sigmask) == 0);
  
@@ -290,7 +290,7 @@ index b6d8e5a29c55e..ded8da1dcfbab 100644
      // Let the ZygoteHost know we are ready to go.
      // The receiving code is in
      // content/browser/zygote_host/zygote_host_impl_linux.cc.
-@@ -221,6 +221,10 @@ bool Zygote::UsingNSSandbox() const {
+@@ -222,6 +222,10 @@ bool Zygote::UsingNSSandbox() const {
    return sandbox_flags_ & sandbox::policy::SandboxLinux::kUserNS;
  }
  
@@ -1295,7 +1295,7 @@ index 4b32dc48c27cd..fb6f41e7ed822 100644
    std::unique_ptr<SetuidSandboxClient> setuid_sandbox_client_;
  #if BUILDFLAG(USING_SANITIZER)
 diff --git a/services/service_manager/service_process_launcher.cc b/services/service_manager/service_process_launcher.cc
-index 6424ec699886b..c8e0502b436f6 100644
+index 05d4a7a290e5c..81b1e004f6c01 100644
 --- a/services/service_manager/service_process_launcher.cc
 +++ b/services/service_manager/service_process_launcher.cc
 @@ -38,6 +38,7 @@
