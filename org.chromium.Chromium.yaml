@@ -61,7 +61,7 @@ sdk-extensions:
   - org.freedesktop.Sdk.Extension.openjdk11
 
 modules:
-  - shared-modules/libsecret/libsecret.json
+  - libsecret.json
 
   - name: libcups
     make-args: [libs]
