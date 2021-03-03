@@ -1,7 +1,7 @@
-From e2700efff3f29f7598033d45bd4cd0a98a5d07af Mon Sep 17 00:00:00 2001
+From eaa4091f834c7322b57bfe37b1b04a198ce611ec Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Tue, 17 Nov 2020 22:57:29 -0600
-Subject: [PATCH 08/23] Import chromium-71.0.3578.98-widevine-r3.patch
+Subject: [PATCH 08/24] Import chromium-71.0.3578.98-widevine-r3.patch
 
 Taken from the Fedora 33 repositories.
 ---

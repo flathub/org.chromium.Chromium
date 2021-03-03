@@ -1,4 +1,4 @@
-From 6b554ea6aaab2945f86d0a3b3fd4b5165087d817 Mon Sep 17 00:00:00 2001
+From 9d0f1fa1d670e89245bc24583a92b6ed2e8c20c2 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Thu, 1 Oct 2020 16:39:00 -0500
 Subject: [PATCH 4/4] Ensure libffmpeg.so is in the rpath of binaries
@@ -8,10 +8,10 @@ Subject: [PATCH 4/4] Ensure libffmpeg.so is in the rpath of binaries
  1 file changed, 6 insertions(+)
 
 diff --git a/third_party/ffmpeg/BUILD.gn b/third_party/ffmpeg/BUILD.gn
-index 337e45cb3f..305f10d487 100755
+index cbe2fdd844..9429121215 100755
 --- a/third_party/ffmpeg/BUILD.gn
 +++ b/third_party/ffmpeg/BUILD.gn
-@@ -463,6 +463,12 @@ if (is_component_ffmpeg) {
+@@ -462,6 +462,12 @@ if (is_component_ffmpeg) {
      if (is_mac && !is_component_build) {
        ldflags += [ "-Wl,-install_name,@rpath/libffmpeg.dylib" ]
      }

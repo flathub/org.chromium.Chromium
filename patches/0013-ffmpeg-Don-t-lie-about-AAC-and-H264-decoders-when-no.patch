@@ -1,7 +1,7 @@
-From 0e106d5e5bdbf9d92e59a8f187990a696f036491 Mon Sep 17 00:00:00 2001
+From ac6f7a9e10a233359f6e35647cc92351fc7ea03c Mon Sep 17 00:00:00 2001
 From: Mario Sanchez Prada <mario@endlessm.com>
 Date: Tue, 25 Oct 2016 16:57:00 +0000
-Subject: [PATCH 13/23] ffmpeg: Don't lie about AAC and H264 decoders when not
+Subject: [PATCH 13/24] ffmpeg: Don't lie about AAC and H264 decoders when not
  available
 
 On Endless OS, we always build with USE_PROPRIETARY_CODECS defined
@@ -31,10 +31,10 @@ https://phabricator.endlessm.com/T30300
  2 files changed, 83 insertions(+), 7 deletions(-)
 
 diff --git a/media/base/BUILD.gn b/media/base/BUILD.gn
-index f3ec9d91fd9f0..1b52bc734a626 100644
+index cd58ff418bac9..ab8f470564afb 100644
 --- a/media/base/BUILD.gn
 +++ b/media/base/BUILD.gn
-@@ -386,6 +386,10 @@ source_set("base") {
+@@ -384,6 +384,10 @@ source_set("base") {
        "//third_party/ffmpeg",
        "//third_party/ffmpeg:ffmpeg_features",
      ]
@@ -46,7 +46,7 @@ index f3ec9d91fd9f0..1b52bc734a626 100644
  
    if (media_use_libvpx) {
 diff --git a/media/base/mime_util_internal.cc b/media/base/mime_util_internal.cc
-index 39d62476358b4..533154f4b45fb 100644
+index 6c554eb112e32..a13b64c644f8c 100644
 --- a/media/base/mime_util_internal.cc
 +++ b/media/base/mime_util_internal.cc
 @@ -4,6 +4,8 @@
