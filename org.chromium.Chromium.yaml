@@ -189,6 +189,7 @@ modules:
         x-checker-data:
           type: anitya
           project-id: 13344
+          stable-only: true
           url-template: https://commondatastorage.googleapis.com/chromium-browser-official/chromium-$version.tar.xz
       - type: patch
         paths:
