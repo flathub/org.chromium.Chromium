@@ -14,6 +14,7 @@ finish-args:
   - --share=ipc
   - --share=network
   - --socket=cups
+  - --socket=pcsc
   - --socket=pulseaudio
   - --socket=x11
   - --socket=wayland
