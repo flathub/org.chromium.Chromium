@@ -59,6 +59,7 @@ add-extensions:
 sdk-extensions:
   - org.freedesktop.Sdk.Extension.node12
   - org.freedesktop.Sdk.Extension.openjdk11
+  - org.freedesktop.Sdk.Extension.llvm11
 
 modules:
   - libsecret.json
