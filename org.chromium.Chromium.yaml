@@ -171,13 +171,13 @@ modules:
   - name: chromium
     buildsystem: simple
     build-options:
+      cflags: -Wno-unknown-warning-option -Wno-unknown-pragmas
+      cxxflags: -Wno-unknown-warning-option -Wno-unknown-pragmas
       env:
         CC: clang
         CXX: clang++
         AR: llvm-ar
         NM: llvm-nm
-        CFLAGS: -Wno-unknown-warning-option -Wno-unknown-pragmas
-        CXXFLAGS: -Wno-unknown-warning-option -Wno-unknown-pragmas
     build-commands:
       - ./bootstrap.sh
       - ./build.sh
