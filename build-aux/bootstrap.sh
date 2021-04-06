@@ -25,6 +25,8 @@ tools/gn/bootstrap/bootstrap.py -v --no-clean --gn-gen-args='
     enable_widevine=true
     chrome_pgo_phase=0
     rtc_use_pipewire=true
+    rtc_link_pipewire=true
+    rtc_pipewire_version="0.3"
     enable_hangout_services_extension=true
 '
 mkdir -p out/ReleaseFree
