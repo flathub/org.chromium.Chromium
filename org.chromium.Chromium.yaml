@@ -156,18 +156,6 @@ modules:
     build-commands:
       - mkdir -p /app/chromium/{extensions,native-messaging-hosts,policies}
 
-  - name: pipewire
-    buildsystem: meson
-    config-opts:
-      - -Dgstreamer=disabled
-      - -Dman=false
-      - -Dsystemd=false
-    sources:
-      - type: git
-        url: https://github.com/PipeWire/pipewire.git
-        tag: 0.2.7
-
-        commit: 14c11c0fe4d366bad4cfecdee97b6652ff9ed63d
   - name: chromium
     buildsystem: simple
     build-options:
