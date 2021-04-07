@@ -97,7 +97,7 @@ def main():
 
     print('Setting up Flatpak environment')
     env = rewrite_manifest_and_get_env(manifest_file, edited_manifest, out_dir)
-    for source in 'krb5.conf', 'gtk-settings.ini', 'shared-modules':
+    for source in 'krb5.conf', 'gtk-settings.ini', 'libsecret.json', 'shared-modules':
         source_path = os.path.join(manifest_dir, source)
         out_link = os.path.join(flatpak_dir, os.path.basename(source))
         try:
