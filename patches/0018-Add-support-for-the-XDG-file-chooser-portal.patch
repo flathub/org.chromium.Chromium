@@ -1,4 +1,4 @@
-From e55ba047b513752b3ea6dce77c12119dd8e17c01 Mon Sep 17 00:00:00 2001
+From f4befa54beca1e3b81ebb7e68c7c8d8eb46bd4c5 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Mon, 31 Aug 2020 15:26:52 -0500
 Subject: [PATCH 18/24] Add support for the XDG file chooser portal
@@ -13,9 +13,9 @@ Subject: [PATCH 18/24] Add support for the XDG file chooser portal
  ui/gtk/gtk_ui.cc                          |   4 +
  ui/gtk/select_file_dialog_impl.cc         |  68 +-
  ui/gtk/select_file_dialog_impl.h          |   9 +
- ui/gtk/select_file_dialog_impl_portal.cc  | 734 ++++++++++++++++++++++
+ ui/gtk/select_file_dialog_impl_portal.cc  | 741 ++++++++++++++++++++++
  ui/gtk/select_file_dialog_impl_portal.h   | 134 ++++
- 11 files changed, 977 insertions(+), 19 deletions(-)
+ 11 files changed, 984 insertions(+), 19 deletions(-)
  create mode 100644 ui/gtk/select_file_dialog_impl_portal.cc
  create mode 100644 ui/gtk/select_file_dialog_impl_portal.h
 
@@ -38,7 +38,7 @@ index 9ba75ccc991e5..a5e3735579264 100644
      {"calculate-native-win-occlusion",
       flag_descriptions::kCalculateNativeWinOcclusionName,
 diff --git a/chrome/browser/flag_descriptions.cc b/chrome/browser/flag_descriptions.cc
-index da89b557079bd..850ff27d0d428 100644
+index 1afe76e601684..93d8fcb0f856d 100644
 --- a/chrome/browser/flag_descriptions.cc
 +++ b/chrome/browser/flag_descriptions.cc
 @@ -3537,6 +3537,17 @@ const char kTabFreezeDescription[] =
@@ -317,10 +317,10 @@ index 3cb8ee5d6a972..412a4394a8d65 100644
    // NewSelectFileDialogImplKDE will actually work.
 diff --git a/ui/gtk/select_file_dialog_impl_portal.cc b/ui/gtk/select_file_dialog_impl_portal.cc
 new file mode 100644
-index 0000000000000..93df4e03f6313
+index 0000000000000..c5d635ea2aba3
 --- /dev/null
 +++ b/ui/gtk/select_file_dialog_impl_portal.cc
-@@ -0,0 +1,734 @@
+@@ -0,0 +1,741 @@
 +#include "ui/gtk/select_file_dialog_impl_portal.h"
 +
 +#include <gdk/gdkx.h>
@@ -378,7 +378,7 @@ index 0000000000000..93df4e03f6313
 +constexpr char kFileChooserOptionFilters[] = "filters";
 +constexpr char kFileChooserOptionCurrentFilter[] = "current_filter";
 +constexpr char kFileChooserOptionCurrentFolder[] = "current_folder";
-+constexpr char kFileChooserOptionCurrentFile[] = "current_file";
++constexpr char kFileChooserOptionCurrentName[] = "current_name";
 +
 +constexpr int kFileChooserFilterKindGlob = 0;
 +
@@ -682,7 +682,7 @@ index 0000000000000..93df4e03f6313
 +  if (info->parent) {
 +    GdkWindow* window = gtk::GtkUi::GetDelegate()->GetGdkWindow(*info->parent);
 +    if (window != nullptr && GDK_IS_X11_WINDOW(window)) {
-+      parent_handle = gdk_x11_window_get_xid(window);
++      parent_handle = "x11:" + std::to_string(gdk_x11_window_get_xid(window));
 +    }
 +  }
 +
@@ -749,13 +749,20 @@ index 0000000000000..93df4e03f6313
 +    options_writer.CloseContainer(&option_writer);
 +  }
 +
-+  if (info->type == SELECT_SAVEAS_FILE) {
++  if (info->type == SELECT_SAVEAS_FILE && !default_path.empty()) {
 +    if (CallDirectoryExistsOnUIThread(default_path)) {
++      // If this is an existing directory, navigate to that directory, with no
++      // filename.
 +      AppendByteStringOption(&options_writer, kFileChooserOptionCurrentFolder,
 +                             default_path.value());
 +    } else {
-+      AppendByteStringOption(&options_writer, kFileChooserOptionCurrentFile,
-+                             default_path.value());
++      // The default path does not exist, or is an existing file. We use
++      // current_folder followed by current_name, as per the recommendation of
++      // the GTK docs and the pattern followed by SelectFileDialogImplGTK.
++      AppendByteStringOption(&options_writer, kFileChooserOptionCurrentFolder,
++                             default_path.DirName().value());
++      AppendStringOption(&options_writer, kFileChooserOptionCurrentName,
++                         default_path.BaseName().value());
 +    }
 +  }
 +

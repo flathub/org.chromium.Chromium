@@ -1,4 +1,4 @@
-From ff1c94680784ade6c70d174e6f7b40cb499db098 Mon Sep 17 00:00:00 2001
+From 998091a8fe493fe9d257976d3cd35e4303967f55 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Wed, 3 Mar 2021 12:18:20 -0600
 Subject: [PATCH 24/24] Revert "[base]: Rename SEQUENCE_CHECKER capability

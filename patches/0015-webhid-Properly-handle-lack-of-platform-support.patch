@@ -1,4 +1,4 @@
-From 64f0a3462bcfdd2eb29beafbc4c0251d00b71661 Mon Sep 17 00:00:00 2001
+From 390271e96ffeb8bf54997d9bd87a247a90d88467 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Wed, 11 Nov 2020 16:53:24 -0600
 Subject: [PATCH 15/24] [webhid] Properly handle lack of platform support

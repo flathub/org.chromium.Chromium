@@ -1,4 +1,4 @@
-From 0cd9656529014323ca5edc24b3cfbff5c4e26768 Mon Sep 17 00:00:00 2001
+From 0f1493d40f4fc8035838f40fdf4f364f5fb1e668 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Wed, 11 Nov 2020 16:54:18 -0600
 Subject: [PATCH 16/24] [webusb] Properly handle lack of platform support

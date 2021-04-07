@@ -1,4 +1,4 @@
-From f16e60d330e850f646d4ee3f9b4f800acf59e3bd Mon Sep 17 00:00:00 2001
+From 4127d847c04a9eb5c4277b1c108c52fd088e9c30 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Tue, 19 Jan 2021 15:41:16 -0600
 Subject: [PATCH 12/24] Enable accelerated mjpeg decode on Linux
@@ -37,7 +37,7 @@ index 1f7e7ced6a98a..9ba75ccc991e5 100644
  #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
      {"system-keyboard-lock", flag_descriptions::kSystemKeyboardLockName,
 diff --git a/chrome/browser/flag_descriptions.cc b/chrome/browser/flag_descriptions.cc
-index f9d48948f9824..da89b557079bd 100644
+index 5990170b110ad..1afe76e601684 100644
 --- a/chrome/browser/flag_descriptions.cc
 +++ b/chrome/browser/flag_descriptions.cc
 @@ -3693,6 +3693,16 @@ const char kVideoToolboxVp9DecodingDescription[] =
@@ -99,7 +99,7 @@ index 9ca53437280a4..b022cc15548ee 100644
  extern const char kAllowDisableMouseAccelerationDescription[];
  
 diff --git a/media/base/media_switches.cc b/media/base/media_switches.cc
-index 61d9578e2ed79..61ea5a3f22eff 100644
+index f8b848e7283b7..e14e4d03bb87f 100644
 --- a/media/base/media_switches.cc
 +++ b/media/base/media_switches.cc
 @@ -861,7 +861,7 @@ bool IsVideoCaptureAcceleratedJpegDecodingEnabled() {
