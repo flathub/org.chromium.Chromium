@@ -1,4 +1,4 @@
-From 2d019db5240dbe303b978818936255e26fbab8a2 Mon Sep 17 00:00:00 2001
+From 127af56d1a8cd9391ce4fef65c9ffd2f48fc789e Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Wed, 20 Jan 2021 10:33:46 -0600
 Subject: [PATCH 23/24] Revert "Reland "build: In LTO links, run just one link

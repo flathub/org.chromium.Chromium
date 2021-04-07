@@ -1,4 +1,4 @@
-From a7511505c0c5773503fe8d2cb9fdb05a880eb477 Mon Sep 17 00:00:00 2001
+From d43cdbc2e17a25b4b869d1ba4bbaaeaf3bd5099e Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Wed, 26 Aug 2020 20:30:35 -0500
 Subject: [PATCH 09/24] Enable Chromecast by default

@@ -1,4 +1,4 @@
-From a0ffd30a1132a3f1bd7eb5b86f6af5e239ab17ce Mon Sep 17 00:00:00 2001
+From 49a0798ac64635d0d024e89cb04e1fe7a2671089 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Tue, 17 Nov 2020 22:35:26 -0600
 Subject: [PATCH 19/24] Add OpenURI portal support for opening directories

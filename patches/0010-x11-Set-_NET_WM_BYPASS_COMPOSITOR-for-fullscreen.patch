@@ -1,4 +1,4 @@
-From a38712e54302a4b6b76203095c244dd918286921 Mon Sep 17 00:00:00 2001
+From 605a0e6d60d796edbc369864511438717cbd249d Mon Sep 17 00:00:00 2001
 From: Daniel Drake <drake@endlessm.com>
 Date: Fri, 3 Jul 2015 14:59:24 -0600
 Subject: [PATCH 10/24] x11: Set _NET_WM_BYPASS_COMPOSITOR for fullscreen
