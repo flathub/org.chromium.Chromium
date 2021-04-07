@@ -1,4 +1,4 @@
-From 6664069cfbadba7e41a7e92c9b776fd7a8e92aa2 Mon Sep 17 00:00:00 2001
+From cfc6c5777cbb135bf49e55adba029edfa18c95dc Mon Sep 17 00:00:00 2001
 From: Andre Moreira Magalhaes <andre.magalhaes@endlessos.org>
 Date: Thu, 17 Dec 2020 19:05:10 -0300
 Subject: [PATCH 22/24] Add support for respecting system proxy settings when

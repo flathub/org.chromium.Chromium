@@ -43,7 +43,7 @@ add-extensions:
   org.chromium.Chromium.Extension:
     version: '1'
     directory: chromium/extensions
-    merge-dirs: extensions
+    merge-dirs: 'extensions;native-messaging-hosts;policies/managed;policies/recommended'
     subdirectories: true
     no-autodownload: true
     autodelete: true
@@ -155,6 +155,8 @@ modules:
     buildsystem: simple
     build-commands:
       - mkdir -p /app/chromium/{extensions,native-messaging-hosts,policies}
+      - for dir in native-messaging-hosts policies; do ln -s /app/chromium/{$dir,extensions}/$dir; done
+      - touch /app/chromium/extensions/no-mount-stamp
 
   - name: chromium
     buildsystem: simple

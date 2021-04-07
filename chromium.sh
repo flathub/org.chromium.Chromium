@@ -9,6 +9,17 @@ get_int32_property() {
     | awk 'match($0, /uint32 ([0-9]+)/, m){print m[1];}'
 }
 
+merge_extensions() {
+  (
+    shopt -s nullglob
+    dest=/app/chromium/extensions/$1
+    mkdir -p $dest
+    for ext in /app/chromium/${1%/*}/$1/*; do
+      ln -s $ext $dest
+    done
+  )
+}
+
 # Check the portal version & make sure it supports expose-pids.
 if [[ $(get_int32_property version) -lt 4 || \
       $(($(get_int32_property supports) & 1)) -eq 0 ]]; then
@@ -24,6 +35,14 @@ if [[ -f "$XDG_CONFIG_HOME/chromium-flags.conf" ]]; then
   unset IFS
 
   set -- "${flags[@]}" "$@"
+fi
+
+if [[ ! -f /app/chromium/extensions/no-mount-stamp ]]; then
+  # Merge all legacy extension points if the symlinks had a tmpfs mounted over
+  # them.
+  merge_extensions native-messaging-hosts
+  merge_extensions policies/managed
+  merge_extensions policies/recommended
 fi
 
 flextop-init
