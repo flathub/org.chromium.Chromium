@@ -184,8 +184,8 @@ modules:
       - ./install.sh
     sources:
       - type: archive
-        url: https://commondatastorage.googleapis.com/chromium-browser-official/chromium-89.0.4389.114.tar.xz
-        sha256: f2f0abe9697a220a8545df74d832c6c8d85a4fb11845e7e398752d746e72ed00
+        url: https://commondatastorage.googleapis.com/chromium-browser-official/chromium-89.0.4389.128.tar.xz
+        sha256: 1a75ea6aeb98f2d3b6feae1fbf5692679e93d5b7631bc7c762dd873499deda5b
         x-checker-data:
           type: anitya
           project-id: 13344
