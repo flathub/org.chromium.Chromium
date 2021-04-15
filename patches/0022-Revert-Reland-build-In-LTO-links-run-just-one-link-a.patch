@@ -1,7 +1,7 @@
-From 874a96f2f73df248e736c8fc0b977f8c984ba164 Mon Sep 17 00:00:00 2001
+From b944fa9ca3fe8274de94bc81ec6dd30dc4e8a740 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Wed, 20 Jan 2021 10:33:46 -0600
-Subject: [PATCH 23/24] Revert "Reland "build: In LTO links, run just one link
+Subject: [PATCH 22/23] Revert "Reland "build: In LTO links, run just one link
  at once, but give it all cores""
 
 This reverts commit a2ebd1511b2ee20072f0768ffb7620066dc643e9.
@@ -14,19 +14,19 @@ The flags given do not work on LLVM 10.
  3 files changed, 9 insertions(+), 7 deletions(-)
 
 diff --git a/build/config/compiler/BUILD.gn b/build/config/compiler/BUILD.gn
-index 7339eb53fd799..833ff18b7e369 100644
+index 2166af00a6ccc..c7a7f75b74fe9 100644
 --- a/build/config/compiler/BUILD.gn
 +++ b/build/config/compiler/BUILD.gn
-@@ -622,7 +622,7 @@ config("compiler") {
-       # files on Windows (https://crbug.com/871962).
+@@ -635,7 +635,7 @@ config("compiler") {
+ 
+     if (is_win) {
        ldflags += [
-         "/opt:lldlto=" + lto_opt_level,
 -        "/opt:lldltojobs=all",
 +        "/opt:lldltojobs=" + max_jobs_per_link,
- 
-         # Experimentally determined to yield a reasonable trade-off between
-         # build time, run-time performance, and binary size.
-@@ -635,11 +635,10 @@ config("compiler") {
+         "-mllvm:-import-instr-limit=$import_instr_limit",
+         "/lldltocache:" +
+             rebase_path("$root_out_dir/thinlto-cache", root_build_dir),
+@@ -648,11 +648,10 @@ config("compiler") {
        # usage in crbug.com/1038040. Note this will increase build time in
        # Chrome OS.
  
@@ -40,13 +40,13 @@ index 7339eb53fd799..833ff18b7e369 100644
 +      # resource allocation scheme, but should be good enough.
 +      ldflags += [ "-Wl,--thinlto-jobs=" + max_jobs_per_link ]
  
-       # Limit the size of the ThinLTO cache to the lesser of 10% of
-       # available disk space, 10GB and 100000 files.
+       ldflags += [
+         "-Wl,--thinlto-cache-dir=" +
 diff --git a/build/config/compiler/compiler.gni b/build/config/compiler/compiler.gni
-index 58afef011e035..1348c2c50c9f7 100644
+index afcf1dbe26831..2d9ebea0450e2 100644
 --- a/build/config/compiler/compiler.gni
 +++ b/build/config/compiler/compiler.gni
-@@ -75,6 +75,10 @@ declare_args() {
+@@ -76,6 +76,10 @@ declare_args() {
    # If true, use Goma for ThinLTO code generation where applicable.
    use_goma_thin_lto = false
  
@@ -58,10 +58,10 @@ index 58afef011e035..1348c2c50c9f7 100644
    # than the one we're compiling for.
    #
 diff --git a/build/toolchain/concurrent_links.gni b/build/toolchain/concurrent_links.gni
-index 6000b37e53c51..b980000c20afb 100644
+index 1328f7d48a6a4..bef0b24898cff 100644
 --- a/build/toolchain/concurrent_links.gni
 +++ b/build/toolchain/concurrent_links.gni
-@@ -94,7 +94,6 @@ if (concurrent_links == -1) {
+@@ -100,7 +100,6 @@ if (concurrent_links == -1) {
      java_cmd_pool_size = _command_dict.secondary_pool_size
    }
  } else {

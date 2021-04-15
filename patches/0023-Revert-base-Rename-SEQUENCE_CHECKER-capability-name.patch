@@ -1,7 +1,7 @@
-From 998091a8fe493fe9d257976d3cd35e4303967f55 Mon Sep 17 00:00:00 2001
+From 6a708f33783cfa418c5a11278c8d40e59e290d68 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Wed, 3 Mar 2021 12:18:20 -0600
-Subject: [PATCH 24/24] Revert "[base]: Rename SEQUENCE_CHECKER capability
+Subject: [PATCH 23/23] Revert "[base]: Rename SEQUENCE_CHECKER capability
  name."
 
 This reverts commit f19e574f37f573256b631d6ee86189c0bcb512b3.
@@ -13,10 +13,10 @@ This reverts commit f19e574f37f573256b631d6ee86189c0bcb512b3.
  4 files changed, 19 insertions(+), 13 deletions(-)
 
 diff --git a/base/sequence_checker.h b/base/sequence_checker.h
-index 7a2d0f5c5c6e0..a3e994541ac72 100644
+index 50a548a759c2d..574962af1dd72 100644
 --- a/base/sequence_checker.h
 +++ b/base/sequence_checker.h
-@@ -88,10 +88,9 @@ namespace base {
+@@ -98,10 +98,9 @@ namespace base {
  //
  // Note: You should almost always use the SequenceChecker class (through the
  // above macros) to get the right version for your build configuration.
@@ -28,9 +28,9 @@ index 7a2d0f5c5c6e0..a3e994541ac72 100644
 +// order to support thread_annotations.h.
 +class LOCKABLE SequenceCheckerDoNothing {
   public:
-   SequenceCheckerDoNothing() = default;
+   static void EnableStackLogging() {}
  
-@@ -108,9 +107,11 @@ class THREAD_ANNOTATION_ATTRIBUTE__(capability("context"))
+@@ -122,9 +121,11 @@ class THREAD_ANNOTATION_ATTRIBUTE__(capability("context"))
  };
  
  #if DCHECK_IS_ON()
@@ -43,12 +43,12 @@ index 7a2d0f5c5c6e0..a3e994541ac72 100644
 +};
  #endif  // DCHECK_IS_ON()
  
- class SCOPED_LOCKABLE ScopedValidateSequenceChecker {
+ #if DCHECK_IS_ON()
 diff --git a/base/sequence_checker_impl.h b/base/sequence_checker_impl.h
-index 716f067effdbf..f472111ae2308 100644
+index e22d358c21fa3..9339b660b2be5 100644
 --- a/base/sequence_checker_impl.h
 +++ b/base/sequence_checker_impl.h
-@@ -19,10 +19,9 @@ namespace base {
+@@ -22,10 +22,9 @@ class StackTrace;
  //
  // Note: You should almost always use the SequenceChecker class to get the right
  // version for your build configuration.
@@ -60,7 +60,7 @@ index 716f067effdbf..f472111ae2308 100644
 +// order to support thread_annotations.h.
 +class LOCKABLE BASE_EXPORT SequenceCheckerImpl {
   public:
-   SequenceCheckerImpl();
+   static void EnableStackLogging();
  
 diff --git a/base/sequence_checker_unittest.nc b/base/sequence_checker_unittest.nc
 index a282ffeba85d5..61b6bf00110b4 100644
