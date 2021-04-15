@@ -1,7 +1,7 @@
 From 6a708f33783cfa418c5a11278c8d40e59e290d68 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Wed, 3 Mar 2021 12:18:20 -0600
-Subject: [PATCH 23/23] Revert "[base]: Rename SEQUENCE_CHECKER capability
+Subject: [PATCH 23/24] Revert "[base]: Rename SEQUENCE_CHECKER capability
  name."
 
 This reverts commit f19e574f37f573256b631d6ee86189c0bcb512b3.
