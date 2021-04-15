@@ -1,7 +1,7 @@
-From 4127d847c04a9eb5c4277b1c108c52fd088e9c30 Mon Sep 17 00:00:00 2001
+From d4dec672f3715a8697090703bef045ce54d58afa Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Tue, 19 Jan 2021 15:41:16 -0600
-Subject: [PATCH 12/24] Enable accelerated mjpeg decode on Linux
+Subject: [PATCH 12/23] Enable accelerated mjpeg decode on Linux
 
 ---
  chrome/browser/about_flags.cc       |  6 +++---
@@ -11,10 +11,10 @@ Subject: [PATCH 12/24] Enable accelerated mjpeg decode on Linux
  4 files changed, 21 insertions(+), 13 deletions(-)
 
 diff --git a/chrome/browser/about_flags.cc b/chrome/browser/about_flags.cc
-index 1f7e7ced6a98a..9ba75ccc991e5 100644
+index 01dea31dd36b5..9111e2643a9c1 100644
 --- a/chrome/browser/about_flags.cc
 +++ b/chrome/browser/about_flags.cc
-@@ -3022,7 +3022,7 @@ const FeatureEntry kFeatureEntries[] = {
+@@ -3082,7 +3082,7 @@ const FeatureEntry kFeatureEntries[] = {
          "disable-accelerated-video-decode",
          flag_descriptions::kAcceleratedVideoDecodeName,
          flag_descriptions::kAcceleratedVideoDecodeDescription,
@@ -23,7 +23,7 @@ index 1f7e7ced6a98a..9ba75ccc991e5 100644
          SINGLE_DISABLE_VALUE_TYPE(switches::kDisableAcceleratedVideoDecode),
      },
  #endif  // (defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)) &&
-@@ -3526,10 +3526,10 @@ const FeatureEntry kFeatureEntries[] = {
+@@ -3620,10 +3620,10 @@ const FeatureEntry kFeatureEntries[] = {
       flag_descriptions::kWebXrForceRuntimeDescription, kOsDesktop,
       MULTI_VALUE_TYPE(kWebXrForceRuntimeChoices)},
  #endif  // ENABLE_VR
@@ -37,10 +37,10 @@ index 1f7e7ced6a98a..9ba75ccc991e5 100644
  #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
      {"system-keyboard-lock", flag_descriptions::kSystemKeyboardLockName,
 diff --git a/chrome/browser/flag_descriptions.cc b/chrome/browser/flag_descriptions.cc
-index 5990170b110ad..1afe76e601684 100644
+index dd2914ad06e92..c7d78a2054f60 100644
 --- a/chrome/browser/flag_descriptions.cc
 +++ b/chrome/browser/flag_descriptions.cc
-@@ -3693,6 +3693,16 @@ const char kVideoToolboxVp9DecodingDescription[] =
+@@ -3807,6 +3807,16 @@ const char kMetalDescription[] =
  
  #endif
  
@@ -57,7 +57,7 @@ index 5990170b110ad..1afe76e601684 100644
  // Chrome OS -------------------------------------------------------------------
  
  #if BUILDFLAG(IS_CHROMEOS_ASH)
-@@ -3704,12 +3714,6 @@ const char kAccountManagementFlowsV2Description[] =
+@@ -3818,12 +3828,6 @@ const char kAccountManagementFlowsV2Description[] =
      "Settings. "
      "See go/betterAM";
  
@@ -71,10 +71,10 @@ index 5990170b110ad..1afe76e601684 100644
      "Allow disabling mouse acceleration";
  const char kAllowDisableMouseAccelerationDescription[] =
 diff --git a/chrome/browser/flag_descriptions.h b/chrome/browser/flag_descriptions.h
-index 9ca53437280a4..b022cc15548ee 100644
+index 3479dc665a2f4..c1ed295859a2c 100644
 --- a/chrome/browser/flag_descriptions.h
 +++ b/chrome/browser/flag_descriptions.h
-@@ -2131,6 +2131,13 @@ extern const char kVideoToolboxVp9DecodingDescription[];
+@@ -2201,6 +2201,13 @@ extern const char kMetalDescription[];
  
  #endif  // defined(OS_MAC)
  
@@ -88,7 +88,7 @@ index 9ca53437280a4..b022cc15548ee 100644
  // Chrome OS ------------------------------------------------------------------
  
  #if BUILDFLAG(IS_CHROMEOS_ASH)
-@@ -2138,9 +2145,6 @@ extern const char kVideoToolboxVp9DecodingDescription[];
+@@ -2208,9 +2215,6 @@ extern const char kMetalDescription[];
  extern const char kAccountManagementFlowsV2Name[];
  extern const char kAccountManagementFlowsV2Description[];
  
@@ -99,10 +99,10 @@ index 9ca53437280a4..b022cc15548ee 100644
  extern const char kAllowDisableMouseAccelerationDescription[];
  
 diff --git a/media/base/media_switches.cc b/media/base/media_switches.cc
-index f8b848e7283b7..e14e4d03bb87f 100644
+index e3d58fd654f16..be8116d9b2fc9 100644
 --- a/media/base/media_switches.cc
 +++ b/media/base/media_switches.cc
-@@ -861,7 +861,7 @@ bool IsVideoCaptureAcceleratedJpegDecodingEnabled() {
+@@ -888,7 +888,7 @@ bool IsVideoCaptureAcceleratedJpegDecodingEnabled() {
            switches::kUseFakeMjpegDecodeAccelerator)) {
      return true;
    }

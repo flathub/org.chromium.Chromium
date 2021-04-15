@@ -1,7 +1,7 @@
-From b81f8bc8d0c50b901d285b2c738316a1fc796865 Mon Sep 17 00:00:00 2001
+From 0e6f907c18e4fc968a71109a86c721fa7be64d15 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Tue, 17 Mar 2020 13:18:27 -0500
-Subject: [PATCH 05/24] flatpak: Add initial sandbox support
+Subject: [PATCH 05/23] flatpak: Add initial sandbox support
 
 ---
  .gitignore                                    |   1 +
@@ -29,11 +29,11 @@ Subject: [PATCH 05/24] flatpak: Add initial sandbox support
  create mode 100644 sandbox/linux/services/flatpak_sandbox.h
 
 diff --git a/.gitignore b/.gitignore
-index f6164b328aa4a..5e08625dfe664 100644
+index 0d222bbe0b579..ef17dc6e39b92 100644
 --- a/.gitignore
 +++ b/.gitignore
-@@ -62,6 +62,7 @@ v8.log
- vs-chromium-project.txt
+@@ -63,6 +63,7 @@ vs-chromium-project.txt
+ /.clangd
  /.clangd/
  /.clangd-index/
 +/.flatpak-builder/
@@ -41,10 +41,10 @@ index f6164b328aa4a..5e08625dfe664 100644
  /.externalToolBuilders/
  /.settings/
 diff --git a/base/threading/thread_restrictions.h b/base/threading/thread_restrictions.h
-index c0cc548d9f8e5..f987a8331f3b4 100644
+index ce16488c6d3c3..b1d4b70d815f3 100644
 --- a/base/threading/thread_restrictions.h
 +++ b/base/threading/thread_restrictions.h
-@@ -284,6 +284,10 @@ namespace resource_coordinator {
+@@ -286,6 +286,10 @@ namespace resource_coordinator {
  class TabManagerDelegate;
  }
  
@@ -55,7 +55,7 @@ index c0cc548d9f8e5..f987a8331f3b4 100644
  namespace service_manager {
  class ServiceProcessLauncher;
  }
-@@ -414,6 +418,7 @@ class BASE_EXPORT ScopedAllowBlocking {
+@@ -416,6 +420,7 @@ class BASE_EXPORT ScopedAllowBlocking {
    friend class printing::PrintJobWorker;
    friend class remoting::ScopedBypassIOThreadRestrictions;  // crbug.com/1144161
    friend class resource_coordinator::TabManagerDelegate;  // crbug.com/778703
@@ -63,7 +63,7 @@ index c0cc548d9f8e5..f987a8331f3b4 100644
    friend class web::WebSubThread;
    friend class weblayer::BrowserContextImpl;
    friend class weblayer::ContentBrowserClientImpl;
-@@ -486,6 +491,7 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitives {
+@@ -489,6 +494,7 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitives {
    friend class rlz_lib::FinancialPing;
    friend class shell_integration_linux::
        LaunchXdgUtilityScopedAllowBaseSyncPrimitives;
@@ -378,10 +378,10 @@ index 82923d4a85df3..cf4765841786a 100644
                  base::GlobalDescriptors::Descriptor(
                      static_cast<uint32_t>(kSandboxIPCChannel), GetSandboxFD()));
 diff --git a/sandbox/linux/BUILD.gn b/sandbox/linux/BUILD.gn
-index e9a94b46125e3..770ce3b6edfea 100644
+index 2f778dd0bcab2..25e9571232351 100644
 --- a/sandbox/linux/BUILD.gn
 +++ b/sandbox/linux/BUILD.gn
-@@ -329,6 +329,10 @@ if (is_linux || is_chromeos) {
+@@ -333,6 +333,10 @@ if (is_linux || is_chromeos) {
  
  component("sandbox_services") {
    sources = [
@@ -392,7 +392,7 @@ index e9a94b46125e3..770ce3b6edfea 100644
      "services/init_process_reaper.cc",
      "services/init_process_reaper.h",
      "services/proc_util.cc",
-@@ -367,7 +371,10 @@ component("sandbox_services") {
+@@ -371,7 +375,10 @@ component("sandbox_services") {
  
    defines = [ "SANDBOX_IMPLEMENTATION" ]
  

@@ -1,7 +1,7 @@
-From 605a0e6d60d796edbc369864511438717cbd249d Mon Sep 17 00:00:00 2001
+From 4e70cfff710ba8ae22701e3c9b17d766b55c4022 Mon Sep 17 00:00:00 2001
 From: Daniel Drake <drake@endlessm.com>
 Date: Fri, 3 Jul 2015 14:59:24 -0600
-Subject: [PATCH 10/24] x11: Set _NET_WM_BYPASS_COMPOSITOR for fullscreen
+Subject: [PATCH 10/23] x11: Set _NET_WM_BYPASS_COMPOSITOR for fullscreen
 
 This improves performance at full screen.
 ---
@@ -11,7 +11,7 @@ This improves performance at full screen.
  3 files changed, 9 insertions(+)
 
 diff --git a/ui/base/x/x11_window.cc b/ui/base/x/x11_window.cc
-index 7fbc130d78df7..bacf2c8bcd1c2 100644
+index 585a09a2b6d89..688649c50754f 100644
 --- a/ui/base/x/x11_window.cc
 +++ b/ui/base/x/x11_window.cc
 @@ -535,6 +535,12 @@ void XWindow::SetFullscreen(bool fullscreen) {
@@ -28,7 +28,7 @@ index 7fbc130d78df7..bacf2c8bcd1c2 100644
    if (!IsXWindowVisible() || !activatable_)
      return;
 diff --git a/ui/base/x/x11_window.h b/ui/base/x/x11_window.h
-index efed967b24ddf..d1f8d3b9123f6 100644
+index 0a870d41a0425..bac3e48bfa88b 100644
 --- a/ui/base/x/x11_window.h
 +++ b/ui/base/x/x11_window.h
 @@ -110,6 +110,7 @@ class COMPONENT_EXPORT(UI_BASE_X) XWindow {
@@ -40,7 +40,7 @@ index efed967b24ddf..d1f8d3b9123f6 100644
    void Deactivate();
    bool IsActive() const;
 diff --git a/ui/platform_window/x11/x11_window.cc b/ui/platform_window/x11/x11_window.cc
-index 0cfcb1cb66e36..b24659aeb99e9 100644
+index 967dd5f1c0999..dd596cf359fc2 100644
 --- a/ui/platform_window/x11/x11_window.cc
 +++ b/ui/platform_window/x11/x11_window.cc
 @@ -300,6 +300,8 @@ void X11Window::ToggleFullscreen() {

@@ -1,4 +1,4 @@
-From f47615158243cf16dccad204e2d06e329c83e5c7 Mon Sep 17 00:00:00 2001
+From 89464ac4369150b047c403ed707736c534fe01ba Mon Sep 17 00:00:00 2001
 From: Mario Sanchez Prada <mario@endlessm.com>
 Date: Wed, 4 Jul 2018 17:02:26 +0100
 Subject: [PATCH 1/4] ffmpeg: Use royalty-free libfdk-aac for AAC playback
@@ -1609,10 +1609,10 @@ index 367a7f7f3c..bc43b980d5 100644
 +#define FFMPEG_VERSION "4.3.git"
  #endif /* AVUTIL_FFVERSION_H */
 diff --git a/third_party/ffmpeg/chromium/scripts/build_ffmpeg.py b/third_party/ffmpeg/chromium/scripts/build_ffmpeg.py
-index 75333a2c9f..ae8cf3a69c 100755
+index b51f47934a..a77646e57e 100755
 --- a/third_party/ffmpeg/chromium/scripts/build_ffmpeg.py
 +++ b/third_party/ffmpeg/chromium/scripts/build_ffmpeg.py
-@@ -910,11 +910,27 @@ def ConfigureAndBuild(target_arch, target_os, host_os, host_arch, parallel_jobs,
+@@ -912,11 +912,27 @@ def ConfigureAndBuild(target_arch, target_os, host_os, host_arch, parallel_jobs,
            '--ar=cygwin-wrapper lib',
        ])
  
