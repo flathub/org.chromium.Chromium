@@ -1,7 +1,7 @@
 From b944fa9ca3fe8274de94bc81ec6dd30dc4e8a740 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Wed, 20 Jan 2021 10:33:46 -0600
-Subject: [PATCH 22/23] Revert "Reland "build: In LTO links, run just one link
+Subject: [PATCH 22/24] Revert "Reland "build: In LTO links, run just one link
  at once, but give it all cores""
 
 This reverts commit a2ebd1511b2ee20072f0768ffb7620066dc643e9.

@@ -207,6 +207,7 @@ modules:
           - patches/0021-Add-support-for-respecting-system-proxy-settings-whe.patch
           - patches/0022-Revert-Reland-build-In-LTO-links-run-just-one-link-a.patch
           - patches/0023-Revert-base-Rename-SEQUENCE_CHECKER-capability-name.patch
+          - patches/0024-Revert-Reland-Add-clang-nomerge-attribute-to-CheckEr.patch
       - type: file
         path: org.chromium.Chromium.desktop
       - type: file
