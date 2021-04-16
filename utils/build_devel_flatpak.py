@@ -35,6 +35,7 @@ def rewrite_manifest_and_get_env(manifest_file, new_manifest_file, out_dir):
         '*.png',
         'locales',
         'MEIPreload',
+        'swiftshader',
     ]
 
     with open(manifest_file) as fp:
