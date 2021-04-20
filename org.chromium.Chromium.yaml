@@ -43,7 +43,7 @@ add-extensions:
   org.chromium.Chromium.Extension:
     version: '1'
     directory: chromium/extensions
-    merge-dirs: 'extensions;native-messaging-hosts;policies/managed;policies/recommended'
+    merge-dirs: extensions;native-messaging-hosts;policies/managed;policies/recommended
     subdirectories: true
     no-autodownload: true
     autodelete: true
@@ -156,7 +156,8 @@ modules:
     buildsystem: simple
     build-commands:
       - mkdir -p /app/chromium/{extensions,native-messaging-hosts,policies}
-      - for dir in native-messaging-hosts policies; do ln -s /app/chromium/{$dir,extensions}/$dir; done
+      - for dir in native-messaging-hosts policies; do ln -s /app/chromium/{$dir,extensions}/$dir;
+        done
       - touch /app/chromium/extensions/no-mount-stamp
 
   - name: chromium
@@ -175,8 +176,8 @@ modules:
       - ./install.sh
     sources:
       - type: archive
-        url: https://commondatastorage.googleapis.com/chromium-browser-official/chromium-90.0.4430.72.tar.xz
-        sha256: a5cc88ca8fffac21ec4d1646980f698dfb6f388a225dd7a2c5a3d252a4098943
+        url: https://commondatastorage.googleapis.com/chromium-browser-official/chromium-90.0.4430.85.tar.xz
+        sha256: 01c5594d4b7eaa67e00b4fa16ae0c9d35ec5917467abd387ba1b5cc332d44922
         x-checker-data:
           type: anitya
           project-id: 13344
