@@ -1,7 +1,7 @@
 From a785aff3ae6cabd0b8edac8841a1dad3e4cde6f8 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Wed, 11 Nov 2020 16:53:24 -0600
-Subject: [PATCH 15/24] [webhid] Properly handle lack of platform support
+Subject: [PATCH 15/21] [webhid] Properly handle lack of platform support
 
 This avoids crashes when the platform does not have an HID service,
 which can occur on builds without udev.
