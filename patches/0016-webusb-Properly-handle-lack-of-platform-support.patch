@@ -1,7 +1,7 @@
 From 94569105052ef28373c7929f20bf27da4fa1a3bd Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Wed, 11 Nov 2020 16:54:18 -0600
-Subject: [PATCH 16/24] [webusb] Properly handle lack of platform support
+Subject: [PATCH 16/21] [webusb] Properly handle lack of platform support
 
 This avoids crashes and infinite device service startup loops when the
 platform does not have a USB service, which can occur on builds without

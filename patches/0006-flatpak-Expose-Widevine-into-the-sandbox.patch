@@ -1,7 +1,7 @@
 From 800b4a9f516604313318a0529d49c0a1b04d322d Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Tue, 17 Nov 2020 13:00:39 -0600
-Subject: [PATCH 06/24] flatpak: Expose Widevine into the sandbox
+Subject: [PATCH 06/21] flatpak: Expose Widevine into the sandbox
 
 ---
  .../zygote_host/zygote_host_impl_linux.cc     | 54 +++++++++++++-
