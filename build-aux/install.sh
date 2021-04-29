@@ -4,7 +4,7 @@ mkdir -p /app/chromium
 
 pushd out/Release
 # Keep file names in sync with build_devel_flatpak.py
-for path in chrome icudtl.dat *.so *.pak *.bin *.png locales MEIPreload; do
+for path in chrome icudtl.dat *.so *.pak *.bin *.png locales MEIPreload swiftshader; do
     cp -rv $path /app/chromium
 done
 popd
