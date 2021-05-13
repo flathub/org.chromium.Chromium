@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -e
 
 # DO NOT REUSE THE BELOW API KEYS; these are for Flathub only.
 # http://lists.debian.org/debian-legal/2013/11/msg00006.html

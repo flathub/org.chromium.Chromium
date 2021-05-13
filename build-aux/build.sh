@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -e
 
 . /usr/lib/sdk/node12/enable.sh
 . /usr/lib/sdk/openjdk11/enable.sh
