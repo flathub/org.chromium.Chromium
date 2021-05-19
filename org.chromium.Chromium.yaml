@@ -213,6 +213,8 @@ modules:
       - type: file
         path: chromium.sh
       - type: file
+        path: unlink_profiles.py
+      - type: file
         path: portal_error.txt
       - type: dir
         path: build-aux

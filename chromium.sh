@@ -20,6 +20,15 @@ merge_extensions() {
   )
 }
 
+unlink_profiles() {
+  local stamp="$XDG_CONFIG_HOME/chromium-profiles-unlinked-stamp"
+  if [[ ! -d "$XDG_CONFIG_HOME/chromium" ]]; then
+    touch "$stamp"
+  elif [[ ! -f "$stamp" ]]; then
+    unlink_profiles.py && touch "$stamp"
+  fi
+}
+
 # Check the portal version & make sure it supports expose-pids.
 if [[ $(get_int32_property version) -lt 4 || \
       $(($(get_int32_property supports) & 1)) -eq 0 ]]; then
@@ -44,6 +53,9 @@ if [[ ! -f /app/chromium/extensions/no-mount-stamp ]]; then
   merge_extensions policies/managed
   merge_extensions policies/recommended
 fi
+
+# Unlink any profiles from the sync keys to avoid any expected deletions.
+unlink_profiles
 
 flextop-init
 

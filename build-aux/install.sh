@@ -19,3 +19,4 @@ install -Dvm 644 portal_error.txt -t /app/share/flatpak-chromium
 install -Dvm 644 org.chromium.Chromium.desktop -t /app/share/applications
 install -Dvm 644 org.chromium.Chromium.metainfo.xml -t /app/share/metainfo
 install -Dvm 755 chromium.sh /app/bin/chromium
+install -Dvm 755 unlink_profiles.py -t /app/bin
