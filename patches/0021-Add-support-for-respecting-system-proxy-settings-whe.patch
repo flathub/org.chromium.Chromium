@@ -1,7 +1,7 @@
-From 8971cdf683c02b3ea7d242fcbc3442b8b49a6fe0 Mon Sep 17 00:00:00 2001
+From f40df9c3e9211ee2a93898781398d3cb3ff6dfa5 Mon Sep 17 00:00:00 2001
 From: Andre Moreira Magalhaes <andre.magalhaes@endlessos.org>
 Date: Thu, 17 Dec 2020 19:05:10 -0300
-Subject: [PATCH 21/21] Add support for respecting system proxy settings when
+Subject: [PATCH 21/22] Add support for respecting system proxy settings when
  running on Linux/Flatpak
 
 Some general notes on implementation:
@@ -44,12 +44,12 @@ Closes https://github.com/flathub/org.chromium.Chromium/issues/36
  chrome/app/generated_resources.grd            |   6 +
  .../net/system_network_context_manager.cc     |   9 +-
  chrome/browser/ui/webui/about_ui.cc           |  14 +-
- net/BUILD.gn                                  |   3 +
+ net/BUILD.gn                                  |   4 +
  .../configured_proxy_resolution_service.cc    |   5 +-
  .../proxy_config_service_linux.cc             |  10 +-
  net/proxy_resolution/proxy_resolver_linux.cc  | 127 ++++++++++++++++++
  net/proxy_resolution/proxy_resolver_linux.h   |  31 +++++
- 8 files changed, 201 insertions(+), 4 deletions(-)
+ 8 files changed, 202 insertions(+), 4 deletions(-)
  create mode 100644 net/proxy_resolution/proxy_resolver_linux.cc
  create mode 100644 net/proxy_resolution/proxy_resolver_linux.h
 
@@ -131,19 +131,21 @@ index 3d0d6375ec142..53edee98278e4 100644
                                  base::ASCIIToUTF16(binary.BaseName().value())));
    AppendFooter(&data);
 diff --git a/net/BUILD.gn b/net/BUILD.gn
-index 216ed593daed1..2e90726f354f7 100644
+index 216ed593daed1..2c7eb4bfd003e 100644
 --- a/net/BUILD.gn
 +++ b/net/BUILD.gn
-@@ -1228,6 +1228,8 @@ component("net") {
+@@ -1228,7 +1228,10 @@ component("net") {
          "base/network_change_notifier_linux.h",
          "proxy_resolution/proxy_config_service_linux.cc",
          "proxy_resolution/proxy_config_service_linux.h",
 +        "proxy_resolution/proxy_resolver_linux.cc",
 +        "proxy_resolution/proxy_resolver_linux.h",
        ]
++      deps += ["//sandbox/linux:sandbox_services"]
      }
  
-@@ -1693,6 +1695,7 @@ source_set("net_deps") {
+     if (is_linux || is_chromeos || is_android) {
+@@ -1693,6 +1696,7 @@ source_set("net_deps") {
  
      if (use_gio) {
        public_configs += [ "//build/linux:gio_config" ]
@@ -384,5 +386,5 @@ index 0000000000000..0a7a22aa44d59
 +
 +#endif  // NET_PROXY_RESOLUTION_PROXY_RESOLVER_LINUX_H_
 -- 
-2.29.2
+2.31.1
 
