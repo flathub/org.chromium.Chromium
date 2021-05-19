@@ -206,6 +206,7 @@ modules:
           - patches/0019-Add-OpenURI-portal-support-for-opening-directories.patch
           - patches/0020-Enable-new-dtags-on-non-component-builds.patch
           - patches/0021-Add-support-for-respecting-system-proxy-settings-whe.patch
+          - patches/0022-content-Disable-the-WASM-trap-handler-on-Linux.patch
       - type: file
         path: org.chromium.Chromium.desktop
       - type: file

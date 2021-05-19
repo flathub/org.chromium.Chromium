@@ -1,7 +1,7 @@
-From 1032fa34c9cc2a89962616b04f014e322b3cdcdc Mon Sep 17 00:00:00 2001
+From 3317fe1ef82c20835aae4bc833a173dccf6e7768 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Mon, 31 Aug 2020 15:26:52 -0500
-Subject: [PATCH 18/21] Add support for the XDG file chooser portal
+Subject: [PATCH 18/22] Add support for the XDG file chooser portal
 
 ---
  chrome/browser/about_flags.cc             |   7 +
@@ -20,10 +20,10 @@ Subject: [PATCH 18/21] Add support for the XDG file chooser portal
  create mode 100644 ui/gtk/select_file_dialog_impl_portal.h
 
 diff --git a/chrome/browser/about_flags.cc b/chrome/browser/about_flags.cc
-index 9111e2643a9c1..10eaec0cea60f 100644
+index 6bf2f93b5fd7f..3242bc73a0f29 100644
 --- a/chrome/browser/about_flags.cc
 +++ b/chrome/browser/about_flags.cc
-@@ -5206,6 +5206,13 @@ const FeatureEntry kFeatureEntries[] = {
+@@ -5215,6 +5215,13 @@ const FeatureEntry kFeatureEntries[] = {
       FEATURE_VALUE_TYPE(features::kVaapiWebPImageDecodeAcceleration)},
  #endif
  
@@ -38,10 +38,10 @@ index 9111e2643a9c1..10eaec0cea60f 100644
      {"calculate-native-win-occlusion",
       flag_descriptions::kCalculateNativeWinOcclusionName,
 diff --git a/chrome/browser/flag_descriptions.cc b/chrome/browser/flag_descriptions.cc
-index c7d78a2054f60..6b78996a6490c 100644
+index b93b26ea2962d..e62f3eee5269f 100644
 --- a/chrome/browser/flag_descriptions.cc
 +++ b/chrome/browser/flag_descriptions.cc
-@@ -3661,6 +3661,17 @@ const char kTabFreezeDescription[] =
+@@ -3665,6 +3665,17 @@ const char kTabFreezeDescription[] =
  
  #endif  // !defined(OS_ANDROID)
  
@@ -60,10 +60,10 @@ index c7d78a2054f60..6b78996a6490c 100644
  
  #if defined(OS_WIN)
 diff --git a/chrome/browser/flag_descriptions.h b/chrome/browser/flag_descriptions.h
-index c1ed295859a2c..987c6ae92dc69 100644
+index 2a348d968d63e..e078abf455947 100644
 --- a/chrome/browser/flag_descriptions.h
 +++ b/chrome/browser/flag_descriptions.h
-@@ -2107,6 +2107,15 @@ extern const char kTabFreezeDescription[];
+@@ -2110,6 +2110,15 @@ extern const char kTabFreezeDescription[];
  
  #endif  // defined(OS_ANDROID)
  
@@ -1203,5 +1203,5 @@ index 0000000000000..fd838bcd3a1ed
 +
 +#endif  // UI_GTK_SELECT_FILE_DIALOG_IMPL_PORTAL_H_
 -- 
-2.29.2
+2.31.1
 
