@@ -1,4 +1,4 @@
-From 6fa73e046ad88de40bd25bb08cac417e2cf34785 Mon Sep 17 00:00:00 2001
+From 77db05a7d1f64ab1d1bf2bc6146bcd965bbdcaa6 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Thu, 1 Oct 2020 16:39:00 -0500
 Subject: [PATCH 4/4] Ensure libffmpeg.so is in the rpath of binaries
@@ -25,5 +25,5 @@ index cbe2fdd844..9429121215 100755
  } else {
    source_set("ffmpeg") {
 -- 
-2.29.2
+2.31.1
 

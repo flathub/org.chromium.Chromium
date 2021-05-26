@@ -1,7 +1,7 @@
-From 323e0f03084448eb3705c0611d3ba8da400f6ada Mon Sep 17 00:00:00 2001
+From 678c3de9343824fdcdef142b728fb3aea47dc35b Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Wed, 11 Nov 2020 16:53:24 -0600
-Subject: [PATCH 15/22] [webhid] Properly handle lack of platform support
+Subject: [PATCH 15/23] [webhid] Properly handle lack of platform support
 
 This avoids crashes when the platform does not have an HID service,
 which can occur on builds without udev.
@@ -10,7 +10,7 @@ which can occur on builds without udev.
  1 file changed, 28 insertions(+), 13 deletions(-)
 
 diff --git a/services/device/hid/hid_manager_impl.cc b/services/device/hid/hid_manager_impl.cc
-index 003d3d9706aa7..135bd117c2e84 100644
+index 604f373514fb6..40d124dfd4fe8 100644
 --- a/services/device/hid/hid_manager_impl.cc
 +++ b/services/device/hid/hid_manager_impl.cc
 @@ -26,8 +26,9 @@ HidManagerImpl::HidManagerImpl() : hid_service_observer_(this) {
