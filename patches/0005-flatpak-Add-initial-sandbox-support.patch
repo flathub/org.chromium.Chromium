@@ -1,7 +1,7 @@
-From 035cfda7f167f7a3eacbfbe770d04a75bcbb8db9 Mon Sep 17 00:00:00 2001
+From 3a63d93cb2ae049c169e717ca5c240187f43e099 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Tue, 17 Mar 2020 13:18:27 -0500
-Subject: [PATCH 05/22] flatpak: Add initial sandbox support
+Subject: [PATCH 05/23] flatpak: Add initial sandbox support
 
 ---
  .gitignore                                    |   1 +
@@ -29,7 +29,7 @@ Subject: [PATCH 05/22] flatpak: Add initial sandbox support
  create mode 100644 sandbox/linux/services/flatpak_sandbox.h
 
 diff --git a/.gitignore b/.gitignore
-index 0d222bbe0b579..ef17dc6e39b92 100644
+index 31867d1985cb3..18a05aa8ff456 100644
 --- a/.gitignore
 +++ b/.gitignore
 @@ -63,6 +63,7 @@ vs-chromium-project.txt
@@ -41,10 +41,10 @@ index 0d222bbe0b579..ef17dc6e39b92 100644
  /.externalToolBuilders/
  /.settings/
 diff --git a/base/threading/thread_restrictions.h b/base/threading/thread_restrictions.h
-index ce16488c6d3c3..b1d4b70d815f3 100644
+index dc5dacc02b67d..2e76d52ed0876 100644
 --- a/base/threading/thread_restrictions.h
 +++ b/base/threading/thread_restrictions.h
-@@ -286,6 +286,10 @@ namespace resource_coordinator {
+@@ -287,6 +287,10 @@ namespace resource_coordinator {
  class TabManagerDelegate;
  }
  
@@ -55,7 +55,7 @@ index ce16488c6d3c3..b1d4b70d815f3 100644
  namespace service_manager {
  class ServiceProcessLauncher;
  }
-@@ -416,6 +420,7 @@ class BASE_EXPORT ScopedAllowBlocking {
+@@ -417,6 +421,7 @@ class BASE_EXPORT ScopedAllowBlocking {
    friend class printing::PrintJobWorker;
    friend class remoting::ScopedBypassIOThreadRestrictions;  // crbug.com/1144161
    friend class resource_coordinator::TabManagerDelegate;  // crbug.com/778703
@@ -63,7 +63,7 @@ index ce16488c6d3c3..b1d4b70d815f3 100644
    friend class web::WebSubThread;
    friend class weblayer::BrowserContextImpl;
    friend class weblayer::ContentBrowserClientImpl;
-@@ -489,6 +494,7 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitives {
+@@ -490,6 +495,7 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitives {
    friend class rlz_lib::FinancialPing;
    friend class shell_integration_linux::
        LaunchXdgUtilityScopedAllowBaseSyncPrimitives;
@@ -234,7 +234,7 @@ index 21b8323eb4965..c69d687f8e871 100644
  
    // This lock protects the |zygote_pids_| set.
 diff --git a/content/common/child_process_host_impl.cc b/content/common/child_process_host_impl.cc
-index fe07a994d68a3..845a3efba0b7d 100644
+index 665bc28c8046b..c7ff28ca10d20 100644
 --- a/content/common/child_process_host_impl.cc
 +++ b/content/common/child_process_host_impl.cc
 @@ -40,6 +40,7 @@
@@ -259,7 +259,7 @@ index fe07a994d68a3..845a3efba0b7d 100644
      child_path = base::FilePath(base::kProcSelfExe);
  #endif
  
-@@ -302,7 +308,7 @@ bool ChildProcessHostImpl::OnMessageReceived(const IPC::Message& msg) {
+@@ -298,7 +304,7 @@ bool ChildProcessHostImpl::OnMessageReceived(const IPC::Message& msg) {
    }
  
    if (!handled) {
@@ -268,7 +268,7 @@ index fe07a994d68a3..845a3efba0b7d 100644
    }
  
  #if BUILDFLAG(IPC_MESSAGE_LOG_ENABLED)
-@@ -316,7 +322,7 @@ void ChildProcessHostImpl::OnChannelConnected(int32_t peer_pid) {
+@@ -312,7 +318,7 @@ void ChildProcessHostImpl::OnChannelConnected(int32_t peer_pid) {
    if (!peer_process_.IsValid()) {
      peer_process_ = base::Process::OpenWithExtraPrivileges(peer_pid);
      if (!peer_process_.IsValid())
@@ -278,7 +278,7 @@ index fe07a994d68a3..845a3efba0b7d 100644
    }
    opening_channel_ = false;
 diff --git a/content/zygote/zygote_linux.cc b/content/zygote/zygote_linux.cc
-index f2512d63bc43e..a2d95816b650a 100644
+index f539436a82014..8ecdb8bda3784 100644
 --- a/content/zygote/zygote_linux.cc
 +++ b/content/zygote/zygote_linux.cc
 @@ -116,7 +116,7 @@ bool Zygote::ProcessRequests() {
@@ -1230,7 +1230,7 @@ index 0000000000000..fc8a77d403f96
 +
 +#endif  // SANDBOX_LINUX_SERVICES_FLATPAK_SANDBOX_H_
 diff --git a/sandbox/policy/linux/sandbox_linux.cc b/sandbox/policy/linux/sandbox_linux.cc
-index c4231d0b964a7..15c8942e63d86 100644
+index ba21e015b5a54..fc2ea9291fd2f 100644
 --- a/sandbox/policy/linux/sandbox_linux.cc
 +++ b/sandbox/policy/linux/sandbox_linux.cc
 @@ -33,6 +33,7 @@

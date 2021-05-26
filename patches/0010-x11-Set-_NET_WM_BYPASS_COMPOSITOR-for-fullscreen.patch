@@ -1,49 +1,19 @@
-From cd178b0785e2c071ee060ceb94ae964df90c3f47 Mon Sep 17 00:00:00 2001
+From 576d05b88b950e4a1a9344fb10faf45896026e98 Mon Sep 17 00:00:00 2001
 From: Daniel Drake <drake@endlessm.com>
 Date: Fri, 3 Jul 2015 14:59:24 -0600
-Subject: [PATCH 10/22] x11: Set _NET_WM_BYPASS_COMPOSITOR for fullscreen
+Subject: [PATCH 10/23] x11: Set _NET_WM_BYPASS_COMPOSITOR for fullscreen
 
 This improves performance at full screen.
 ---
- ui/base/x/x11_window.cc              | 6 ++++++
- ui/base/x/x11_window.h               | 1 +
- ui/platform_window/x11/x11_window.cc | 2 ++
- 3 files changed, 9 insertions(+)
+ ui/platform_window/x11/x11_window.cc | 8 ++++++++
+ ui/platform_window/x11/x11_window.h  | 1 +
+ 2 files changed, 9 insertions(+)
 
-diff --git a/ui/base/x/x11_window.cc b/ui/base/x/x11_window.cc
-index 585a09a2b6d89..688649c50754f 100644
---- a/ui/base/x/x11_window.cc
-+++ b/ui/base/x/x11_window.cc
-@@ -535,6 +535,12 @@ void XWindow::SetFullscreen(bool fullscreen) {
-                  x11::Atom::None);
- }
- 
-+void XWindow::SetBypassCompositor(bool bypass) {
-+  x11::SetProperty<uint32_t>(xwindow_,
-+                             x11::GetAtom("_NET_WM_BYPASS_COMPOSITOR"),
-+                             x11::Atom::CARDINAL, bypass);
-+}
-+
- void XWindow::Activate() {
-   if (!IsXWindowVisible() || !activatable_)
-     return;
-diff --git a/ui/base/x/x11_window.h b/ui/base/x/x11_window.h
-index 0a870d41a0425..bac3e48bfa88b 100644
---- a/ui/base/x/x11_window.h
-+++ b/ui/base/x/x11_window.h
-@@ -110,6 +110,7 @@ class COMPONENT_EXPORT(UI_BASE_X) XWindow {
-   bool Hide();
-   void Unhide();
-   void SetFullscreen(bool fullscreen);
-+  void SetBypassCompositor(bool bypass);
-   void Activate();
-   void Deactivate();
-   bool IsActive() const;
 diff --git a/ui/platform_window/x11/x11_window.cc b/ui/platform_window/x11/x11_window.cc
-index 967dd5f1c0999..dd596cf359fc2 100644
+index 37649f7f332fc..bd79fbe49b691 100644
 --- a/ui/platform_window/x11/x11_window.cc
 +++ b/ui/platform_window/x11/x11_window.cc
-@@ -300,6 +300,8 @@ void X11Window::ToggleFullscreen() {
+@@ -602,6 +602,8 @@ void X11Window::ToggleFullscreen() {
    state_ = new_state;
    SetFullscreen(fullscreen);
  
@@ -52,6 +22,31 @@ index 967dd5f1c0999..dd596cf359fc2 100644
    if (unmaximize_and_remaximize)
      Maximize();
  
+@@ -1684,6 +1686,12 @@ void X11Window::SetFullscreen(bool fullscreen) {
+                  x11::Atom::None);
+ }
+ 
++void X11Window::SetBypassCompositor(bool bypass) {
++  x11::SetProperty<uint32_t>(xwindow_,
++                             x11::GetAtom("_NET_WM_BYPASS_COMPOSITOR"),
++                             x11::Atom::CARDINAL, bypass);
++}
++
+ bool X11Window::IsActive() const {
+   // Focus and stacking order are independent in X11.  Since we cannot guarantee
+   // a window is topmost iff it has focus, just use the focus state to determine
+diff --git a/ui/platform_window/x11/x11_window.h b/ui/platform_window/x11/x11_window.h
+index 3a78032d8467c..eafd31b28c457 100644
+--- a/ui/platform_window/x11/x11_window.h
++++ b/ui/platform_window/x11/x11_window.h
+@@ -225,6 +225,7 @@ class X11_WINDOW_EXPORT X11Window
+   void CloseXWindow();
+   void Map(bool inactive = false);
+   void SetFullscreen(bool fullscreen);
++  void SetBypassCompositor(bool bypass);
+   bool IsActive() const;
+   bool IsTargetedBy(const x11::Event& xev) const;
+   void HandleEvent(const x11::Event& xev);
 -- 
 2.31.1
 

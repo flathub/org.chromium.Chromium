@@ -1,7 +1,7 @@
-From b0639ece1140d1d2af596ca0e0eaaaee879cf511 Mon Sep 17 00:00:00 2001
+From 5ed1db9dcdd17fa9929abe0506759254f075dce6 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Wed, 11 Nov 2020 16:54:18 -0600
-Subject: [PATCH 16/22] [webusb] Properly handle lack of platform support
+Subject: [PATCH 16/23] [webusb] Properly handle lack of platform support
 
 This avoids crashes and infinite device service startup loops when the
 platform does not have a USB service, which can occur on builds without
@@ -12,7 +12,7 @@ udev.
  2 files changed, 20 insertions(+), 8 deletions(-)
 
 diff --git a/chrome/browser/usb/web_usb_detector.cc b/chrome/browser/usb/web_usb_detector.cc
-index 6e28665b92112..6f6f432fbe478 100644
+index 12ca403505829..d09827459777a 100644
 --- a/chrome/browser/usb/web_usb_detector.cc
 +++ b/chrome/browser/usb/web_usb_detector.cc
 @@ -275,6 +275,7 @@ void WebUsbDetector::OnDeviceManagerConnectionError() {
@@ -24,7 +24,7 @@ index 6e28665b92112..6f6f432fbe478 100644
  }
  
 diff --git a/services/device/usb/mojo/device_manager_impl.cc b/services/device/usb/mojo/device_manager_impl.cc
-index 6415ecdb6e2ab..35ecdc35278cf 100644
+index 2b20bd75f8f93..a6db3095cdd74 100644
 --- a/services/device/usb/mojo/device_manager_impl.cc
 +++ b/services/device/usb/mojo/device_manager_impl.cc
 @@ -46,23 +46,31 @@ DeviceManagerImpl::~DeviceManagerImpl() = default;
@@ -67,9 +67,9 @@ index 6415ecdb6e2ab..35ecdc35278cf 100644
  }
  
  void DeviceManagerImpl::GetDevice(
-@@ -223,6 +231,9 @@ void DeviceManagerImpl::GetDeviceInternal(
-     mojo::PendingReceiver<mojom::UsbDevice> device_receiver,
+@@ -226,6 +234,9 @@ void DeviceManagerImpl::GetDeviceInternal(
      mojo::PendingRemote<mojom::UsbDeviceClient> device_client,
+     base::span<const uint8_t> blocked_interface_classes,
      bool allow_security_key_requests) {
 +  if (!usb_service_)
 +    return;

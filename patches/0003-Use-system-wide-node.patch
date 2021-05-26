@@ -1,18 +1,18 @@
-From 8eb22b8000b0f54895ec140492dc4d570c0c33eb Mon Sep 17 00:00:00 2001
+From 88ef24d222f93badd85606bdfac91b20378066c9 Mon Sep 17 00:00:00 2001
 From: Andre Moreira Magalhaes <andre@endlessm.com>
 Date: Thu, 16 Jul 2020 20:22:57 -0300
 Subject: [PATCH 3/4] Use system wide node
 
 https://phabricator.endlessm.com/T30286
 ---
- third_party/node/node.py | 8 +-------
- 1 file changed, 1 insertion(+), 7 deletions(-)
+ third_party/node/node.py | 14 +-------------
+ 1 file changed, 1 insertion(+), 13 deletions(-)
 
 diff --git a/third_party/node/node.py b/third_party/node/node.py
-index c68955eea9..2c77c9b064 100755
+index 09662c4045..9e7811766f 100755
 --- a/third_party/node/node.py
 +++ b/third_party/node/node.py
-@@ -3,19 +3,13 @@
+@@ -3,25 +3,13 @@
  # Use of this source code is governed by a BSD-style license that can be
  # found in the LICENSE file.
  
@@ -24,6 +24,12 @@ index c68955eea9..2c77c9b064 100755
  
  
  def GetBinaryPath():
+-  # TODO: Node 16.0 will likely ship with an official universal node binary
+-  # on macOS. Once node 16.0 is released, remove this special case here
+-  # and use node-darwin-universal in the dict in the main return statement.
+-  if platform.system() == 'Darwin' and platform.machine() == 'arm64':
+-      return os.path.join(os_path.join(os_path.dirname(__file__), 'mac',
+-                          'node-darwin-arm64', 'bin', 'node'))
 -  return os_path.join(os_path.dirname(__file__), *{
 -    'Darwin': ('mac', 'node-darwin-x64', 'bin', 'node'),
 -    'Linux': ('linux', 'node-linux-x64', 'bin', 'node'),
@@ -34,5 +40,5 @@ index c68955eea9..2c77c9b064 100755
  
  def RunNode(cmd_parts, stdout=None):
 -- 
-2.29.2
+2.31.1
 
