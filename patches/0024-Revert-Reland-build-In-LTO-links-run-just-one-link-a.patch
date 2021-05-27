@@ -1,0 +1,74 @@
+From fddcd52e1c1245709d1c14af1765259c4ee1753d Mon Sep 17 00:00:00 2001
+From: Ryan Gonzalez <rymg19@gmail.com>
+Date: Wed, 20 Jan 2021 10:33:46 -0600
+Subject: [PATCH 24/26] Revert "Reland "build: In LTO links, run just one link
+ at once, but give it all cores""
+
+This reverts commit a2ebd1511b2ee20072f0768ffb7620066dc643e9.
+
+The flags given do not work on LLVM 10.
+---
+ build/config/compiler/BUILD.gn       | 11 +++++------
+ build/config/compiler/compiler.gni   |  4 ++++
+ build/toolchain/concurrent_links.gni |  1 -
+ 3 files changed, 9 insertions(+), 7 deletions(-)
+
+diff --git a/build/config/compiler/BUILD.gn b/build/config/compiler/BUILD.gn
+index 72ea590d69681..c20155eb66357 100644
+--- a/build/config/compiler/BUILD.gn
++++ b/build/config/compiler/BUILD.gn
+@@ -644,7 +644,7 @@ config("compiler") {
+ 
+     if (is_win) {
+       ldflags += [
+-        "/opt:lldltojobs=all",
++        "/opt:lldltojobs=" + max_jobs_per_link,
+         "-mllvm:-import-instr-limit=$import_instr_limit",
+         "/lldltocache:" +
+             rebase_path("$root_out_dir/thinlto-cache", root_build_dir),
+@@ -657,11 +657,10 @@ config("compiler") {
+       # usage in crbug.com/1038040. Note this will increase build time in
+       # Chrome OS.
+ 
+-      # In ThinLTO builds, we run at most one link process at a time,
+-      # and let it use all cores.
+-      # TODO(thakis): Check if '=0' (that is, number of cores, instead
+-      # of "all" which means number of hardware threads) is faster.
+-      ldflags += [ "-Wl,--thinlto-jobs=all" ]
++      # Limit the parallelism to avoid too aggressive competition between
++      # linker jobs. This is still suboptimal to a potential dynamic
++      # resource allocation scheme, but should be good enough.
++      ldflags += [ "-Wl,--thinlto-jobs=" + max_jobs_per_link ]
+ 
+       ldflags += [
+         "-Wl,--thinlto-cache-dir=" +
+diff --git a/build/config/compiler/compiler.gni b/build/config/compiler/compiler.gni
+index 96a18d91a3f63..b6a8e297db66a 100644
+--- a/build/config/compiler/compiler.gni
++++ b/build/config/compiler/compiler.gni
+@@ -76,6 +76,10 @@ declare_args() {
+   # If true, use Goma for ThinLTO code generation where applicable.
+   use_goma_thin_lto = false
+ 
++  # Limit the number of jobs (threads/processes) the linker is allowed
++  # to use (for linkers that support this).
++  max_jobs_per_link = 8
++
+   # Whether we're using a sample profile collected on an architecture different
+   # than the one we're compiling for.
+   #
+diff --git a/build/toolchain/concurrent_links.gni b/build/toolchain/concurrent_links.gni
+index f1a42c9101a24..d6dea09842952 100644
+--- a/build/toolchain/concurrent_links.gni
++++ b/build/toolchain/concurrent_links.gni
+@@ -100,7 +100,6 @@ if (concurrent_links == -1) {
+     java_cmd_pool_size = _command_dict.secondary_pool_size
+   }
+ } else {
+-  assert(!use_thin_lto, "can't explicitly set concurrent_links with thinlto")
+   concurrent_links_logs =
+       [ "concurrent_links set by GN arg (value=$concurrent_links)" ]
+ }
+-- 
+2.31.1
+
