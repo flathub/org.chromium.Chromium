@@ -59,7 +59,7 @@ add-extensions:
 sdk-extensions:
   - org.freedesktop.Sdk.Extension.node12
   - org.freedesktop.Sdk.Extension.openjdk11
-  - org.freedesktop.Sdk.Extension.llvm12
+  - org.freedesktop.Sdk.Extension.llvm11
 
 modules:
   - libsecret.json
@@ -208,6 +208,9 @@ modules:
           - patches/0021-Add-support-for-respecting-system-proxy-settings-whe.patch
           - patches/0022-content-Disable-the-WASM-trap-handler-on-Linux.patch
           - patches/0023-Use-the-host-Java-install-for-Closure.patch
+          - patches/0024-Revert-Reland-build-In-LTO-links-run-just-one-link-a.patch
+          - patches/0025-Revert-base-Rename-SEQUENCE_CHECKER-capability-name.patch
+          - patches/0026-Revert-Reland-Add-clang-nomerge-attribute-to-CheckEr.patch
       - type: file
         path: org.chromium.Chromium.desktop
       - type: file
