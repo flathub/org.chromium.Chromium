@@ -1,7 +1,7 @@
 From 07ff264f8a107f516fc43a34d90d54da998ae922 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Tue, 25 Aug 2020 19:26:07 -0500
-Subject: [PATCH 07/26] flatpak: Adjust paths for the sandbox
+Subject: [PATCH 07/25] flatpak: Adjust paths for the sandbox
 
 ---
  chrome/common/BUILD.gn        |  4 +++

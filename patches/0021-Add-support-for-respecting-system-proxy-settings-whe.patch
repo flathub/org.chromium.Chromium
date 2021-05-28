@@ -1,7 +1,7 @@
 From 8b1adf09e9ef3874046f727cd2820c72b5fde2b0 Mon Sep 17 00:00:00 2001
 From: Andre Moreira Magalhaes <andre.magalhaes@endlessos.org>
 Date: Thu, 17 Dec 2020 19:05:10 -0300
-Subject: [PATCH 21/26] Add support for respecting system proxy settings when
+Subject: [PATCH 21/25] Add support for respecting system proxy settings when
  running on Linux/Flatpak
 
 Some general notes on implementation:

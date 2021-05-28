@@ -1,7 +1,7 @@
 From 4efc911f4259e0ff1d789c936141d41365cbaa80 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Wed, 11 Nov 2020 16:51:49 -0600
-Subject: [PATCH 14/26] Remove the ability to create desktop shortcuts
+Subject: [PATCH 14/25] Remove the ability to create desktop shortcuts
 
 ---
  .../ui/views/create_application_shortcut_view.cc      | 11 ++---------
