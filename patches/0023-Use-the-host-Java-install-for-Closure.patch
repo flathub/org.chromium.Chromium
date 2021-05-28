@@ -1,7 +1,7 @@
 From 12019a35b5e9cb613b41ee1b4e3e86545c9b0b3d Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Wed, 26 May 2021 09:33:21 -0500
-Subject: [PATCH 23/26] Use the host Java install for Closure
+Subject: [PATCH 23/25] Use the host Java install for Closure
 
 Workaround for https://bugs.chromium.org/p/chromium/issues/detail?id=1192875
 ---

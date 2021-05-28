@@ -57,9 +57,9 @@ add-extensions:
     autodelete: true
 
 sdk-extensions:
+  - org.freedesktop.Sdk.Extension.llvm12
   - org.freedesktop.Sdk.Extension.node12
   - org.freedesktop.Sdk.Extension.openjdk11
-  - org.freedesktop.Sdk.Extension.llvm11
 
 modules:
   - libsecret.json
@@ -179,10 +179,26 @@ modules:
         url: https://commondatastorage.googleapis.com/chromium-browser-official/chromium-91.0.4472.77.tar.xz
         sha256: 45d5a43ef798d20313c78fa8a075be0c22055e39c8481eb53eabda81df901b31
         x-checker-data:
-          type: anitya
-          project-id: 13344
-          stable-only: true
-          url-template: https://commondatastorage.googleapis.com/chromium-browser-official/chromium-$version.tar.xz
+          type: chromium
+          component: chromium
+          is-main-source: true
+      - type: archive
+        url: https://commondatastorage.googleapis.com/chromium-browser-clang/Linux_x64/clang-llvmorg-13-init-6429-g0e92cbd6-2.tgz
+        sha256: 3355d81f43412c1664babdafc2051b9154aaca8d86077829107cc4eae28b018c
+        dest: third_party/llvm-build/Release+Asserts
+        strip-components: 0
+        only-arches: [x86_64]
+        x-checker-data:
+          type: chromium
+          component: llvm-prebuilt
+      - type: git
+        url: https://github.com/llvm/llvm-project
+        commit: llvmorg-13-init-6429-g0e92cbd6
+        dest: third_party/llvm-2
+        only-arches: [aarch64]
+        x-checker-data:
+          type: chromium
+          component: llvm-git
       - type: patch
         paths:
           - patches/0001-ffmpeg-Use-royalty-free-libfdk-aac-for-AAC-playback.patch
@@ -208,9 +224,8 @@ modules:
           - patches/0021-Add-support-for-respecting-system-proxy-settings-whe.patch
           - patches/0022-content-Disable-the-WASM-trap-handler-on-Linux.patch
           - patches/0023-Use-the-host-Java-install-for-Closure.patch
-          - patches/0024-Revert-Reland-build-In-LTO-links-run-just-one-link-a.patch
-          - patches/0025-Revert-base-Rename-SEQUENCE_CHECKER-capability-name.patch
-          - patches/0026-Revert-Reland-Add-clang-nomerge-attribute-to-CheckEr.patch
+          - patches/0024-Clang-build-script-Allow-passing-a-prebuilt-Clang-fo.patch
+          - patches/0025-build-Remove-arm64-tool-prefix.patch
       - type: file
         path: org.chromium.Chromium.desktop
       - type: file

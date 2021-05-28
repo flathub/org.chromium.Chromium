@@ -1,0 +1,43 @@
+From 603c6f568b46bc4453a4397f94674ff423f18f75 Mon Sep 17 00:00:00 2001
+From: Ryan Gonzalez <rymg19@gmail.com>
+Date: Fri, 28 May 2021 10:41:25 -0500
+Subject: [PATCH 24/25] Clang build script: Allow passing a prebuilt Clang for
+ boostrapping
+
+---
+ tools/clang/scripts/build.py | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
+
+diff --git a/tools/clang/scripts/build.py b/tools/clang/scripts/build.py
+index e5cdb26d33ed0..ad1f205ab67d9 100755
+--- a/tools/clang/scripts/build.py
++++ b/tools/clang/scripts/build.py
+@@ -419,6 +419,10 @@ def main():
+   parser.add_argument('--gcc-toolchain', help='what gcc toolchain to use for '
+                       'building; --gcc-toolchain=/opt/foo picks '
+                       '/opt/foo/bin/gcc')
++  parser.add_argument('--bootstrap-llvm',
++                      help='use this LLVM/Clang toolchain for building; '
++                      'must be combined with and overwrites the compilers from '
++                      '--gcc-toolchain')
+   parser.add_argument('--pgo', action='store_true', help='build with PGO')
+   parser.add_argument('--thinlto',
+                       action='store_true',
+@@ -590,6 +594,14 @@ def main():
+         '-DLLVM_LOCAL_RPATH=' + os.path.join(args.gcc_toolchain, 'lib64')
+     ]
+ 
++  # --bootstrap-llvm should overwrite --gcc-toolchain's compilers.
++  if args.bootstrap_llvm:
++    cc = os.path.join(args.bootstrap_llvm, 'bin', 'clang')
++    cxx = os.path.join(args.bootstrap_llvm, 'bin', 'clang++')
++    if not os.access(cc, os.X_OK):
++      print('Invalid --bootstrap-llvm: ' + args.bootstrap_llvm)
++      return 1
++
+   if sys.platform == 'darwin':
+     # For libc++, we only want the headers.
+     base_cmake_args.extend([
+-- 
+2.31.1
+

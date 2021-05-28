@@ -1,11 +1,19 @@
 #!/bin/bash -e
 
+if [[ -d third_party/llvm-2 ]]; then
+  rm -rf third_party/llvm
+  mv third_party/llvm{-2,}
+
+  python3 tools/clang/scripts/build.py --disable-asserts \
+      --skip-checkout --use-system-cmake \
+      --gcc-toolchain=/usr --bootstrap-llvm=/usr/lib/sdk/llvm12 \
+      --without-android --without-fuchsia
+fi
+
 # DO NOT REUSE THE BELOW API KEY; it is for Flathub only.
 # http://lists.debian.org/debian-legal/2013/11/msg00006.html
 tools/gn/bootstrap/bootstrap.py -v --no-clean --gn-gen-args='
     use_sysroot=false
-    custom_toolchain="//build/toolchain/linux/unbundle:default"
-    host_toolchain="//build/toolchain/linux/unbundle:default"
     use_udev=false
     use_lld=true
     enable_nacl=false
@@ -21,7 +29,6 @@ tools/gn/bootstrap/bootstrap.py -v --no-clean --gn-gen-args='
     is_component_ffmpeg=true
     use_vaapi=true
     enable_widevine=true
-    chrome_pgo_phase=0
     rtc_use_pipewire=true
     rtc_link_pipewire=true
     rtc_pipewire_version="0.3"

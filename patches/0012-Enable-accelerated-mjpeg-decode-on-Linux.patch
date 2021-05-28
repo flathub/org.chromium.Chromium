@@ -1,7 +1,7 @@
 From dbbe5bb603ac46050fe760424c1076eeb817ec25 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Tue, 19 Jan 2021 15:41:16 -0600
-Subject: [PATCH 12/26] Enable accelerated mjpeg decode on Linux
+Subject: [PATCH 12/25] Enable accelerated mjpeg decode on Linux
 
 ---
  chrome/browser/about_flags.cc       |  4 ++--
