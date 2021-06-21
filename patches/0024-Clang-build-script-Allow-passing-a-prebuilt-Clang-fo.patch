@@ -1,7 +1,7 @@
 From 603c6f568b46bc4453a4397f94674ff423f18f75 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Fri, 28 May 2021 10:41:25 -0500
-Subject: [PATCH 24/25] Clang build script: Allow passing a prebuilt Clang for
+Subject: [PATCH 24/26] Clang build script: Allow passing a prebuilt Clang for
  boostrapping
 
 ---

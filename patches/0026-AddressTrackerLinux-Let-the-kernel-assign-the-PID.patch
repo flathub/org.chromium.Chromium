@@ -1,0 +1,34 @@
+From 06ae03f53f84907540500228dc2178a9e1edcb55 Mon Sep 17 00:00:00 2001
+From: Ryan Gonzalez <rymg19@gmail.com>
+Date: Mon, 21 Jun 2021 11:24:58 -0500
+Subject: [PATCH 26/26] AddressTrackerLinux: Let the kernel assign the PID
+
+---
+ net/base/address_tracker_linux.cc | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/net/base/address_tracker_linux.cc b/net/base/address_tracker_linux.cc
+index 03537a91c111e..1c703d8de840b 100644
+--- a/net/base/address_tracker_linux.cc
++++ b/net/base/address_tracker_linux.cc
+@@ -203,7 +203,7 @@ void AddressTrackerLinux::Init() {
+     // Request notifications.
+     struct sockaddr_nl addr = {};
+     addr.nl_family = AF_NETLINK;
+-    addr.nl_pid = getpid();
++    addr.nl_pid = 0;  // from kernel
+     // TODO(szym): Track RTMGRP_LINK as well for ifi_type,
+     // http://crbug.com/113993
+     addr.nl_groups =
+@@ -229,7 +229,7 @@ void AddressTrackerLinux::Init() {
+   request.header.nlmsg_len = NLMSG_LENGTH(sizeof(request.msg));
+   request.header.nlmsg_type = RTM_GETADDR;
+   request.header.nlmsg_flags = NLM_F_REQUEST | NLM_F_DUMP;
+-  request.header.nlmsg_pid = getpid();
++  request.header.nlmsg_pid = 0;
+   request.msg.rtgen_family = AF_UNSPEC;
+ 
+   rv = HANDLE_EINTR(
+-- 
+2.31.1
+

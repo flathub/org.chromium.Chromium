@@ -1,7 +1,7 @@
 From 368f309b95da13e0385492d489f7b9953dbc8f11 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Wed, 2 Jun 2021 20:32:22 -0500
-Subject: [PATCH 25/25] build: Remove arm64 tool prefix
+Subject: [PATCH 25/26] build: Remove arm64 tool prefix
 
 ---
  build/toolchain/linux/BUILD.gn | 2 +-
