@@ -91,7 +91,7 @@ index 29a222be4493a..0e7e312b8eee1 100644
 +#if defined(OS_LINUX)
 +// Enables use of the XDG file chooser portal for file selection.
 +const base::Feature kXdgFileChooserPortal{"XdgFileChooserPortal",
-+                                          base::FEATURE_DISABLED_BY_DEFAULT};
++                                          base::FEATURE_ENABLED_BY_DEFAULT};
 +#endif  // defined(OS_LINUX)
 +
 +#if defined(OS_MACOS)
