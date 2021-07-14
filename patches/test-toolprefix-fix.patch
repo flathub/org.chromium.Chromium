@@ -1,0 +1,20 @@
+diff --git a/build/toolchain/gcc_toolchain.gni b/build/toolchain/gcc_toolchain.gni
+index a303d472baf63..3fa273b50158e 100644
+--- a/build/toolchain/gcc_toolchain.gni
++++ b/build/toolchain/gcc_toolchain.gni
+@@ -666,7 +666,14 @@ template("gcc_toolchain") {
+ # actually just be doing a native compile. The invoker can optionally override
+ # use_gold too.
+ template("clang_toolchain") {
+-  if (defined(invoker.toolprefix)) {
++  is_cross_compiling = false
++
++  if (defined(invoker.toolchain_args)) {
++    invoker_toolchain_args = invoker.toolchain_args
++    is_cross_compiling = host_cpu != invoker_toolchain_args.current_cpu
++  }
++
++  if (defined(invoker.toolprefix) && is_cross_compiling) {
+     toolprefix = invoker.toolprefix
+   } else {
+     toolprefix = ""

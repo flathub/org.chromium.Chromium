@@ -152,6 +152,13 @@ modules:
         url: https://github.com/refi64/flextop
         commit: 9f66dac84388f520ecab5ac4fa60df6343b7db5b
 
+  - name: readelf-symlink
+    only-arches: [aarch64]
+    buildsystem: simple
+    build-commands:
+      # Chromium expects to find readelf with its full toolprefix on arm64
+      - ln -s /usr/bin/readelf /app/bin/aarch64-linux-gnu-readelf
+
   - name: extensions
     buildsystem: simple
     build-commands:
@@ -225,7 +232,8 @@ modules:
           - patches/0022-content-Disable-the-WASM-trap-handler-on-Linux.patch
           - patches/0023-Use-the-host-Java-install-for-Closure.patch
           - patches/0024-Clang-build-script-Allow-passing-a-prebuilt-Clang-fo.patch
-          - patches/0025-build-Remove-arm64-tool-prefix.patch
+          # - patches/0025-build-Remove-arm64-tool-prefix.patch
+          # - patches/test-toolprefix-fix.patch
       - type: file
         path: org.chromium.Chromium.desktop
       - type: file
