@@ -1,7 +1,7 @@
-From 603c6f568b46bc4453a4397f94674ff423f18f75 Mon Sep 17 00:00:00 2001
+From d43f22a45493764ba2462dc9eed11bb7348a6941 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Fri, 28 May 2021 10:41:25 -0500
-Subject: [PATCH 24/25] Clang build script: Allow passing a prebuilt Clang for
+Subject: [PATCH] Clang build script: Allow passing a prebuilt Clang for
  boostrapping
 
 ---
@@ -9,10 +9,10 @@ Subject: [PATCH 24/25] Clang build script: Allow passing a prebuilt Clang for
  1 file changed, 12 insertions(+)
 
 diff --git a/tools/clang/scripts/build.py b/tools/clang/scripts/build.py
-index e5cdb26d33ed0..ad1f205ab67d9 100755
+index b3d83dcc9085a..8676510a92892 100755
 --- a/tools/clang/scripts/build.py
 +++ b/tools/clang/scripts/build.py
-@@ -419,6 +419,10 @@ def main():
+@@ -429,6 +429,10 @@ def main():
    parser.add_argument('--gcc-toolchain', help='what gcc toolchain to use for '
                        'building; --gcc-toolchain=/opt/foo picks '
                        '/opt/foo/bin/gcc')
@@ -23,7 +23,7 @@ index e5cdb26d33ed0..ad1f205ab67d9 100755
    parser.add_argument('--pgo', action='store_true', help='build with PGO')
    parser.add_argument('--thinlto',
                        action='store_true',
-@@ -590,6 +594,14 @@ def main():
+@@ -606,6 +610,14 @@ def main():
          '-DLLVM_LOCAL_RPATH=' + os.path.join(args.gcc_toolchain, 'lib64')
      ]
  

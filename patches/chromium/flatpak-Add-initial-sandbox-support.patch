@@ -1,7 +1,7 @@
-From 3a63d93cb2ae049c169e717ca5c240187f43e099 Mon Sep 17 00:00:00 2001
+From 181db1dc0ae300a4d63bf457b82e8160403f0d31 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Tue, 17 Mar 2020 13:18:27 -0500
-Subject: [PATCH 05/25] flatpak: Add initial sandbox support
+Subject: [PATCH] flatpak: Add initial sandbox support
 
 ---
  .gitignore                                    |   1 +
@@ -29,7 +29,7 @@ Subject: [PATCH 05/25] flatpak: Add initial sandbox support
  create mode 100644 sandbox/linux/services/flatpak_sandbox.h
 
 diff --git a/.gitignore b/.gitignore
-index 31867d1985cb3..18a05aa8ff456 100644
+index aa8d155df30d1..8d3603d9c8265 100644
 --- a/.gitignore
 +++ b/.gitignore
 @@ -63,6 +63,7 @@ vs-chromium-project.txt
@@ -41,11 +41,11 @@ index 31867d1985cb3..18a05aa8ff456 100644
  /.externalToolBuilders/
  /.settings/
 diff --git a/base/threading/thread_restrictions.h b/base/threading/thread_restrictions.h
-index dc5dacc02b67d..2e76d52ed0876 100644
+index 06faca5833183..c32b578f66418 100644
 --- a/base/threading/thread_restrictions.h
 +++ b/base/threading/thread_restrictions.h
-@@ -287,6 +287,10 @@ namespace resource_coordinator {
- class TabManagerDelegate;
+@@ -289,6 +289,10 @@ class ScopedAllowThreadJoinForWebRtcTransport;
+ }
  }
  
 +namespace sandbox {
@@ -55,15 +55,15 @@ index dc5dacc02b67d..2e76d52ed0876 100644
  namespace service_manager {
  class ServiceProcessLauncher;
  }
-@@ -417,6 +421,7 @@ class BASE_EXPORT ScopedAllowBlocking {
+@@ -423,6 +427,7 @@ class BASE_EXPORT ScopedAllowBlocking {
+ #endif
    friend class printing::PrintJobWorker;
    friend class remoting::ScopedBypassIOThreadRestrictions;  // crbug.com/1144161
-   friend class resource_coordinator::TabManagerDelegate;  // crbug.com/778703
 +  friend class sandbox::FlatpakSandbox;
    friend class web::WebSubThread;
    friend class weblayer::BrowserContextImpl;
    friend class weblayer::ContentBrowserClientImpl;
-@@ -490,6 +495,7 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitives {
+@@ -495,6 +500,7 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitives {
    friend class rlz_lib::FinancialPing;
    friend class shell_integration_linux::
        LaunchXdgUtilityScopedAllowBaseSyncPrimitives;
@@ -125,7 +125,7 @@ index 6a7120b98d477..6df8f2d66e090 100644
                       status & sandbox::policy::SandboxLinux::kNetNS;
    // A second-layer sandbox is also required to be adequately sandboxed.
 diff --git a/content/browser/zygote_host/zygote_host_impl_linux.cc b/content/browser/zygote_host/zygote_host_impl_linux.cc
-index 87a0c431e214a..ddfd2ac453f42 100644
+index a63289307dacd..3869ecdd83f7c 100644
 --- a/content/browser/zygote_host/zygote_host_impl_linux.cc
 +++ b/content/browser/zygote_host/zygote_host_impl_linux.cc
 @@ -13,11 +13,13 @@
@@ -234,10 +234,10 @@ index 21b8323eb4965..c69d687f8e871 100644
  
    // This lock protects the |zygote_pids_| set.
 diff --git a/content/common/child_process_host_impl.cc b/content/common/child_process_host_impl.cc
-index 665bc28c8046b..c7ff28ca10d20 100644
+index 2166308bf1a26..7ab7908f07411 100644
 --- a/content/common/child_process_host_impl.cc
 +++ b/content/common/child_process_host_impl.cc
-@@ -40,6 +40,7 @@
+@@ -39,6 +39,7 @@
  
  #if defined(OS_LINUX) || defined(OS_CHROMEOS)
  #include "base/linux_util.h"
@@ -245,7 +245,7 @@ index 665bc28c8046b..c7ff28ca10d20 100644
  #elif defined(OS_MAC)
  #include "base/mac/foundation_util.h"
  #include "content/common/mac_helpers.h"
-@@ -75,7 +76,12 @@ base::FilePath ChildProcessHost::GetChildPath(int flags) {
+@@ -74,7 +75,12 @@ base::FilePath ChildProcessHost::GetChildPath(int flags) {
  #if defined(OS_LINUX) || defined(OS_CHROMEOS)
    // Use /proc/self/exe rather than our known binary path so updates
    // can't swap out the binary from underneath us.
@@ -259,7 +259,7 @@ index 665bc28c8046b..c7ff28ca10d20 100644
      child_path = base::FilePath(base::kProcSelfExe);
  #endif
  
-@@ -298,7 +304,7 @@ bool ChildProcessHostImpl::OnMessageReceived(const IPC::Message& msg) {
+@@ -297,7 +303,7 @@ bool ChildProcessHostImpl::OnMessageReceived(const IPC::Message& msg) {
    }
  
    if (!handled) {
@@ -268,7 +268,7 @@ index 665bc28c8046b..c7ff28ca10d20 100644
    }
  
  #if BUILDFLAG(IPC_MESSAGE_LOG_ENABLED)
-@@ -312,7 +318,7 @@ void ChildProcessHostImpl::OnChannelConnected(int32_t peer_pid) {
+@@ -311,7 +317,7 @@ void ChildProcessHostImpl::OnChannelConnected(int32_t peer_pid) {
    if (!peer_process_.IsValid()) {
      peer_process_ = base::Process::OpenWithExtraPrivileges(peer_pid);
      if (!peer_process_.IsValid())
@@ -278,7 +278,7 @@ index 665bc28c8046b..c7ff28ca10d20 100644
    }
    opening_channel_ = false;
 diff --git a/content/zygote/zygote_linux.cc b/content/zygote/zygote_linux.cc
-index f539436a82014..8ecdb8bda3784 100644
+index bba8137c280a9..85f37d9c40347 100644
 --- a/content/zygote/zygote_linux.cc
 +++ b/content/zygote/zygote_linux.cc
 @@ -116,7 +116,7 @@ bool Zygote::ProcessRequests() {
@@ -302,7 +302,7 @@ index f539436a82014..8ecdb8bda3784 100644
    std::vector<base::ScopedFD> fds;
    char buf[kZygoteMaxMessageLength];
 diff --git a/content/zygote/zygote_linux.h b/content/zygote/zygote_linux.h
-index d186e71979700..f86e0257821d4 100644
+index cf713acee5f64..f8d12684c111d 100644
 --- a/content/zygote/zygote_linux.h
 +++ b/content/zygote/zygote_linux.h
 @@ -62,6 +62,8 @@ class Zygote {
@@ -315,7 +315,7 @@ index d186e71979700..f86e0257821d4 100644
    // ---------------------------------------------------------------------------
    // Requests from the browser...
 diff --git a/content/zygote/zygote_main_linux.cc b/content/zygote/zygote_main_linux.cc
-index 82923d4a85df3..cf4765841786a 100644
+index c47d2c8aaa363..eaa1db6425977 100644
 --- a/content/zygote/zygote_main_linux.cc
 +++ b/content/zygote/zygote_main_linux.cc
 @@ -34,6 +34,7 @@
@@ -1263,7 +1263,7 @@ index ba21e015b5a54..fc2ea9291fd2f 100644
  
      // We report whether the sandbox will be activated when renderers, workers
 diff --git a/sandbox/policy/linux/sandbox_linux.h b/sandbox/policy/linux/sandbox_linux.h
-index 4b32dc48c27cd..fb6f41e7ed822 100644
+index 9054eb62d0976..47dce9f380816 100644
 --- a/sandbox/policy/linux/sandbox_linux.h
 +++ b/sandbox/policy/linux/sandbox_linux.h
 @@ -12,6 +12,7 @@
