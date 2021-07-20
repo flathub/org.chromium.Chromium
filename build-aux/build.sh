@@ -1,7 +1,13 @@
 #!/bin/bash -e
 
-ln -s /usr/lib/sdk/node12 third_party/node/linux/node-linux-x64
-ln -s /usr/lib/sdk/openjdk11 third_party/jdk/current
+ln_overwrite_all() {
+  rm -rf "$2"
+  ln -s "$1" "$2"
+}
+
+ln_overwrite_all /usr/lib/sdk/node12 third_party/node/linux/node-linux-x64
+ln_overwrite_all /usr/lib/sdk/openjdk11 third_party/jdk/current
+
 ls -Rf third_party/jdk
 ls third_party/jdk/current/bin/java
 

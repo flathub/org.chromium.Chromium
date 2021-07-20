@@ -216,7 +216,7 @@ modules:
           - patches/0006-flatpak-Expose-Widevine-into-the-sandbox.patch
           - patches/0007-flatpak-Adjust-paths-for-the-sandbox.patch
           - patches/0008-Import-chromium-71.0.3578.98-widevine-r3.patch.patch
-          - patches/0009-Enable-Chromecast-by-default.patch
+          # - patches/0009-Enable-Chromecast-by-default.patch
           - patches/0010-x11-Set-_NET_WM_BYPASS_COMPOSITOR-for-fullscreen.patch
           - patches/0011-memory-Enable-the-tab-discards-feature.patch
           - patches/0012-Enable-accelerated-mjpeg-decode-on-Linux.patch
