@@ -40,6 +40,9 @@ fi
 # Merge the flags.
 if [[ -f "$XDG_CONFIG_HOME/chromium-flags.conf" ]]; then
   IFS=$'\n'
+  # Append non-default PipeWire flag for Wayland screen sharing 
+  echo "--enable-features=WebRTCPipeWireCapturer" >> "$XDG_CONFIG_HOME/chromium-flags.conf"
+
   flags=($(grep -v '^#' "$XDG_CONFIG_HOME/chromium-flags.conf"))
   unset IFS
 
