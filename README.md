@@ -42,16 +42,14 @@ Also important to note that in the example above one would not be able to symlin
 actual policy file directly, as otherwise flatpak would not be able to resolve the
 symlink when bind mounting the extension point.
 
-### Live shell
+### Building and updating
 
-`build_devel_flatpak.py` can be used to access a live shell inside the build environment
-for performing a local from-source build for development purposes.
+[CroFT](https://github.com/refi64/croft) is used to manage the patches in this
+repository and work with a build environment.
 
 ### Build arguments to pass to gn
 
 ```
-# Not supported
-use_udev = false
 # Not required but makes builds faster.
 use_lld = true
 # NaCL hasn't been tested and is being removed from Linux builds.
