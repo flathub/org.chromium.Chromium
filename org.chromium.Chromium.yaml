@@ -202,9 +202,7 @@ modules:
         x-checker-data:
           type: chromium
           component: llvm-git
-      - patches/ffmpeg/_sources.json
-      # XXX: Work around https://github.com/flatpak/flatpak-builder/issues/282
-      - ../chromium/_sources.json
+      - patches/all.json
       - type: file
         path: org.chromium.Chromium.desktop
       - type: file
