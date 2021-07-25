@@ -146,14 +146,22 @@ modules:
     sources:
       - type: git
         url: https://github.com/refi64/flextop
+        tag: v2021.07.1
         commit: 9f66dac84388f520ecab5ac4fa60df6343b7db5b
+        x-checker-data:
+          type: git
+          tag-pattern: ^v([\d.]+)$
 
   - name: cobalt
     buildsystem: meson
     sources:
       - type: git
         url: https://github.com/refi64/cobalt
-        tag: v2021.07.2
+        tag: v2021.09.1
+        commit: 6081cef971331b350f6f83d18e208fd7397550e3
+        x-checker-data:
+          type: git
+          tag-pattern: ^v([\d.]+)$
 
   - name: readelf-symlink
     only-arches: [aarch64]
