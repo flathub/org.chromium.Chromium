@@ -78,7 +78,7 @@ modules:
         commit: 3b566f73587ffa8ad9690f2399efc4508b3a9016
         x-checker-data:
           type: git
-          tag-pattern: "^v([\\d.]+)"
+          tag-pattern: ^v([\d.]+)
 
   - name: gtk-cups-backend
     buildsystem: meson
@@ -154,7 +154,11 @@ modules:
     sources:
       - type: git
         url: https://github.com/refi64/flextop
+        tag: v2021.07.1
         commit: 9f66dac84388f520ecab5ac4fa60df6343b7db5b
+        x-checker-data:
+          type: git
+          tag-pattern: ^v([\d.]+)$
 
   - name: cobalt
     buildsystem: meson
@@ -162,6 +166,10 @@ modules:
       - type: git
         url: https://github.com/refi64/cobalt
         tag: v2021.07.2
+        commit: 2ef67dc9df354a5714944757e41360ec4e2cd14a
+        x-checker-data:
+          type: git
+          tag-pattern: ^v([\d.]+)$
 
   - name: readelf-symlink
     only-arches: [aarch64]
