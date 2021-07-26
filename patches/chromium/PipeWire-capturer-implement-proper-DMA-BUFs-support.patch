@@ -1,0 +1,966 @@
+From 9d0df4e7739487f01e8fbaa4b519bfbc1b661f52 Mon Sep 17 00:00:00 2001
+From: Jan Grulich <grulja@gmail.com>
+Date: Tue, 27 Jul 2021 10:35:28 +0200
+Subject: [PATCH] PipeWire capturer: implement proper DMA-BUFs support
+
+Currently both KWin (KDE) and Mutter (GNOME) window managers don't
+use DMA-BUFs by default, but only when client asks specifically for
+them (KWin) or when experimental DMA-BUF support is enabled (Mutter).
+While current implementation works just fine on integrated graphics
+cards, it causes issues on dedicated GPUs (AMD and NVidia) where the
+code either crashes or screensharing is slow and unusable.
+
+To fix this, DMA-BUFs has to be opened using OpenGL context and not
+being directly mmaped(). This implementation requires to use DMA-BUF
+modifiers, as they are now mandatory for DMA-BUFs usage.
+
+Documentation for this behavior can be found here:
+https://gitlab.freedesktop.org/pipewire/pipewire/-/blob/master/doc/dma-buf.dox
+---
+ modules/desktop_capture/BUILD.gn              |  23 +
+ .../linux/base_capturer_pipewire.cc           | 217 +++++++--
+ .../linux/base_capturer_pipewire.h            |   8 +
+ modules/desktop_capture/linux/egl_dmabuf.cc   | 420 ++++++++++++++++++
+ modules/desktop_capture/linux/egl_dmabuf.h    |  58 +++
+ modules/desktop_capture/linux/pipewire03.sigs |   1 +
+ 6 files changed, 682 insertions(+), 45 deletions(-)
+ create mode 100644 modules/desktop_capture/linux/egl_dmabuf.cc
+ create mode 100644 modules/desktop_capture/linux/egl_dmabuf.h
+
+diff --git a/third_party/webrtc/modules/desktop_capture/BUILD.gn b/third_party/webrtc/modules/desktop_capture/BUILD.gn
+index 25b92bed45..9562c168eb 100644
+--- a/third_party/webrtc/modules/desktop_capture/BUILD.gn
++++ b/third_party/webrtc/modules/desktop_capture/BUILD.gn
+@@ -230,6 +230,18 @@ if (is_linux || is_chromeos) {
+           ignore_libs = true
+         }
+       }
++      pkg_config("gbm") {
++        packages = [ "gbm" ]
++      }
++      pkg_config("egl") {
++        packages = [ "egl" ]
++      }
++      pkg_config("epoxy") {
++        packages = [ "epoxy" ]
++      }
++      pkg_config("libdrm") {
++        packages = [ "libdrm" ]
++      }
+     } else {
+       pkg_config("pipewire") {
+         packages = [ "libpipewire-0.2" ]
+@@ -562,10 +574,21 @@ rtc_library("desktop_capture_generic") {
+       "linux/base_capturer_pipewire.h",
+     ]
+ 
++    if (rtc_pipewire_version == "0.3") {
++      sources += [
++        "linux/egl_dmabuf.cc",
++        "linux/egl_dmabuf.h",
++      ]
++    }
++
+     configs += [
+       ":pipewire_config",
+       ":gio",
+       ":pipewire",
++      ":gbm",
++      ":egl",
++      ":epoxy",
++      ":libdrm",
+     ]
+ 
+     if (!rtc_link_pipewire) {
+diff --git a/third_party/webrtc/modules/desktop_capture/linux/base_capturer_pipewire.cc b/third_party/webrtc/modules/desktop_capture/linux/base_capturer_pipewire.cc
+index e5d001e476..3be118f928 100644
+--- a/third_party/webrtc/modules/desktop_capture/linux/base_capturer_pipewire.cc
++++ b/third_party/webrtc/modules/desktop_capture/linux/base_capturer_pipewire.cc
+@@ -22,8 +22,10 @@
+ #include <sys/ioctl.h>
+ #include <sys/mman.h>
+ #include <sys/syscall.h>
++#include <unistd.h>
+ 
+ #include <memory>
++#include <string>
+ #include <utility>
+ 
+ #include "absl/memory/memory.h"
+@@ -94,6 +96,78 @@ static void SyncDmaBuf(int fd, uint64_t start_or_end) {
+   }
+ }
+ 
++#if !PW_CHECK_VERSION(0, 3, 29)
++#define SPA_POD_PROP_FLAG_MANDATORY (1u << 3)
++#endif
++#if !PW_CHECK_VERSION(0, 3, 33)
++#define SPA_POD_PROP_FLAG_DONT_FIXATE (1u << 4)
++#endif
++
++struct pw_version {
++  int major;
++  int minor;
++  int micro;
++};
++
++static pw_version ParsePipeWireVersion(const char* version) {
++  pw_version pw_version;
++  sscanf(version, "%d.%d.%d", &pw_version.major, &pw_version.minor,
++         &pw_version.micro);
++  return pw_version;
++}
++
++#if PW_CHECK_VERSION(0, 3, 0)
++static spa_pod* BuildFormat(
++    spa_pod_builder* builder,
++    uint32_t format,
++    const std::vector<uint64_t>& modifiers = std::vector<uint64_t>()) {
++  int c = 0;
++  spa_pod_frame f[2];
++  spa_rectangle pw_min_screen_bounds = spa_rectangle{1, 1};
++  spa_rectangle pw_max_screen_bounds = spa_rectangle{UINT32_MAX, UINT32_MAX};
++
++  spa_pod_builder_push_object(builder, &f[0], SPA_TYPE_OBJECT_Format,
++                              SPA_PARAM_EnumFormat);
++  spa_pod_builder_add(builder, SPA_FORMAT_mediaType,
++                      SPA_POD_Id(SPA_MEDIA_TYPE_video), 0);
++  spa_pod_builder_add(builder, SPA_FORMAT_mediaSubtype,
++                      SPA_POD_Id(SPA_MEDIA_SUBTYPE_raw), 0);
++  spa_pod_builder_add(builder, SPA_FORMAT_VIDEO_format, SPA_POD_Id(format), 0);
++
++  if (modifiers.size()) {
++    pw_version pw_version = ParsePipeWireVersion(pw_get_library_version());
++
++    // SPA_POD_PROP_FLAG_DONT_FIXATE can be used with PipeWire >= 0.3.33
++    if (pw_version.major >= 0 && pw_version.minor >= 3 &&
++        pw_version.micro >= 33) {
++      spa_pod_builder_prop(
++          builder, SPA_FORMAT_VIDEO_modifier,
++          SPA_POD_PROP_FLAG_MANDATORY | SPA_POD_PROP_FLAG_DONT_FIXATE);
++    } else {
++      spa_pod_builder_prop(builder, SPA_FORMAT_VIDEO_modifier,
++                           SPA_POD_PROP_FLAG_MANDATORY);
++    }
++    spa_pod_builder_push_choice(builder, &f[1], SPA_CHOICE_Enum, 0);
++    // mofifiers from the array
++    for (auto it = modifiers.begin(); it != modifiers.end(); it++) {
++      spa_pod_builder_long(builder, *it);
++      if (c++ == 0) {
++        spa_pod_builder_long(builder, *it);
++      }
++    }
++    spa_pod_builder_pop(builder, &f[1]);
++  }
++
++  spa_pod_builder_add(
++      builder, SPA_FORMAT_VIDEO_size,
++      SPA_POD_CHOICE_RANGE_Rectangle(
++          &pw_min_screen_bounds, &pw_min_screen_bounds, &pw_max_screen_bounds),
++      0);
++
++  return static_cast<spa_pod*>(spa_pod_builder_pop(builder, &f[0]));
++}
++#endif
++
+ class ScopedBuf {
+  public:
+   ScopedBuf() {}
+@@ -120,9 +194,9 @@ class ScopedBuf {
+   unsigned char* get() { return map_; }
+ 
+  protected:
+-  unsigned char* map_ = nullptr;
++  unsigned char* map_ = static_cast<unsigned char*>(MAP_FAILED);
+   int map_size_;
+-  bool is_dma_buf_;
++  bool is_dma_buf_ = false;
+   int fd_;
+ };
+ 
+@@ -313,6 +387,9 @@ void BaseCapturerPipeWire::OnStreamFormatChanged(void* data,
+   auto size = height * stride;
+ 
+   that->desktop_size_ = DesktopSize(width, height);
++#if PW_CHECK_VERSION(0, 3, 0)
++  that->modifier_ = that->spa_video_format_.modifier;
++#endif
+ 
+   uint8_t buffer[1024] = {};
+   auto builder = spa_pod_builder{buffer, sizeof(buffer)};
+@@ -320,11 +397,18 @@ void BaseCapturerPipeWire::OnStreamFormatChanged(void* data,
+   // Setup buffers and meta header for new format.
+   const struct spa_pod* params[3];
+ #if PW_CHECK_VERSION(0, 3, 0)
++  const auto buffer_types =
++      spa_pod_find_prop(format, nullptr, SPA_FORMAT_VIDEO_modifier)
++          ? (1 << SPA_DATA_DmaBuf) | (1 << SPA_DATA_MemFd) |
++                (1 << SPA_DATA_MemPtr)
++          : (1 << SPA_DATA_MemFd) | (1 << SPA_DATA_MemPtr);
++
+   params[0] = reinterpret_cast<spa_pod*>(spa_pod_builder_add_object(
+       &builder, SPA_TYPE_OBJECT_ParamBuffers, SPA_PARAM_Buffers,
+       SPA_PARAM_BUFFERS_size, SPA_POD_Int(size), SPA_PARAM_BUFFERS_stride,
+       SPA_POD_Int(stride), SPA_PARAM_BUFFERS_buffers,
+-      SPA_POD_CHOICE_RANGE_Int(8, 1, 32)));
++      SPA_POD_CHOICE_RANGE_Int(8, 1, 32), SPA_PARAM_BUFFERS_dataType,
++      SPA_POD_CHOICE_FLAGS_Int(buffer_types)));
+   params[1] = reinterpret_cast<spa_pod*>(spa_pod_builder_add_object(
+       &builder, SPA_TYPE_OBJECT_ParamMeta, SPA_PARAM_Meta, SPA_PARAM_META_type,
+       SPA_POD_Id(SPA_META_Header), SPA_PARAM_META_size,
+@@ -499,6 +583,12 @@ BaseCapturerPipeWire::~BaseCapturerPipeWire() {
+   }
+ }
+ 
++#if PW_CHECK_VERSION(0, 3, 0)
++void BaseCapturerPipeWire::InitEGL() {
++  egl_dmabuf_ = std::make_unique<EglDmaBuf>();
++}
++#endif
++
+ void BaseCapturerPipeWire::InitPortal() {
+   cancellable_ = g_cancellable_new();
+   g_dbus_proxy_new_for_bus(
+@@ -619,8 +709,6 @@ pw_stream* BaseCapturerPipeWire::CreateReceivingStream() {
+     return nullptr;
+   }
+ #endif
+-  spa_rectangle pwMinScreenBounds = spa_rectangle{1, 1};
+-  spa_rectangle pwMaxScreenBounds = spa_rectangle{UINT32_MAX, UINT32_MAX};
+ 
+   pw_properties* reuseProps =
+       pw_properties_new_string("pipewire.client.reuse=1");
+@@ -630,24 +718,45 @@ pw_stream* BaseCapturerPipeWire::CreateReceivingStream() {
+   auto stream = pw_stream_new(pw_remote_, "webrtc-consume-stream", reuseProps);
+ #endif
+ 
++#if PW_CHECK_VERSION(0, 3, 0)
++  const spa_pod** params;
++  spa_pod_builder builder;
++  uint32_t n_formats, n_params = 0;
++  uint8_t buffer[2048] = {};
++  std::vector<uint64_t> modifiers;
++
++  builder = spa_pod_builder{buffer, sizeof(buffer)};
++  uint32_t formats[] = {
++      SPA_VIDEO_FORMAT_BGRA,
++      SPA_VIDEO_FORMAT_RGBA,
++      SPA_VIDEO_FORMAT_BGRx,
++      SPA_VIDEO_FORMAT_RGBx,
++  };
++
++  n_formats = sizeof(formats) / sizeof(formats[0]);
++  params = static_cast<const spa_pod**>(
++      calloc(2 * n_formats, sizeof(struct spa_param*)));
++
++  for (uint32_t i = 0; i < n_formats; i++) {
++    pw_version pw_version = ParsePipeWireVersion(pw_get_library_version());
++
++    // Modifiers can be used with PipeWire >= 0.3.29
++    if (pw_version.major >= 0 && pw_version.minor >= 3 &&
++        pw_version.micro >= 29) {
++      modifiers = egl_dmabuf_->QueryDmaBufModifiers(formats[i]);
++
++      if (modifiers.size()) {
++        params[n_params++] = BuildFormat(&builder, formats[i], modifiers);
++      }
++    }
++
++    params[n_params++] = BuildFormat(&builder, formats[i]);
++  }
++#else
+   uint8_t buffer[1024] = {};
+   const spa_pod* params[1];
+   spa_pod_builder builder = spa_pod_builder{buffer, sizeof(buffer)};
+ 
+-#if PW_CHECK_VERSION(0, 3, 0)
+-  params[0] = reinterpret_cast<spa_pod*>(spa_pod_builder_add_object(
+-      &builder, SPA_TYPE_OBJECT_Format, SPA_PARAM_EnumFormat,
+-      SPA_FORMAT_mediaType, SPA_POD_Id(SPA_MEDIA_TYPE_video),
+-      SPA_FORMAT_mediaSubtype, SPA_POD_Id(SPA_MEDIA_SUBTYPE_raw),
+-      SPA_FORMAT_VIDEO_format,
+-      SPA_POD_CHOICE_ENUM_Id(5, SPA_VIDEO_FORMAT_BGRx, SPA_VIDEO_FORMAT_RGBx,
+-                             SPA_VIDEO_FORMAT_RGBA, SPA_VIDEO_FORMAT_BGRx,
+-                             SPA_VIDEO_FORMAT_BGRA),
+-      SPA_FORMAT_VIDEO_size,
+-      SPA_POD_CHOICE_RANGE_Rectangle(&pwMinScreenBounds, &pwMinScreenBounds,
+-                                     &pwMaxScreenBounds),
+-      0));
+-#else
+   params[0] = reinterpret_cast<spa_pod*>(spa_pod_builder_object(
+       &builder,
+       // id to enumerate formats
+@@ -671,7 +780,7 @@ pw_stream* BaseCapturerPipeWire::CreateReceivingStream() {
+                          this);
+ #if PW_CHECK_VERSION(0, 3, 0)
+   if (pw_stream_connect(stream, PW_DIRECTION_INPUT, pw_stream_node_id_,
+-                        PW_STREAM_FLAG_AUTOCONNECT, params, 1) != 0) {
++                        PW_STREAM_FLAG_AUTOCONNECT, params, n_params) != 0) {
+ #else
+   pw_stream_flags flags = static_cast<pw_stream_flags>(
+       PW_STREAM_FLAG_AUTOCONNECT | PW_STREAM_FLAG_INACTIVE);
+@@ -688,34 +797,36 @@ pw_stream* BaseCapturerPipeWire::CreateReceivingStream() {
+ }
+ 
+ void BaseCapturerPipeWire::HandleBuffer(pw_buffer* buffer) {
+-  spa_buffer* spaBuffer = buffer->buffer;
++  spa_buffer* spa_buffer = buffer->buffer;
+   ScopedBuf map;
++  std::unique_ptr<uint8_t[]> src_unique_ptr;
+   uint8_t* src = nullptr;
+ 
+-  if (spaBuffer->datas[0].chunk->size == 0) {
++  if (spa_buffer->datas[0].chunk->size == 0) {
+     RTC_LOG(LS_ERROR) << "Failed to get video stream: Zero size.";
+     return;
+   }
+ 
++  std::function<void()> cleanup;
++  const int32_t src_stride = spa_buffer->datas[0].chunk->stride;
+ #if PW_CHECK_VERSION(0, 3, 0)
+-  if (spaBuffer->datas[0].type == SPA_DATA_MemFd ||
+-      spaBuffer->datas[0].type == SPA_DATA_DmaBuf) {
++  if (spa_buffer->datas[0].type == SPA_DATA_MemFd) {
+ #else
+-  if (spaBuffer->datas[0].type == pw_core_type_->data.MemFd ||
+-      spaBuffer->datas[0].type == pw_core_type_->data.DmaBuf) {
++  if (spa_buffer->datas[0].type == pw_core_type_->data.MemFd ||
++      spa_buffer->datas[0].type == pw_core_type_->data.DmaBuf) {
+ #endif
+     map.initialize(
+         static_cast<uint8_t*>(
+             mmap(nullptr,
+-                 spaBuffer->datas[0].maxsize + spaBuffer->datas[0].mapoffset,
+-                 PROT_READ, MAP_PRIVATE, spaBuffer->datas[0].fd, 0)),
+-        spaBuffer->datas[0].maxsize + spaBuffer->datas[0].mapoffset,
++                 spa_buffer->datas[0].maxsize + spa_buffer->datas[0].mapoffset,
++                 PROT_READ, MAP_PRIVATE, spa_buffer->datas[0].fd, 0)),
++        spa_buffer->datas[0].maxsize + spa_buffer->datas[0].mapoffset,
+ #if PW_CHECK_VERSION(0, 3, 0)
+-        spaBuffer->datas[0].type == SPA_DATA_DmaBuf,
++        false,
+ #else
+-        spaBuffer->datas[0].type == pw_core_type_->data.DmaBuf,
++        spa_buffer->datas[0].type == pw_core_type_->data.DmaBuf,
+ #endif
+-        spaBuffer->datas[0].fd);
++        spa_buffer->datas[0].fd);
+ 
+     if (!map) {
+       RTC_LOG(LS_ERROR) << "Failed to mmap the memory: "
+@@ -723,21 +834,35 @@ void BaseCapturerPipeWire::HandleBuffer(pw_buffer* buffer) {
+       return;
+     }
+ 
+-#if PW_CHECK_VERSION(0, 3, 0)
+-    if (spaBuffer->datas[0].type == SPA_DATA_DmaBuf) {
+-#else
+-    if (spaBuffer->datas[0].type == pw_core_type_->data.DmaBuf) {
+-#endif
+-      SyncDmaBuf(spaBuffer->datas[0].fd, DMA_BUF_SYNC_START);
++#if !PW_CHECK_VERSION(0, 3, 0)
++    if (spa_buffer->datas[0].type == pw_core_type_->data.DmaBuf) {
++      SyncDmaBuf(spa_buffer->datas[0].fd, DMA_BUF_SYNC_START);
+     }
++#endif
+ 
+-    src = SPA_MEMBER(map.get(), spaBuffer->datas[0].mapoffset, uint8_t);
++    src = SPA_MEMBER(map.get(), spa_buffer->datas[0].mapoffset, uint8_t);
+ #if PW_CHECK_VERSION(0, 3, 0)
+-  } else if (spaBuffer->datas[0].type == SPA_DATA_MemPtr) {
++  } else if (spa_buffer->datas[0].type == SPA_DATA_DmaBuf) {
++    const uint n_planes = spa_buffer->n_datas;
++    int fds[n_planes];
++    uint32_t offsets[n_planes];
++    uint32_t strides[n_planes];
++
++    for (uint i = 0; i < n_planes; i++) {
++      fds[i] = spa_buffer->datas[i].fd;
++      offsets[i] = spa_buffer->datas[i].chunk->offset;
++      strides[i] = spa_buffer->datas[i].chunk->stride;
++    }
++
++    src_unique_ptr = egl_dmabuf_->ImageFromDmaBuf(
++        desktop_size_, spa_video_format_.format, n_planes, fds, strides,
++        offsets, modifier_);
++    src = src_unique_ptr.get();
++  } else if (spa_buffer->datas[0].type == SPA_DATA_MemPtr) {
+ #else
+-  } else if (spaBuffer->datas[0].type == pw_core_type_->data.MemPtr) {
++  } else if (spa_buffer->datas[0].type == pw_core_type_->data.MemPtr) {
+ #endif
+-    src = static_cast<uint8_t*>(spaBuffer->datas[0].data);
++    src = static_cast<uint8_t*>(spa_buffer->datas[0].data);
+   }
+ 
+   if (!src) {
+@@ -747,11 +872,11 @@ void BaseCapturerPipeWire::HandleBuffer(pw_buffer* buffer) {
+ #if PW_CHECK_VERSION(0, 3, 0)
+   struct spa_meta_region* video_metadata =
+       static_cast<struct spa_meta_region*>(spa_buffer_find_meta_data(
+-          spaBuffer, SPA_META_VideoCrop, sizeof(*video_metadata)));
++          spa_buffer, SPA_META_VideoCrop, sizeof(*video_metadata)));
+ #else
+   struct spa_meta_video_crop* video_metadata =
+       static_cast<struct spa_meta_video_crop*>(
+-          spa_buffer_find_meta(spaBuffer, pw_core_type_->meta.VideoCrop));
++          spa_buffer_find_meta(spa_buffer, pw_core_type_->meta.VideoCrop));
+ #endif
+ 
+   // Video size from metadata is bigger than an actual video stream size.
+@@ -804,7 +929,6 @@ void BaseCapturerPipeWire::HandleBuffer(pw_buffer* buffer) {
+   }
+ 
+   const int32_t dst_stride = video_size_.width() * kBytesPerPixel;
+-  const int32_t src_stride = spaBuffer->datas[0].chunk->stride;
+ 
+   if (src_stride != (desktop_size_.width() * kBytesPerPixel)) {
+     RTC_LOG(LS_ERROR) << "Got buffer with stride different from screen stride: "
+@@ -1283,6 +1407,9 @@ void BaseCapturerPipeWire::OnOpenPipeWireRemoteRequested(
+     return;
+   }
+ 
++#if PW_CHECK_VERSION(0, 3, 0)
++  that->InitEGL();
++#endif
+   that->InitPipeWire();
+ }
+ 
+diff --git a/third_party/webrtc/modules/desktop_capture/linux/base_capturer_pipewire.h b/third_party/webrtc/modules/desktop_capture/linux/base_capturer_pipewire.h
+index 52264188a7..ded4809720 100644
+--- a/third_party/webrtc/modules/desktop_capture/linux/base_capturer_pipewire.h
++++ b/third_party/webrtc/modules/desktop_capture/linux/base_capturer_pipewire.h
+@@ -21,6 +21,7 @@
+ #include "absl/types/optional.h"
+ #include "modules/desktop_capture/desktop_capture_options.h"
+ #include "modules/desktop_capture/desktop_capturer.h"
++#include "modules/desktop_capture/linux/egl_dmabuf.h"
+ #include "rtc_base/constructor_magic.h"
+ #include "rtc_base/synchronization/mutex.h"
+ 
+@@ -118,6 +119,7 @@ class BaseCapturerPipeWire : public DesktopCapturer {
+   guint sources_request_signal_id_ = 0;
+   guint start_request_signal_id_ = 0;
+ 
++  int64_t modifier_;
+   DesktopSize video_size_;
+   DesktopSize desktop_size_ = {};
+   DesktopCaptureOptions options_ = {};
+@@ -128,6 +130,12 @@ class BaseCapturerPipeWire : public DesktopCapturer {
+ 
+   bool portal_init_failed_ = false;
+ 
++#if PW_CHECK_VERSION(0, 3, 0)
++  std::unique_ptr<EglDmaBuf> egl_dmabuf_;
++
++  void InitEGL();
++#endif
++
+   void InitPortal();
+   void InitPipeWire();
+   void InitPipeWireTypes();
+diff --git a/third_party/webrtc/modules/desktop_capture/linux/egl_dmabuf.cc b/third_party/webrtc/modules/desktop_capture/linux/egl_dmabuf.cc
+new file mode 100644
+index 0000000000..97bcb77a38
+--- /dev/null
++++ b/third_party/webrtc/modules/desktop_capture/linux/egl_dmabuf.cc
+@@ -0,0 +1,420 @@
++/*
++ *  Copyright 2021 The WebRTC project authors. All Rights Reserved.
++ *
++ *  Use of this source code is governed by a BSD-style license
++ *  that can be found in the LICENSE file in the root of the source
++ *  tree. An additional intellectual property rights grant can be found
++ *  in the file PATENTS.  All contributing project authors may
++ *  be found in the AUTHORS file in the root of the source tree.
++ */
++
++#include "modules/desktop_capture/linux/egl_dmabuf.h"
++
++#include <asm/ioctl.h>
++#include <fcntl.h>
++#include <libdrm/drm_fourcc.h>
++#include <linux/types.h>
++#include <spa/param/video/format-utils.h>
++#include <unistd.h>
++#include <xf86drm.h>
++
++#include "absl/memory/memory.h"
++#include "rtc_base/checks.h"
++#include "rtc_base/logging.h"
++#include "rtc_base/sanitizer.h"
++
++namespace webrtc {
++
++typedef EGLBoolean (*eglQueryDmaBufFormatsEXT_func)(EGLDisplay dpy,
++                                                    EGLint max_formats,
++                                                    EGLint* formats,
++                                                    EGLint* num_formats);
++typedef EGLBoolean (*eglQueryDmaBufModifiersEXT_func)(EGLDisplay dpy,
++                                                      EGLint format,
++                                                      EGLint max_modifiers,
++                                                      EGLuint64KHR* modifiers,
++                                                      EGLBoolean* external_only,
++                                                      EGLint* num_modifiers);
++eglQueryDmaBufFormatsEXT_func EglQueryDmaBufFormatsEXT = nullptr;
++eglQueryDmaBufModifiersEXT_func EglQueryDmaBufModifiersEXT = nullptr;
++
++static const std::string FormatGLError(GLenum err) {
++  switch (err) {
++    case GL_NO_ERROR:
++      return "GL_NO_ERROR";
++    case GL_INVALID_ENUM:
++      return "GL_INVALID_ENUM";
++    case GL_INVALID_VALUE:
++      return "GL_INVALID_VALUE";
++    case GL_INVALID_OPERATION:
++      return "GL_INVALID_OPERATION";
++    case GL_STACK_OVERFLOW:
++      return "GL_STACK_OVERFLOW";
++    case GL_STACK_UNDERFLOW:
++      return "GL_STACK_UNDERFLOW";
++    case GL_OUT_OF_MEMORY:
++      return "GL_OUT_OF_MEMORY";
++    default:
++      return std::string("0x") + std::to_string(err);
++  }
++}
++
++static uint32_t SpaPixelFormatToDrmFormat(uint32_t spa_format) {
++  switch (spa_format) {
++    case SPA_VIDEO_FORMAT_RGBA:
++      return DRM_FORMAT_ABGR8888;
++    case SPA_VIDEO_FORMAT_RGBx:
++      return DRM_FORMAT_XBGR8888;
++    case SPA_VIDEO_FORMAT_BGRA:
++      return DRM_FORMAT_ARGB8888;
++    case SPA_VIDEO_FORMAT_BGRx:
++      return DRM_FORMAT_XRGB8888;
++    default:
++      return DRM_FORMAT_INVALID;
++  }
++}
++
++static const std::string GetRenderNode() {
++  drmDevicePtr* devices;
++  drmDevicePtr device;
++  int ret, max_devices;
++  std::string render_node;
++
++  max_devices = drmGetDevices2(0, nullptr, 0);
++  if (max_devices <= 0) {
++    RTC_LOG(LS_ERROR) << "drmGetDevices2() has not found any devices (errno="
++                      << -max_devices << ")";
++    return render_node;
++  }
++
++  devices =
++      static_cast<drmDevicePtr*>(calloc(max_devices, sizeof(drmDevicePtr)));
++  if (!devices) {
++    RTC_LOG(LS_ERROR) << "Failed to allocate memory for the drmDevicePtr array";
++    return render_node;
++  }
++
++  ret = drmGetDevices2(0, devices, max_devices);
++  if (ret < 0) {
++    RTC_LOG(LS_ERROR) << "drmGetDevices2() returned an error " << ret;
++    free(devices);
++    return render_node;
++  }
++
++  for (int i = 0; i < ret; i++) {
++    device = devices[i];
++    if (device->available_nodes & (1 << DRM_NODE_RENDER)) {
++      render_node = device->nodes[DRM_NODE_RENDER];
++      break;
++    }
++  }
++
++  drmFreeDevices(devices, ret);
++  free(devices);
++  return render_node;
++}
++
++RTC_NO_SANITIZE("cfi-icall")
++EglDmaBuf::EglDmaBuf() {
++  const std::string render_node = GetRenderNode();
++  if (render_node.empty()) {
++    return;
++  }
++
++  drm_fd_ = open(render_node.c_str(), O_RDWR);
++
++  if (drm_fd_ < 0) {
++    RTC_LOG(LS_ERROR) << "Failed to open drm render node: " << strerror(errno);
++    return;
++  }
++
++  gbm_device_ = gbm_create_device(drm_fd_);
++
++  if (!gbm_device_) {
++    RTC_LOG(LS_ERROR) << "Cannot create GBM device: " << strerror(errno);
++    return;
++  }
++
++  // Get the list of client extensions
++  const char* client_extensions_cstring_no_display =
++      eglQueryString(EGL_NO_DISPLAY, EGL_EXTENSIONS);
++  std::string client_extensions_string = client_extensions_cstring_no_display;
++  if (!client_extensions_cstring_no_display) {
++    // If eglQueryString() returned NULL, the implementation doesn't support
++    // EGL_EXT_client_extensions. Expect an EGL_BAD_DISPLAY error.
++    RTC_LOG(LS_ERROR) << "No client extensions defined! "
++                      << FormatGLError(eglGetError());
++    return;
++  }
++
++  std::string delimiter = " ";
++  size_t pos = 0;
++  while ((pos = client_extensions_string.find(delimiter)) !=
++         std::string::npos) {
++    egl_.extensions.push_back(client_extensions_string.substr(0, pos));
++    client_extensions_string.erase(0, pos + delimiter.length());
++  }
++  egl_.extensions.push_back(client_extensions_string);
++
++  bool has_platform_base_ext = false;
++  bool has_platform_gbm_ext = false;
++
++  for (auto it = egl_.extensions.begin(); it != egl_.extensions.end(); it++) {
++    if (*it == "EGL_EXT_platform_base") {
++      has_platform_base_ext = true;
++      continue;
++    } else if (*it == "EGL_MESA_platform_gbm") {
++      has_platform_gbm_ext = true;
++      continue;
++    }
++  }
++
++  if (!has_platform_base_ext || !has_platform_gbm_ext) {
++    RTC_LOG(LS_ERROR) << "One of required EGL extensions is missing";
++    return;
++  }
++
++  // Use eglGetPlatformDisplayEXT() to get the display pointer
++  // if the implementation supports it.
++  egl_.display =
++      eglGetPlatformDisplayEXT(EGL_PLATFORM_GBM_MESA, gbm_device_, nullptr);
++
++  if (egl_.display == EGL_NO_DISPLAY) {
++    RTC_LOG(LS_ERROR) << "Error during obtaining EGL display: "
++                      << FormatGLError(eglGetError());
++    return;
++  }
++
++  EGLint major, minor;
++  if (eglInitialize(egl_.display, &major, &minor) == EGL_FALSE) {
++    RTC_LOG(LS_ERROR) << "Error during eglInitialize: "
++                      << FormatGLError(eglGetError());
++    return;
++  }
++
++  if (eglBindAPI(EGL_OPENGL_API) == EGL_FALSE) {
++    RTC_LOG(LS_ERROR) << "bind OpenGL API failed";
++    return;
++  }
++
++  egl_.context =
++      eglCreateContext(egl_.display, nullptr, EGL_NO_CONTEXT, nullptr);
++
++  if (egl_.context == EGL_NO_CONTEXT) {
++    RTC_LOG(LS_ERROR) << "Couldn't create EGL context: "
++                      << FormatGLError(eglGetError());
++    return;
++  }
++
++  const char* client_extensions_cstring_display =
++      eglQueryString(egl_.display, EGL_EXTENSIONS);
++  client_extensions_string = client_extensions_cstring_display;
++
++  bool has_image_dma_buf_import_ext = false;
++  bool has_image_dma_buf_import_modifiers_ext = false;
++
++  for (auto it = egl_.extensions.begin(); it != egl_.extensions.end(); it++) {
++    if (*it == "EGL_EXT_image_dma_buf_import") {
++      has_image_dma_buf_import_ext = true;
++      continue;
++    } else if (*it == "EGL_EXT_image_dma_buf_import_modifiers") {
++      has_image_dma_buf_import_modifiers_ext = true;
++      continue;
++    }
++  }
++
++  if (has_image_dma_buf_import_ext && has_image_dma_buf_import_modifiers_ext) {
++    EglQueryDmaBufFormatsEXT = (eglQueryDmaBufFormatsEXT_func)eglGetProcAddress(
++        "eglQueryDmaBufFormatsEXT");
++    EglQueryDmaBufModifiersEXT =
++        (eglQueryDmaBufModifiersEXT_func)eglGetProcAddress(
++            "eglQueryDmaBufModifiersEXT");
++  }
++
++  RTC_LOG(LS_INFO) << "Egl initialization succeeded";
++  egl_initialized_ = true;
++}
++
++EglDmaBuf::~EglDmaBuf() {
++  if (gbm_device_) {
++    gbm_device_destroy(gbm_device_);
++  }
++}
++
++RTC_NO_SANITIZE("cfi-icall")
++std::unique_ptr<uint8_t[]> EglDmaBuf::ImageFromDmaBuf(const DesktopSize& size,
++                                                      uint32_t format,
++                                                      uint32_t n_planes,
++                                                      const int32_t* fds,
++                                                      const uint32_t* strides,
++                                                      const uint32_t* offsets,
++                                                      uint64_t modifier) {
++  std::unique_ptr<uint8_t[]> src;
++
++  if (!egl_initialized_) {
++    return src;
++  }
++
++  if (n_planes <= 0) {
++    RTC_LOG(LS_ERROR) << "Failed to process buffer: invalid number of planes";
++    return src;
++  }
++
++  gbm_bo* imported;
++  if (modifier == DRM_FORMAT_MOD_INVALID) {
++    gbm_import_fd_data importInfo = {
++        static_cast<int>(fds[0]), static_cast<uint32_t>(size.width()),
++        static_cast<uint32_t>(size.height()), static_cast<uint32_t>(strides[0]),
++        GBM_BO_FORMAT_ARGB8888};
++
++    imported = gbm_bo_import(gbm_device_, GBM_BO_IMPORT_FD, &importInfo, 0);
++  } else {
++    gbm_import_fd_modifier_data importInfo = {};
++    importInfo.format = GBM_BO_FORMAT_ARGB8888;
++    importInfo.width = static_cast<uint32_t>(size.width());
++    importInfo.height = static_cast<uint32_t>(size.height());
++    importInfo.num_fds = n_planes;
++    importInfo.modifier = modifier;
++    for (uint i = 0; i < n_planes; i++) {
++      importInfo.fds[i] = fds[i];
++      importInfo.offsets[i] = offsets[i];
++      importInfo.strides[i] = strides[i];
++    }
++
++    imported =
++        gbm_bo_import(gbm_device_, GBM_BO_IMPORT_FD_MODIFIER, &importInfo, 0);
++  }
++
++  if (!imported) {
++    RTC_LOG(LS_ERROR)
++        << "Failed to process buffer: Cannot import passed GBM fd - "
++        << strerror(errno);
++    return src;
++  }
++
++  // bind context to render thread
++  eglMakeCurrent(egl_.display, EGL_NO_SURFACE, EGL_NO_SURFACE, egl_.context);
++
++  // create EGL image from imported BO
++  EGLImageKHR image = eglCreateImageKHR(
++      egl_.display, nullptr, EGL_NATIVE_PIXMAP_KHR, imported, nullptr);
++
++  if (image == EGL_NO_IMAGE_KHR) {
++    RTC_LOG(LS_ERROR) << "Failed to record frame: Error creating EGLImageKHR - "
++                      << FormatGLError(glGetError());
++    gbm_bo_destroy(imported);
++    return src;
++  }
++
++  // create GL 2D texture for framebuffer
++  GLuint texture;
++  glGenTextures(1, &texture);
++  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
++  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
++  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
++  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
++  glBindTexture(GL_TEXTURE_2D, texture);
++  glEGLImageTargetTexture2DOES(GL_TEXTURE_2D, image);
++
++  src = std::make_unique<uint8_t[]>(strides[0] * size.height());
++
++  GLenum gl_format = GL_BGRA;
++  switch (format) {
++    case SPA_VIDEO_FORMAT_RGBx:
++      gl_format = GL_RGBA;
++      break;
++    case SPA_VIDEO_FORMAT_RGBA:
++      gl_format = GL_RGBA;
++      break;
++    case SPA_VIDEO_FORMAT_BGRx:
++      gl_format = GL_BGRA;
++      break;
++    case SPA_VIDEO_FORMAT_RGB:
++      gl_format = GL_RGB;
++      break;
++    case SPA_VIDEO_FORMAT_BGR:
++      gl_format = GL_BGR;
++      break;
++    default:
++      gl_format = GL_BGRA;
++      break;
++  }
++  glGetTexImage(GL_TEXTURE_2D, 0, gl_format, GL_UNSIGNED_BYTE, src.get());
++
++  if (!src) {
++    RTC_LOG(LS_ERROR) << "Failed to get image from DMA buffer.";
++    gbm_bo_destroy(imported);
++    return src;
++  }
++
++  glDeleteTextures(1, &texture);
++  eglDestroyImageKHR(egl_.display, image);
++
++  gbm_bo_destroy(imported);
++
++  return src;
++}
++
++RTC_NO_SANITIZE("cfi-icall")
++std::vector<uint64_t> EglDmaBuf::QueryDmaBufModifiers(uint32_t format) {
++  if (!egl_initialized_) {
++    return std::vector<uint64_t>();
++  }
++
++  // Modifiers not supported, return just DRM_FORMAT_MOD_INVALID as we can still
++  // use modifier-less DMA-BUFs
++  if (EglQueryDmaBufFormatsEXT == nullptr ||
++      EglQueryDmaBufModifiersEXT == nullptr) {
++    return std::vector<uint64_t>{DRM_FORMAT_MOD_INVALID};
++  }
++
++  uint32_t drm_format = SpaPixelFormatToDrmFormat(format);
++  if (drm_format == DRM_FORMAT_INVALID) {
++    RTC_LOG(LS_ERROR) << "Failed to find matching DRM format.";
++    return std::vector<uint64_t>{DRM_FORMAT_MOD_INVALID};
++  }
++
++  EGLint count = 0;
++  EGLBoolean success =
++      EglQueryDmaBufFormatsEXT(egl_.display, 0, nullptr, &count);
++
++  if (!success || !count) {
++    RTC_LOG(LS_ERROR) << "Failed to query DMA-BUF formats.";
++    return std::vector<uint64_t>{DRM_FORMAT_MOD_INVALID};
++  }
++
++  std::vector<uint32_t> formats(count);
++  if (!EglQueryDmaBufFormatsEXT(egl_.display, count,
++                                reinterpret_cast<EGLint*>(formats.data()),
++                                &count)) {
++    RTC_LOG(LS_ERROR) << "Failed to query DMA-BUF formats.";
++    return std::vector<uint64_t>{DRM_FORMAT_MOD_INVALID};
++  }
++
++  if (std::find(formats.begin(), formats.end(), drm_format) == formats.end()) {
++    RTC_LOG(LS_ERROR) << "Format " << drm_format
++                      << " not supported for modifiers.";
++    return std::vector<uint64_t>{DRM_FORMAT_MOD_INVALID};
++  }
++
++  success = EglQueryDmaBufModifiersEXT(egl_.display, drm_format, 0, nullptr,
++                                       nullptr, &count);
++
++  if (!success || !count) {
++    RTC_LOG(LS_ERROR) << "Failed to query DMA-BUF modifiers.";
++    return std::vector<uint64_t>{DRM_FORMAT_MOD_INVALID};
++  }
++
++  std::vector<uint64_t> modifiers(count);
++  if (!EglQueryDmaBufModifiersEXT(egl_.display, drm_format, count,
++                                  modifiers.data(), nullptr, &count)) {
++    RTC_LOG(LS_ERROR) << "Failed to query DMA-BUF modifiers.";
++  }
++
++  // Support modifier-less buffers
++  modifiers.push_back(DRM_FORMAT_MOD_INVALID);
++
++  return modifiers;
++}
++
++}  // namespace webrtc
+diff --git a/third_party/webrtc/modules/desktop_capture/linux/egl_dmabuf.h b/third_party/webrtc/modules/desktop_capture/linux/egl_dmabuf.h
+new file mode 100644
+index 0000000000..bfa3a0a71c
+--- /dev/null
++++ b/third_party/webrtc/modules/desktop_capture/linux/egl_dmabuf.h
+@@ -0,0 +1,58 @@
++/*
++ *  Copyright 2021 The WebRTC project authors. All Rights Reserved.
++ *
++ *  Use of this source code is governed by a BSD-style license
++ *  that can be found in the LICENSE file in the root of the source
++ *  tree. An additional intellectual property rights grant can be found
++ *  in the file PATENTS.  All contributing project authors may
++ *  be found in the AUTHORS file in the root of the source tree.
++ */
++
++#ifndef MODULES_DESKTOP_CAPTURE_LINUX_EGL_DMABUF_H_
++#define MODULES_DESKTOP_CAPTURE_LINUX_EGL_DMABUF_H_
++
++#include <epoxy/egl.h>
++#include <epoxy/gl.h>
++#include <gbm.h>
++
++#include <memory>
++#include <string>
++#include <vector>
++
++#include "modules/desktop_capture/desktop_geometry.h"
++
++namespace webrtc {
++
++class EglDmaBuf {
++ public:
++  struct EGLStruct {
++    std::vector<std::string> extensions;
++    EGLDisplay display = EGL_NO_DISPLAY;
++    EGLContext context = EGL_NO_CONTEXT;
++  };
++
++  EglDmaBuf();
++  ~EglDmaBuf();
++
++  std::unique_ptr<uint8_t[]> ImageFromDmaBuf(const DesktopSize& size,
++                                             uint32_t format,
++                                             uint32_t n_planes,
++                                             const int32_t* fds,
++                                             const uint32_t* strides,
++                                             const uint32_t* offsets,
++                                             uint64_t modifiers);
++  std::vector<uint64_t> QueryDmaBufModifiers(uint32_t format);
++
++  bool IsEglInitialized() const { return egl_initialized_; }
++
++ private:
++  bool egl_initialized_ = false;
++  int32_t drm_fd_ = -1;               // for GBM buffer mmap
++  gbm_device* gbm_device_ = nullptr;  // for passed GBM buffer retrieval
++
++  EGLStruct egl_;
++};
++
++}  // namespace webrtc
++
++#endif  // MODULES_DESKTOP_CAPTURE_LINUX_EGL_DMABUF_H_
+diff --git a/third_party/webrtc/modules/desktop_capture/linux/pipewire03.sigs b/third_party/webrtc/modules/desktop_capture/linux/pipewire03.sigs
+index 78d241f40c..debe04bbdc 100644
+--- a/third_party/webrtc/modules/desktop_capture/linux/pipewire03.sigs
++++ b/third_party/webrtc/modules/desktop_capture/linux/pipewire03.sigs
+@@ -16,6 +16,7 @@ pw_loop * pw_loop_new(const spa_dict *props);
+ 
+ // pipewire.h
+ void pw_init(int *argc, char **argv[]);
++const char* pw_get_library_version();
+ 
+ // properties.h
+ pw_properties * pw_properties_new_string(const char *args);
+-- 
+2.31.1
+

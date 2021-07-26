@@ -18,6 +18,7 @@
             "patches/chromium/Add-support-for-respecting-system-proxy-settings-when-runn.patch",
             "patches/chromium/content-Disable-the-WASM-trap-handler-on-Linux.patch",
             "patches/chromium/Clang-build-script-Allow-passing-a-prebuilt-Clang-for-boos.patch",
+            "patches/chromium/PipeWire-capturer-implement-proper-DMA-BUFs-support.patch",
             "patches/ffmpeg/Enable-support-for-libfdk-aac-and-OpenH264.patch",
             "patches/ffmpeg/ffmpeg-Handle-transient-decode-errors-arising-from-libfdk-.patch",
             "patches/ffmpeg/Ensure-libffmpeg.so-is-in-the-rpath-of-binaries.patch",
