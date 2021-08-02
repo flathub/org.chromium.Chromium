@@ -171,6 +171,28 @@ modules:
         done
       - touch /app/chromium/extensions/no-mount-stamp
 
+  - name: pipewire
+    buildsystem: meson
+    config-opts:
+      - -Daudiotestsrc=disabled
+      - -Djack=disabled
+      - -Droc=disabled
+      - -Dvideotestsrc=disabled
+      - -Dvolume=disabled
+      - -Dvulkan=disabled
+      - -Ddocs=disabled
+      - -Dman=disabled
+      - -Dbluez5-codec-ldac=disabled
+      - -Dbluez5-codec-aptx=disabled
+      - -Dlibcamera=disabled
+      - -Dudevrulesdir=/app/lib/udev/rules.d/
+    sources:
+      - type: git
+        url: https://gitlab.freedesktop.org/pipewire/pipewire.git
+        tag: 0.3.33
+
+        commit: 8119e5cdb4efc3325f5629cd1afe9957aa5c39dc
+
   - name: chromium
     buildsystem: simple
     build-commands:
