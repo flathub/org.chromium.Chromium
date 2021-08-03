@@ -78,7 +78,7 @@ modules:
         commit: 3b566f73587ffa8ad9690f2399efc4508b3a9016
         x-checker-data:
           type: git
-          tag-pattern: "^v([\\d.]+)"
+          tag-pattern: ^v([\d.]+)
 
   - name: gtk-cups-backend
     buildsystem: meson
@@ -179,8 +179,8 @@ modules:
       - ./install.sh
     sources:
       - type: archive
-        url: https://commondatastorage.googleapis.com/chromium-browser-official/chromium-92.0.4515.107.tar.xz
-        sha256: 6e51ac6512a4e95018eefc9fef1d2e7597f28a1c45c763b3a8eb7dde5f557012
+        url: https://commondatastorage.googleapis.com/chromium-browser-official/chromium-92.0.4515.131.tar.xz
+        sha256: b6ac840ed5390de69f962e922649bf1df895ff0f5db8e5f656b5191e0cf4ce3a
         x-checker-data:
           type: chromium
           component: chromium
