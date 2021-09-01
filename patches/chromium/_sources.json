@@ -12,12 +12,11 @@
       "patches/chromium/ffmpeg-Don-t-lie-about-AAC-and-H264-decoders-when-not-avai.patch",
       "patches/chromium/Remove-the-ability-to-create-desktop-shortcuts.patch",
       "patches/chromium/Use-CHROME_WRAPPER-as-the-executable-on-restart.patch",
-      "patches/chromium/Add-support-for-the-XDG-file-chooser-portal.patch",
-      "patches/chromium/Add-OpenURI-portal-support-for-opening-directories.patch",
       "patches/chromium/Enable-new-dtags-on-non-component-builds.patch",
       "patches/chromium/Add-support-for-respecting-system-proxy-settings-when-runn.patch",
       "patches/chromium/content-Disable-the-WASM-trap-handler-on-Linux.patch",
-      "patches/chromium/Clang-build-script-Allow-passing-a-prebuilt-Clang-for-boos.patch"
+      "patches/chromium/Clang-build-script-Allow-passing-a-prebuilt-Clang-for-boos.patch",
+      "patches/chromium/Don-t-cancel-the-select-file-dialog-if-exporting-the-windo.patch"
     ]
   }
 ]

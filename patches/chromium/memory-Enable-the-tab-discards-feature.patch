@@ -1,4 +1,4 @@
-From 257446d5c00bbab7d5cf443ab7b4c5c4e5c01b08 Mon Sep 17 00:00:00 2001
+From b2eab6b4c7c3317c54aff0b2002c1be2415b1b90 Mon Sep 17 00:00:00 2001
 From: Mario Sanchez Prada <mario@endlessm.com>
 Date: Thu, 28 Jan 2016 13:53:08 +0000
 Subject: [PATCH] memory: Enable the tab discards feature
@@ -7,19 +7,20 @@ This allows manually discarding tabs from chrome://discards as well
 as automatic tab discards once a certain level of "memory pressure"
 is reached.
 ---
- chrome/browser/resource_coordinator/tab_manager.cc | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ chrome/browser/resource_coordinator/tab_manager.cc | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
 diff --git a/chrome/browser/resource_coordinator/tab_manager.cc b/chrome/browser/resource_coordinator/tab_manager.cc
-index 7757c6d6e5e21..33610f4798b34 100644
+index 6f76e5aad4fb8..e08dfbc98773a 100644
 --- a/chrome/browser/resource_coordinator/tab_manager.cc
 +++ b/chrome/browser/resource_coordinator/tab_manager.cc
-@@ -172,7 +172,7 @@ void TabManager::Start() {
+@@ -171,7 +171,8 @@ void TabManager::Start() {
+ 
  // MemoryPressureMonitor is not implemented on Linux so far and tabs are never
  // discarded.
- #if defined(OS_WIN) || defined(OS_MAC) || BUILDFLAG(IS_CHROMEOS_ASH) || \
--    BUILDFLAG(IS_CHROMEOS_LACROS)
-+    BUILDFLAG(IS_CHROMEOS_LACROS) || defined(OS_LINUX)
+-#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_CHROMEOS)
++#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_CHROMEOS) || \
++    defined(OS_LINUX)
    // Don't handle memory pressure events here if this is done by
    // PerformanceManager.
    if (!base::FeatureList::IsEnabled(

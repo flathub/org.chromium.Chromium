@@ -1,4 +1,4 @@
-From d43f22a45493764ba2462dc9eed11bb7348a6941 Mon Sep 17 00:00:00 2001
+From 8a49234f43bf68dceb3f210662d8dd2ec6644ca2 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Fri, 28 May 2021 10:41:25 -0500
 Subject: [PATCH] Clang build script: Allow passing a prebuilt Clang for
@@ -9,7 +9,7 @@ Subject: [PATCH] Clang build script: Allow passing a prebuilt Clang for
  1 file changed, 12 insertions(+)
 
 diff --git a/tools/clang/scripts/build.py b/tools/clang/scripts/build.py
-index b3d83dcc9085a..8676510a92892 100755
+index fc83122d7d697..617aab3e4da94 100755
 --- a/tools/clang/scripts/build.py
 +++ b/tools/clang/scripts/build.py
 @@ -429,6 +429,10 @@ def main():

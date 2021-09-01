@@ -1,0 +1,64 @@
+From d8e1e2a7eaefc0b8f39d3e1738a6ee08900de446 Mon Sep 17 00:00:00 2001
+From: Ryan Gonzalez <rymg19@gmail.com>
+Date: Tue, 31 Aug 2021 14:19:40 -0500
+Subject: [PATCH] Don't cancel the select file dialog if exporting the window
+ handle fails
+
+In particular, this can fail with Wayland if the compositor doesn't
+implement xdg-foreign v1, which is the only version that Chromium
+currently supports. (KDE, in particular, only implements v2.)
+
+Bug: 1245134
+---
+ ui/gtk/select_file_dialog_impl_portal.cc | 32 +++++++++++++-----------
+ 1 file changed, 17 insertions(+), 15 deletions(-)
+
+diff --git a/ui/gtk/select_file_dialog_impl_portal.cc b/ui/gtk/select_file_dialog_impl_portal.cc
+index 398b94ed5ac60..8813b3e68b031 100644
+--- a/ui/gtk/select_file_dialog_impl_portal.cc
++++ b/ui/gtk/select_file_dialog_impl_portal.cc
+@@ -190,24 +190,26 @@ void SelectFileDialogImplPortal::SelectFileImpl(
+ 
+   PortalFilterSet filter_set = BuildFilterSet();
+ 
+-  auto parent_handle_callback = base::BindOnce(
+-      &SelectFileDialogImplPortal::SelectFileImplWithParentHandle,
+-      base::Unretained(this),
+-      // We don't move info, because it will be needed below to cancel the open
+-      // on error.
+-      info, std::move(title), std::move(default_path), std::move(filter_set),
+-      std::move(default_extension));
+-
+   if (info->parent) {
+-    if (!GtkUi::GetPlatform()->ExportWindowHandle(
+-            *info->parent, std::move(parent_handle_callback))) {
+-      LOG(ERROR) << "Failed to export window handle for portal select dialog";
+-      CancelOpenOnMainThread(std::move(info));
++    if (GtkUi::GetPlatform()->ExportWindowHandle(
++            *info->parent,
++            base::BindOnce(
++                &SelectFileDialogImplPortal::SelectFileImplWithParentHandle,
++                // Note that we can't move any of the parameters, as the
++                // fallback case below requires them to all still be available.
++                base::Unretained(this), info, title, default_path, filter_set,
++                default_extension))) {
++      // Return early to skip the fallback below.
++      return;
++    } else {
++      LOG(WARNING) << "Failed to export window handle for portal select dialog";
+     }
+-  } else {
+-    // No parent, so just use a blank parent handle.
+-    std::move(parent_handle_callback).Run("");
+   }
++
++  // No parent, so just use a blank parent handle.
++  SelectFileImplWithParentHandle(std::move(info), std::move(title),
++                                 std::move(default_path), std::move(filter_set),
++                                 std::move(default_extension), "");
+ }
+ 
+ bool SelectFileDialogImplPortal::HasMultipleFileTypeChoicesImpl() {
+-- 
+2.31.1
+

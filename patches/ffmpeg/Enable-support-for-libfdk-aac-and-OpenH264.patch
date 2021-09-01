@@ -1,4 +1,4 @@
-From 469d54490910491cc1f37eaac267b21ebf641eb5 Mon Sep 17 00:00:00 2001
+From 29e759cf2192b97f739dbb32c5c3bd4b372bac03 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Tue, 20 Jul 2021 14:18:31 -0500
 Subject: [PATCH] Enable support for libfdk-aac and OpenH264
@@ -10,10 +10,10 @@ Subject: [PATCH] Enable support for libfdk-aac and OpenH264
  3 files changed, 25 insertions(+), 3 deletions(-)
 
 diff --git a/third_party/ffmpeg/BUILD.gn b/third_party/ffmpeg/BUILD.gn
-index 40cd1481f7..c01a320e69 100755
+index 70bb04c3fd..276e0d8065 100755
 --- a/third_party/ffmpeg/BUILD.gn
 +++ b/third_party/ffmpeg/BUILD.gn
-@@ -435,6 +435,11 @@ if (is_component_ffmpeg) {
+@@ -438,6 +438,11 @@ if (is_component_ffmpeg) {
          "-L",
          rebase_path(target_gen_dir, root_build_dir),
        ]
@@ -26,10 +26,10 @@ index 40cd1481f7..c01a320e69 100755
        # Windows component build needs the .def file to export ffmpeg symbols.
        deps += [ ":ffmpeg_generate_def" ]
 diff --git a/third_party/ffmpeg/chromium/scripts/build_ffmpeg.py b/third_party/ffmpeg/chromium/scripts/build_ffmpeg.py
-index fcdba5ab07..3e222053cd 100755
+index c7c783451b..73a29df56c 100755
 --- a/third_party/ffmpeg/chromium/scripts/build_ffmpeg.py
 +++ b/third_party/ffmpeg/chromium/scripts/build_ffmpeg.py
-@@ -995,11 +995,27 @@ def ConfigureAndBuild(target_arch, target_os, host_os, host_arch, parallel_jobs,
+@@ -994,11 +994,27 @@ def ConfigureAndBuild(target_arch, target_os, host_os, host_arch, parallel_jobs,
            '--ar=cygwin-wrapper lib',
        ])
  
@@ -61,7 +61,7 @@ index fcdba5ab07..3e222053cd 100755
  
    # Google ChromeOS specific configuration.
 diff --git a/third_party/ffmpeg/chromium/scripts/generate_gn.py b/third_party/ffmpeg/chromium/scripts/generate_gn.py
-index 6814adf058..e5451c60b1 100755
+index e13c2d3b9c..c8e1eb82e1 100755
 --- a/third_party/ffmpeg/chromium/scripts/generate_gn.py
 +++ b/third_party/ffmpeg/chromium/scripts/generate_gn.py
 @@ -665,6 +665,7 @@ ALLOWED_LICENSES = [
