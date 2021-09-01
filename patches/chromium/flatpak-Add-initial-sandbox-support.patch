@@ -1,4 +1,4 @@
-From 181db1dc0ae300a4d63bf457b82e8160403f0d31 Mon Sep 17 00:00:00 2001
+From 71df6dccc9bf9c65f2a9d932478b536d14dbe385 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Tue, 17 Mar 2020 13:18:27 -0500
 Subject: [PATCH] flatpak: Add initial sandbox support
@@ -10,26 +10,26 @@ Subject: [PATCH] flatpak: Add initial sandbox support
  .../ui/webui/sandbox/sandbox_internals_ui.cc  |   6 +-
  .../zygote_host/zygote_host_impl_linux.cc     |  39 +-
  .../zygote_host/zygote_host_impl_linux.h      |   1 +
- content/common/child_process_host_impl.cc     |  12 +-
+ content/common/child_process_host_impl.cc     |   8 +-
  content/zygote/zygote_linux.cc                |   6 +-
  content/zygote/zygote_linux.h                 |   2 +
  content/zygote/zygote_main_linux.cc           |  16 +-
  sandbox/linux/BUILD.gn                        |   9 +-
- sandbox/linux/services/flatpak_pid_map.cc     |  58 ++
+ sandbox/linux/services/flatpak_pid_map.cc     |  57 ++
  sandbox/linux/services/flatpak_pid_map.h      |  46 ++
- sandbox/linux/services/flatpak_sandbox.cc     | 578 ++++++++++++++++++
+ sandbox/linux/services/flatpak_sandbox.cc     | 577 ++++++++++++++++++
  sandbox/linux/services/flatpak_sandbox.h      | 119 ++++
  sandbox/policy/linux/sandbox_linux.cc         |   8 +
  sandbox/policy/linux/sandbox_linux.h          |   7 +
  .../service_process_launcher.cc               |  12 +-
- 18 files changed, 910 insertions(+), 20 deletions(-)
+ 18 files changed, 906 insertions(+), 18 deletions(-)
  create mode 100644 sandbox/linux/services/flatpak_pid_map.cc
  create mode 100644 sandbox/linux/services/flatpak_pid_map.h
  create mode 100644 sandbox/linux/services/flatpak_sandbox.cc
  create mode 100644 sandbox/linux/services/flatpak_sandbox.h
 
 diff --git a/.gitignore b/.gitignore
-index aa8d155df30d1..8d3603d9c8265 100644
+index ad1b63e2e9d66..7ff693c2c250c 100644
 --- a/.gitignore
 +++ b/.gitignore
 @@ -63,6 +63,7 @@ vs-chromium-project.txt
@@ -41,10 +41,10 @@ index aa8d155df30d1..8d3603d9c8265 100644
  /.externalToolBuilders/
  /.settings/
 diff --git a/base/threading/thread_restrictions.h b/base/threading/thread_restrictions.h
-index 06faca5833183..c32b578f66418 100644
+index 5d28e0a1eceff..3dd55bfcfec9e 100644
 --- a/base/threading/thread_restrictions.h
 +++ b/base/threading/thread_restrictions.h
-@@ -289,6 +289,10 @@ class ScopedAllowThreadJoinForWebRtcTransport;
+@@ -294,6 +294,10 @@ class ScopedAllowThreadJoinForWebRtcTransport;
  }
  }
  
@@ -55,15 +55,15 @@ index 06faca5833183..c32b578f66418 100644
  namespace service_manager {
  class ServiceProcessLauncher;
  }
-@@ -423,6 +427,7 @@ class BASE_EXPORT ScopedAllowBlocking {
- #endif
-   friend class printing::PrintJobWorker;
+@@ -432,6 +436,7 @@ class BASE_EXPORT ScopedAllowBlocking {
+   friend class remote_cocoa::
+       DroppedScreenShotCopierMac;  // https://crbug.com/1148078
    friend class remoting::ScopedBypassIOThreadRestrictions;  // crbug.com/1144161
 +  friend class sandbox::FlatpakSandbox;
    friend class web::WebSubThread;
    friend class weblayer::BrowserContextImpl;
    friend class weblayer::ContentBrowserClientImpl;
-@@ -495,6 +500,7 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitives {
+@@ -504,6 +509,7 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitives {
    friend class rlz_lib::FinancialPing;
    friend class shell_integration_linux::
        LaunchXdgUtilityScopedAllowBaseSyncPrimitives;
@@ -94,7 +94,7 @@ index 4fa81a019090b..aaeba2d7d0ee7 100644
  
    addStatusRow('Layer 1 Sandbox', layer1SandboxType, layer1SandboxCssClass);
 diff --git a/chrome/browser/ui/webui/sandbox/sandbox_internals_ui.cc b/chrome/browser/ui/webui/sandbox/sandbox_internals_ui.cc
-index 6a7120b98d477..6df8f2d66e090 100644
+index 26c9270399948..6587d1fcbb9e6 100644
 --- a/chrome/browser/ui/webui/sandbox/sandbox_internals_ui.cc
 +++ b/chrome/browser/ui/webui/sandbox/sandbox_internals_ui.cc
 @@ -14,6 +14,7 @@
@@ -234,7 +234,7 @@ index 21b8323eb4965..c69d687f8e871 100644
  
    // This lock protects the |zygote_pids_| set.
 diff --git a/content/common/child_process_host_impl.cc b/content/common/child_process_host_impl.cc
-index 2166308bf1a26..7ab7908f07411 100644
+index 8dda040d2d53c..6bc72b6d30da4 100644
 --- a/content/common/child_process_host_impl.cc
 +++ b/content/common/child_process_host_impl.cc
 @@ -39,6 +39,7 @@
@@ -259,24 +259,6 @@ index 2166308bf1a26..7ab7908f07411 100644
      child_path = base::FilePath(base::kProcSelfExe);
  #endif
  
-@@ -297,7 +303,7 @@ bool ChildProcessHostImpl::OnMessageReceived(const IPC::Message& msg) {
-   }
- 
-   if (!handled) {
--      handled = delegate_->OnMessageReceived(msg);
-+    handled = delegate_->OnMessageReceived(msg);
-   }
- 
- #if BUILDFLAG(IPC_MESSAGE_LOG_ENABLED)
-@@ -311,7 +317,7 @@ void ChildProcessHostImpl::OnChannelConnected(int32_t peer_pid) {
-   if (!peer_process_.IsValid()) {
-     peer_process_ = base::Process::OpenWithExtraPrivileges(peer_pid);
-     if (!peer_process_.IsValid())
--       peer_process_ = delegate_->GetProcess().Duplicate();
-+      peer_process_ = delegate_->GetProcess().Duplicate();
-     DCHECK(peer_process_.IsValid());
-   }
-   opening_channel_ = false;
 diff --git a/content/zygote/zygote_linux.cc b/content/zygote/zygote_linux.cc
 index bba8137c280a9..85f37d9c40347 100644
 --- a/content/zygote/zygote_linux.cc
@@ -406,16 +388,15 @@ index 2f778dd0bcab2..25e9571232351 100644
      "//base/third_party/dynamic_annotations",
 diff --git a/sandbox/linux/services/flatpak_pid_map.cc b/sandbox/linux/services/flatpak_pid_map.cc
 new file mode 100644
-index 0000000000000..d8a2e0c385d87
+index 0000000000000..58b2ab552385b
 --- /dev/null
 +++ b/sandbox/linux/services/flatpak_pid_map.cc
-@@ -0,0 +1,58 @@
+@@ -0,0 +1,57 @@
 +// Copyright 2020 The Chromium Authors. All rights reserved.
 +// Use of this source code is governed by a BSD-style license that can be
 +// found in the LICENSE file.
 +
 +#include "sandbox/linux/services/flatpak_pid_map.h"
-+#include "base/optional.h"
 +
 +namespace sandbox {
 +
@@ -430,35 +411,35 @@ index 0000000000000..d8a2e0c385d87
 +  return true;
 +}
 +
-+base::Optional<pid_t> FlatpakPidMap::FindRelativeByExternal(pid_t external) {
++absl::optional<pid_t> FlatpakPidMap::FindRelativeByExternal(pid_t external) {
 +  return FindImpl(&external_to_relative_, external);
 +}
 +
-+base::Optional<pid_t> FlatpakPidMap::FindExternalByRelative(pid_t relative) {
++absl::optional<pid_t> FlatpakPidMap::FindExternalByRelative(pid_t relative) {
 +  return FindImpl(&relative_to_external_, relative);
 +}
 +
-+base::Optional<pid_t> FlatpakPidMap::DeleteByExternal(pid_t external) {
++absl::optional<pid_t> FlatpakPidMap::DeleteByExternal(pid_t external) {
 +  return DeleteImpl(&external_to_relative_, &relative_to_external_, external);
 +}
 +
-+base::Optional<pid_t> FlatpakPidMap::DeleteByRelative(pid_t relative) {
++absl::optional<pid_t> FlatpakPidMap::DeleteByRelative(pid_t relative) {
 +  return DeleteImpl(&relative_to_external_, &external_to_relative_, relative);
 +}
 +
-+base::Optional<pid_t> FlatpakPidMap::FindImpl(base::flat_map<pid_t, pid_t>* map,
++absl::optional<pid_t> FlatpakPidMap::FindImpl(base::flat_map<pid_t, pid_t>* map,
 +                                              pid_t key) {
 +  auto it = map->find(key);
-+  return it != map->end() ? it->second : base::Optional<pid_t>();
++  return it != map->end() ? it->second : absl::optional<pid_t>();
 +}
 +
-+base::Optional<pid_t> FlatpakPidMap::DeleteImpl(
++absl::optional<pid_t> FlatpakPidMap::DeleteImpl(
 +    base::flat_map<pid_t, pid_t>* map,
 +    base::flat_map<pid_t, pid_t>* reversed,
 +    pid_t key) {
 +  auto it = map->find(key);
 +  if (it == map->end()) {
-+    return base::Optional<pid_t>();
++    return absl::optional<pid_t>();
 +  }
 +
 +  pid_t value = it->second;
@@ -470,7 +451,7 @@ index 0000000000000..d8a2e0c385d87
 +}  // namespace sandbox
 diff --git a/sandbox/linux/services/flatpak_pid_map.h b/sandbox/linux/services/flatpak_pid_map.h
 new file mode 100644
-index 0000000000000..16b27437aad5f
+index 0000000000000..22799eb42f782
 --- /dev/null
 +++ b/sandbox/linux/services/flatpak_pid_map.h
 @@ -0,0 +1,46 @@
@@ -482,7 +463,7 @@ index 0000000000000..16b27437aad5f
 +#define SANDBOX_LINUX_SERVICES_FLATPAK_PID_MAP_H_
 +
 +#include "base/containers/flat_map.h"
-+#include "base/optional.h"
++#include "third_party/abseil-cpp/absl/types/optional.h"
 +
 +namespace sandbox {
 +
@@ -501,15 +482,15 @@ index 0000000000000..16b27437aad5f
 +
 +  bool Insert(PidPair pair);
 +
-+  base::Optional<pid_t> FindRelativeByExternal(pid_t external);
-+  base::Optional<pid_t> FindExternalByRelative(pid_t relative);
++  absl::optional<pid_t> FindRelativeByExternal(pid_t external);
++  absl::optional<pid_t> FindExternalByRelative(pid_t relative);
 +
-+  base::Optional<pid_t> DeleteByRelative(pid_t relative);
-+  base::Optional<pid_t> DeleteByExternal(pid_t external);
++  absl::optional<pid_t> DeleteByRelative(pid_t relative);
++  absl::optional<pid_t> DeleteByExternal(pid_t external);
 +
 + private:
-+  base::Optional<pid_t> FindImpl(base::flat_map<pid_t, pid_t>* map, pid_t key);
-+  base::Optional<pid_t> DeleteImpl(base::flat_map<pid_t, pid_t>* map,
++  absl::optional<pid_t> FindImpl(base::flat_map<pid_t, pid_t>* map, pid_t key);
++  absl::optional<pid_t> DeleteImpl(base::flat_map<pid_t, pid_t>* map,
 +                                   base::flat_map<pid_t, pid_t>* reversed,
 +                                   pid_t key);
 +
@@ -522,10 +503,10 @@ index 0000000000000..16b27437aad5f
 +#endif
 diff --git a/sandbox/linux/services/flatpak_sandbox.cc b/sandbox/linux/services/flatpak_sandbox.cc
 new file mode 100644
-index 0000000000000..475e7a291bc38
+index 0000000000000..7b6d9c2425773
 --- /dev/null
 +++ b/sandbox/linux/services/flatpak_sandbox.cc
-@@ -0,0 +1,578 @@
+@@ -0,0 +1,577 @@
 +// Copyright 2019 The Chromium Authors. All rights reserved.
 +// Use of this source code is governed by a BSD-style license that can be
 +// found in the LICENSE file.
@@ -540,7 +521,6 @@ index 0000000000000..475e7a291bc38
 +#include "base/files/file_path.h"
 +#include "base/files/file_util.h"
 +#include "base/logging.h"
-+#include "base/optional.h"
 +#include "base/process/process_handle.h"
 +#include "base/strings/string_number_conversions.h"
 +#include "base/strings/string_util.h"
@@ -756,7 +736,7 @@ index 0000000000000..475e7a291bc38
 +  if (!bus_thread_.IsRunning()) {
 +    base::Thread::Options options;
 +    options.message_pump_type = base::MessagePumpType::IO;
-+    CHECK(bus_thread_.StartWithOptions(options));
++    CHECK(bus_thread_.StartWithOptions(std::move(options)));
 +
 +    bus_thread_.task_runner()->PostTask(
 +        FROM_HERE, base::BindOnce(&FlatpakSandbox::InitializeBusThread,
@@ -768,16 +748,16 @@ index 0000000000000..475e7a291bc38
 +  // Note that destruction of the bus is not a concern, because once the
 +  // thread dies its bus connection will be terminated anyway and the
 +  // portal will notice.
-+  static base::NoDestructor<dbus::Bus*> bus([] {
++  static base::NoDestructor<scoped_refptr<dbus::Bus>> bus([] {
 +    dbus::Bus::Options options;
 +    options.bus_type = dbus::Bus::SESSION;
 +    options.connection_type = dbus::Bus::PRIVATE;
 +    options.dbus_task_runner = base::SequencedTaskRunnerHandle::Get();
 +
-+    return new dbus::Bus(options);
++    return base::MakeRefCounted<dbus::Bus>(options);
 +  }());
 +
-+  return *bus;
++  return bus->get();
 +}
 +
 +dbus::ObjectProxy* FlatpakSandbox::GetPortalObjectProxy() {
@@ -1106,7 +1086,7 @@ index 0000000000000..475e7a291bc38
 +}  // namespace sandbox
 diff --git a/sandbox/linux/services/flatpak_sandbox.h b/sandbox/linux/services/flatpak_sandbox.h
 new file mode 100644
-index 0000000000000..fc8a77d403f96
+index 0000000000000..8def31e9ce245
 --- /dev/null
 +++ b/sandbox/linux/services/flatpak_sandbox.h
 @@ -0,0 +1,119 @@
@@ -1123,7 +1103,6 @@ index 0000000000000..fc8a77d403f96
 +#include "base/containers/flat_set.h"
 +#include "base/macros.h"
 +#include "base/no_destructor.h"
-+#include "base/optional.h"
 +#include "base/process/kill.h"
 +#include "base/process/launch.h"
 +#include "base/process/process_handle.h"
@@ -1135,6 +1114,7 @@ index 0000000000000..fc8a77d403f96
 +#include "dbus/message.h"
 +#include "sandbox/linux/services/flatpak_pid_map.h"
 +#include "sandbox/sandbox_export.h"
++#include "third_party/abseil-cpp/absl/types/optional.h"
 +
 +namespace sandbox {
 +
@@ -1209,7 +1189,7 @@ index 0000000000000..fc8a77d403f96
 +
 +  base::ProcessId GetRelativePid(base::ProcessId external_pid);
 +
-+  base::Optional<SandboxLevel> sandbox_level_;
++  absl::optional<SandboxLevel> sandbox_level_;
 +  base::Thread bus_thread_;
 +
 +  base::Lock process_info_lock_;
@@ -1295,7 +1275,7 @@ index 9054eb62d0976..47dce9f380816 100644
    std::unique_ptr<SetuidSandboxClient> setuid_sandbox_client_;
  #if BUILDFLAG(USING_SANITIZER)
 diff --git a/services/service_manager/service_process_launcher.cc b/services/service_manager/service_process_launcher.cc
-index 05d4a7a290e5c..81b1e004f6c01 100644
+index 72a2161d61cdb..3b2f2c7235a6c 100644
 --- a/services/service_manager/service_process_launcher.cc
 +++ b/services/service_manager/service_process_launcher.cc
 @@ -38,6 +38,7 @@
@@ -1306,7 +1286,7 @@ index 05d4a7a290e5c..81b1e004f6c01 100644
  #include "sandbox/linux/services/namespace_sandbox.h"
  #endif
  
-@@ -271,8 +272,15 @@ void ServiceProcessLauncher::ProcessState::StopInBackground() {
+@@ -273,8 +274,15 @@ void ServiceProcessLauncher::ProcessState::StopInBackground() {
      return;
  
    int rv = -1;
