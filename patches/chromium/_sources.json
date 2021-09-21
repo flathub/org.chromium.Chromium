@@ -15,8 +15,7 @@
       "patches/chromium/Enable-new-dtags-on-non-component-builds.patch",
       "patches/chromium/Add-support-for-respecting-system-proxy-settings-when-runn.patch",
       "patches/chromium/content-Disable-the-WASM-trap-handler-on-Linux.patch",
-      "patches/chromium/Clang-build-script-Allow-passing-a-prebuilt-Clang-for-boos.patch",
-      "patches/chromium/Don-t-cancel-the-select-file-dialog-if-exporting-the-windo.patch"
+      "patches/chromium/Clang-build-script-Allow-passing-a-prebuilt-Clang-for-boos.patch"
     ]
   }
 ]

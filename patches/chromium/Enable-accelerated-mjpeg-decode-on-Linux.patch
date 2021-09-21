@@ -1,4 +1,4 @@
-From a9b6814ae20f597164f11b82005a9acdf64c5b2b Mon Sep 17 00:00:00 2001
+From 3f57de1b547f8196e44b4437eab2d476a1ba2458 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Tue, 19 Jan 2021 15:41:16 -0600
 Subject: [PATCH] Enable accelerated mjpeg decode on Linux
@@ -11,10 +11,10 @@ Subject: [PATCH] Enable accelerated mjpeg decode on Linux
  4 files changed, 20 insertions(+), 12 deletions(-)
 
 diff --git a/chrome/browser/about_flags.cc b/chrome/browser/about_flags.cc
-index 11f9808ee1e06..8ad3680c56d81 100644
+index e50714dc9f4f8..9f14801533e4d 100644
 --- a/chrome/browser/about_flags.cc
 +++ b/chrome/browser/about_flags.cc
-@@ -3817,10 +3817,10 @@ const FeatureEntry kFeatureEntries[] = {
+@@ -3696,10 +3696,10 @@ const FeatureEntry kFeatureEntries[] = {
       flag_descriptions::kWebXrForceRuntimeDescription, kOsDesktop,
       MULTI_VALUE_TYPE(kWebXrForceRuntimeChoices)},
  #endif  // ENABLE_VR
@@ -28,10 +28,10 @@ index 11f9808ee1e06..8ad3680c56d81 100644
  #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
      {"system-keyboard-lock", flag_descriptions::kSystemKeyboardLockName,
 diff --git a/chrome/browser/flag_descriptions.cc b/chrome/browser/flag_descriptions.cc
-index 451f91828c06b..bbe290da9b011 100644
+index d41f7a9563b5a..5d5231e37f5e8 100644
 --- a/chrome/browser/flag_descriptions.cc
 +++ b/chrome/browser/flag_descriptions.cc
-@@ -4013,6 +4013,16 @@ const char kScreenTimeDescription[] =
+@@ -3853,6 +3853,16 @@ const char kScreenTimeDescription[] =
  
  #endif
  
@@ -48,7 +48,7 @@ index 451f91828c06b..bbe290da9b011 100644
  // Chrome OS -------------------------------------------------------------------
  
  #if BUILDFLAG(IS_CHROMEOS_ASH)
-@@ -4024,12 +4034,6 @@ const char kAccountManagementFlowsV2Description[] =
+@@ -3864,12 +3874,6 @@ const char kAccountManagementFlowsV2Description[] =
      "Settings. "
      "See go/betterAM";
  
@@ -62,10 +62,10 @@ index 451f91828c06b..bbe290da9b011 100644
      "Allow disabling mouse acceleration";
  const char kAllowDisableMouseAccelerationDescription[] =
 diff --git a/chrome/browser/flag_descriptions.h b/chrome/browser/flag_descriptions.h
-index 5155b6bb2d235..0a85211da9452 100644
+index 1078cced42c52..316dd2829a4b6 100644
 --- a/chrome/browser/flag_descriptions.h
 +++ b/chrome/browser/flag_descriptions.h
-@@ -2301,6 +2301,13 @@ extern const char kScreenTimeDescription[];
+@@ -2205,6 +2205,13 @@ extern const char kScreenTimeDescription[];
  
  #endif  // defined(OS_MAC)
  
@@ -79,7 +79,7 @@ index 5155b6bb2d235..0a85211da9452 100644
  // Chrome OS ------------------------------------------------------------------
  
  #if BUILDFLAG(IS_CHROMEOS_ASH)
-@@ -2308,9 +2315,6 @@ extern const char kScreenTimeDescription[];
+@@ -2212,9 +2219,6 @@ extern const char kScreenTimeDescription[];
  extern const char kAccountManagementFlowsV2Name[];
  extern const char kAccountManagementFlowsV2Description[];
  
@@ -90,10 +90,10 @@ index 5155b6bb2d235..0a85211da9452 100644
  extern const char kAllowDisableMouseAccelerationDescription[];
  
 diff --git a/media/base/media_switches.cc b/media/base/media_switches.cc
-index 039681128b9f9..982879dde795b 100644
+index 9b32170f89608..f0789f5e19a5d 100644
 --- a/media/base/media_switches.cc
 +++ b/media/base/media_switches.cc
-@@ -882,7 +882,7 @@ bool IsVideoCaptureAcceleratedJpegDecodingEnabled() {
+@@ -922,7 +922,7 @@ bool IsVideoCaptureAcceleratedJpegDecodingEnabled() {
            switches::kUseFakeMjpegDecodeAccelerator)) {
      return true;
    }

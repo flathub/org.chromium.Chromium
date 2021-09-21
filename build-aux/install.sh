@@ -3,7 +3,7 @@
 mkdir -p /app/chromium
 
 pushd out/Release
-for path in chrome crashpad_handler icudtl.dat *.so *.pak *.bin *.png locales MEIPreload swiftshader; do
+for path in chrome chrome_crashpad_handler icudtl.dat *.so *.pak *.bin *.png locales MEIPreload swiftshader; do
     cp -rv $path /app/chromium
 done
 popd

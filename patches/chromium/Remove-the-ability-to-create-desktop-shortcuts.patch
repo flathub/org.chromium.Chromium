@@ -1,4 +1,4 @@
-From 325c2c2c4c8a6f974a87913b5e027c540f92133b Mon Sep 17 00:00:00 2001
+From de408f81fefddf6dcbc722e60abf05dd67ae6cd7 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Wed, 11 Nov 2020 16:51:49 -0600
 Subject: [PATCH] Remove the ability to create desktop shortcuts
@@ -9,7 +9,7 @@ Subject: [PATCH] Remove the ability to create desktop shortcuts
  2 files changed, 2 insertions(+), 10 deletions(-)
 
 diff --git a/chrome/browser/ui/views/create_application_shortcut_view.cc b/chrome/browser/ui/views/create_application_shortcut_view.cc
-index 191814d9f2337..f7cae2ab65f24 100644
+index 569daa059f850..ca4bf0d90f8c3 100644
 --- a/chrome/browser/ui/views/create_application_shortcut_view.cc
 +++ b/chrome/browser/ui/views/create_application_shortcut_view.cc
 @@ -113,10 +113,6 @@ void CreateChromeApplicationShortcutView::InitControls() {

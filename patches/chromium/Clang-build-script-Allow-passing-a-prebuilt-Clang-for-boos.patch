@@ -1,4 +1,4 @@
-From 8a49234f43bf68dceb3f210662d8dd2ec6644ca2 Mon Sep 17 00:00:00 2001
+From 2f0ae4874cfe658b195078f2e31c084cbfe43ec1 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Fri, 28 May 2021 10:41:25 -0500
 Subject: [PATCH] Clang build script: Allow passing a prebuilt Clang for
@@ -9,10 +9,10 @@ Subject: [PATCH] Clang build script: Allow passing a prebuilt Clang for
  1 file changed, 12 insertions(+)
 
 diff --git a/tools/clang/scripts/build.py b/tools/clang/scripts/build.py
-index fc83122d7d697..617aab3e4da94 100755
+index f421cbc5c2d66..640d5e8dd6c8d 100755
 --- a/tools/clang/scripts/build.py
 +++ b/tools/clang/scripts/build.py
-@@ -429,6 +429,10 @@ def main():
+@@ -431,6 +431,10 @@ def main():
    parser.add_argument('--gcc-toolchain', help='what gcc toolchain to use for '
                        'building; --gcc-toolchain=/opt/foo picks '
                        '/opt/foo/bin/gcc')
@@ -23,7 +23,7 @@ index fc83122d7d697..617aab3e4da94 100755
    parser.add_argument('--pgo', action='store_true', help='build with PGO')
    parser.add_argument('--thinlto',
                        action='store_true',
-@@ -606,6 +610,14 @@ def main():
+@@ -608,6 +612,14 @@ def main():
          '-DLLVM_LOCAL_RPATH=' + os.path.join(args.gcc_toolchain, 'lib64')
      ]
  
