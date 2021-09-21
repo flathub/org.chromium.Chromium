@@ -22,5 +22,5 @@ index 9a0afdfc4cd1a..5f2fef8d40f19 100644
  const base::Feature kWebAssemblyTrapHandler{"WebAssemblyTrapHandler",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
 -- 
-2.31.1
+2.32.0
 

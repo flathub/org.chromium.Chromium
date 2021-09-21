@@ -64,5 +64,5 @@ index 5c88437d26ae2..f5ef9db0ee583 100644
    views::Checkbox* quick_launch_check_box_ = nullptr;
  
 -- 
-2.31.1
+2.32.0
 
