@@ -4,7 +4,6 @@
     "paths": [
       "patches/ffmpeg/Enable-support-for-libfdk-aac-and-OpenH264.patch",
       "patches/ffmpeg/ffmpeg-Handle-transient-decode-errors-arising-from-libfdk-.patch",
-      "patches/ffmpeg/Ensure-libffmpeg.so-is-in-the-rpath-of-binaries.patch",
       "patches/ffmpeg/Update-build-configuration.patch"
     ]
   }

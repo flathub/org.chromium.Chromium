@@ -1,4 +1,4 @@
-From 71df6dccc9bf9c65f2a9d932478b536d14dbe385 Mon Sep 17 00:00:00 2001
+From f888a924cd6dec39264d6727f82a47d39a532875 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Tue, 17 Mar 2020 13:18:27 -0500
 Subject: [PATCH] flatpak: Add initial sandbox support
@@ -29,7 +29,7 @@ Subject: [PATCH] flatpak: Add initial sandbox support
  create mode 100644 sandbox/linux/services/flatpak_sandbox.h
 
 diff --git a/.gitignore b/.gitignore
-index ad1b63e2e9d66..7ff693c2c250c 100644
+index c59b3010d7663..4322b73e0c167 100644
 --- a/.gitignore
 +++ b/.gitignore
 @@ -63,6 +63,7 @@ vs-chromium-project.txt
@@ -41,10 +41,10 @@ index ad1b63e2e9d66..7ff693c2c250c 100644
  /.externalToolBuilders/
  /.settings/
 diff --git a/base/threading/thread_restrictions.h b/base/threading/thread_restrictions.h
-index 5d28e0a1eceff..3dd55bfcfec9e 100644
+index 088e966c9948d..1751e8acc2817 100644
 --- a/base/threading/thread_restrictions.h
 +++ b/base/threading/thread_restrictions.h
-@@ -294,6 +294,10 @@ class ScopedAllowThreadJoinForWebRtcTransport;
+@@ -301,6 +301,10 @@ class ScopedAllowThreadJoinForWebRtcTransport;
  }
  }
  
@@ -55,7 +55,7 @@ index 5d28e0a1eceff..3dd55bfcfec9e 100644
  namespace service_manager {
  class ServiceProcessLauncher;
  }
-@@ -432,6 +436,7 @@ class BASE_EXPORT ScopedAllowBlocking {
+@@ -442,6 +446,7 @@ class BASE_EXPORT ScopedAllowBlocking {
    friend class remote_cocoa::
        DroppedScreenShotCopierMac;  // https://crbug.com/1148078
    friend class remoting::ScopedBypassIOThreadRestrictions;  // crbug.com/1144161
@@ -63,7 +63,7 @@ index 5d28e0a1eceff..3dd55bfcfec9e 100644
    friend class web::WebSubThread;
    friend class weblayer::BrowserContextImpl;
    friend class weblayer::ContentBrowserClientImpl;
-@@ -504,6 +509,7 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitives {
+@@ -514,6 +519,7 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitives {
    friend class rlz_lib::FinancialPing;
    friend class shell_integration_linux::
        LaunchXdgUtilityScopedAllowBaseSyncPrimitives;
@@ -260,7 +260,7 @@ index 8dda040d2d53c..6bc72b6d30da4 100644
  #endif
  
 diff --git a/content/zygote/zygote_linux.cc b/content/zygote/zygote_linux.cc
-index bba8137c280a9..85f37d9c40347 100644
+index 582b0fd490ba9..d90eddcd1425b 100644
 --- a/content/zygote/zygote_linux.cc
 +++ b/content/zygote/zygote_linux.cc
 @@ -116,7 +116,7 @@ bool Zygote::ProcessRequests() {
@@ -360,7 +360,7 @@ index c47d2c8aaa363..eaa1db6425977 100644
                  base::GlobalDescriptors::Descriptor(
                      static_cast<uint32_t>(kSandboxIPCChannel), GetSandboxFD()));
 diff --git a/sandbox/linux/BUILD.gn b/sandbox/linux/BUILD.gn
-index 2f778dd0bcab2..25e9571232351 100644
+index ccbbc91716e71..020784af07d43 100644
 --- a/sandbox/linux/BUILD.gn
 +++ b/sandbox/linux/BUILD.gn
 @@ -333,6 +333,10 @@ if (is_linux || is_chromeos) {
@@ -1210,7 +1210,7 @@ index 0000000000000..8def31e9ce245
 +
 +#endif  // SANDBOX_LINUX_SERVICES_FLATPAK_SANDBOX_H_
 diff --git a/sandbox/policy/linux/sandbox_linux.cc b/sandbox/policy/linux/sandbox_linux.cc
-index ba21e015b5a54..fc2ea9291fd2f 100644
+index e7f2fecb4f7a1..3bae8f3cd40d0 100644
 --- a/sandbox/policy/linux/sandbox_linux.cc
 +++ b/sandbox/policy/linux/sandbox_linux.cc
 @@ -33,6 +33,7 @@

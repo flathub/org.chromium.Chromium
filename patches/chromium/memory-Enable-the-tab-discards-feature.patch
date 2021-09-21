@@ -1,4 +1,4 @@
-From b2eab6b4c7c3317c54aff0b2002c1be2415b1b90 Mon Sep 17 00:00:00 2001
+From 2bbb660669791be3c1a884c1a730be8f5f58caec Mon Sep 17 00:00:00 2001
 From: Mario Sanchez Prada <mario@endlessm.com>
 Date: Thu, 28 Jan 2016 13:53:08 +0000
 Subject: [PATCH] memory: Enable the tab discards feature

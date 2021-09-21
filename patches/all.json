@@ -1,26 +1,24 @@
 [
-    {
-        "type": "patch",
-        "paths": [
-            "patches/chromium/flatpak-Add-initial-sandbox-support.patch",
-            "patches/chromium/flatpak-Expose-Widevine-into-the-sandbox.patch",
-            "patches/chromium/flatpak-Adjust-paths-for-the-sandbox.patch",
-            "patches/chromium/Import-chromium-71.0.3578.98-widevine-r3.patch.patch",
-            "patches/chromium/x11-Set-_NET_WM_BYPASS_COMPOSITOR-for-fullscreen.patch",
-            "patches/chromium/memory-Enable-the-tab-discards-feature.patch",
-            "patches/chromium/Enable-accelerated-mjpeg-decode-on-Linux.patch",
-            "patches/chromium/ffmpeg-Don-t-lie-about-AAC-and-H264-decoders-when-not-avai.patch",
-            "patches/chromium/Remove-the-ability-to-create-desktop-shortcuts.patch",
-            "patches/chromium/Use-CHROME_WRAPPER-as-the-executable-on-restart.patch",
-            "patches/chromium/Enable-new-dtags-on-non-component-builds.patch",
-            "patches/chromium/Add-support-for-respecting-system-proxy-settings-when-runn.patch",
-            "patches/chromium/content-Disable-the-WASM-trap-handler-on-Linux.patch",
-            "patches/chromium/Clang-build-script-Allow-passing-a-prebuilt-Clang-for-boos.patch",
-            "patches/chromium/Don-t-cancel-the-select-file-dialog-if-exporting-the-windo.patch",
-            "patches/ffmpeg/Enable-support-for-libfdk-aac-and-OpenH264.patch",
-            "patches/ffmpeg/ffmpeg-Handle-transient-decode-errors-arising-from-libfdk-.patch",
-            "patches/ffmpeg/Ensure-libffmpeg.so-is-in-the-rpath-of-binaries.patch",
-            "patches/ffmpeg/Update-build-configuration.patch"
-        ]
-    }
+  {
+    "type": "patch",
+    "paths": [
+      "patches/chromium/flatpak-Add-initial-sandbox-support.patch",
+      "patches/chromium/flatpak-Expose-Widevine-into-the-sandbox.patch",
+      "patches/chromium/flatpak-Adjust-paths-for-the-sandbox.patch",
+      "patches/chromium/Import-chromium-71.0.3578.98-widevine-r3.patch.patch",
+      "patches/chromium/x11-Set-_NET_WM_BYPASS_COMPOSITOR-for-fullscreen.patch",
+      "patches/chromium/memory-Enable-the-tab-discards-feature.patch",
+      "patches/chromium/Enable-accelerated-mjpeg-decode-on-Linux.patch",
+      "patches/chromium/ffmpeg-Don-t-lie-about-AAC-and-H264-decoders-when-not-avai.patch",
+      "patches/chromium/Remove-the-ability-to-create-desktop-shortcuts.patch",
+      "patches/chromium/Use-CHROME_WRAPPER-as-the-executable-on-restart.patch",
+      "patches/chromium/Enable-new-dtags-on-non-component-builds.patch",
+      "patches/chromium/Add-support-for-respecting-system-proxy-settings-when-runn.patch",
+      "patches/chromium/content-Disable-the-WASM-trap-handler-on-Linux.patch",
+      "patches/chromium/Clang-build-script-Allow-passing-a-prebuilt-Clang-for-boos.patch",
+      "patches/ffmpeg/Enable-support-for-libfdk-aac-and-OpenH264.patch",
+      "patches/ffmpeg/ffmpeg-Handle-transient-decode-errors-arising-from-libfdk-.patch",
+      "patches/ffmpeg/Update-build-configuration.patch"
+    ]
+  }
 ]
