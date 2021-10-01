@@ -1,4 +1,4 @@
-From 3f57de1b547f8196e44b4437eab2d476a1ba2458 Mon Sep 17 00:00:00 2001
+From d26131385bf25fe810e141f10b2250e9c73b8b33 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Tue, 19 Jan 2021 15:41:16 -0600
 Subject: [PATCH] Enable accelerated mjpeg decode on Linux
