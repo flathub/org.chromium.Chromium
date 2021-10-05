@@ -148,13 +148,6 @@ modules:
         url: https://github.com/refi64/flextop
         commit: 9f66dac84388f520ecab5ac4fa60df6343b7db5b
 
-  - name: cobalt
-    buildsystem: meson
-    sources:
-      - type: git
-        url: https://github.com/refi64/cobalt
-        tag: v2021.07.2
-
   - name: readelf-symlink
     only-arches: [aarch64]
     buildsystem: simple
@@ -215,6 +208,6 @@ modules:
       - type: file
         path: unlink_profiles.py
       - type: file
-        path: cobalt.ini
+        path: portal_error.txt
       - type: dir
         path: build-aux
