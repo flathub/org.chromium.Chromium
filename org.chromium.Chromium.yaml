@@ -1,6 +1,6 @@
 app-id: org.chromium.Chromium
 runtime: org.freedesktop.Platform
-runtime-version: '21.08'
+runtime-version: '20.08'
 sdk: org.freedesktop.Sdk
 command: chromium
 finish-args:
@@ -90,11 +90,8 @@ modules:
       - type: git
         url: https://gitlab.gnome.org/GNOME/gtk.git
         tag: 3.24.23
-        commit: 016e8c55ab924c9ef4d32c8cb06253b1dc1be60d
-      # From https://gitlab.gnome.org/GNOME/gnome-build-meta/-/blob/master/files/gtk3-werror.patch
-      - type: patch
-        path: gtk3-werror.patch
 
+        commit: 016e8c55ab924c9ef4d32c8cb06253b1dc1be60d
   - name: gtk-settings
     buildsystem: simple
     build-commands:
@@ -122,6 +119,17 @@ modules:
       - type: archive
         url: https://www.python.org/ftp/python/2.7.18/Python-2.7.18.tar.xz
         sha256: b62c0e7937551d0cc02b8fd5cb0f544f9405bafc9a54d3808ed4594812edef43
+
+  - name: xcbproto
+    build-options:
+      env:
+        PYTHON: /app/bin/python2
+    cleanup:
+      - '*'
+    sources:
+      - type: archive
+        url: https://xorg.freedesktop.org/archive/individual/proto/xcb-proto-1.14.tar.xz
+        sha256: 186a3ceb26f9b4a015f5a44dcc814c93033a5fc39684f36f1ecc79834416a605
 
   - name: krb5
     subdir: src
@@ -186,14 +194,10 @@ modules:
         x-checker-data:
           type: chromium
           component: llvm-prebuilt
-      - type: shell
-        commands:
-          - rm -rf third_party/llvm
-        only-arches: [aarch64]
       - type: git
         url: https://github.com/llvm/llvm-project
         commit: llvmorg-14-init-1002-gb5e470aa
-        dest: third_party/llvm
+        dest: third_party/llvm-2
         only-arches: [aarch64]
         x-checker-data:
           type: chromium
