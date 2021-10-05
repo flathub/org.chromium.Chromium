@@ -1,4 +1,4 @@
-From ba7edd86cdda55c2ef112ca83e9db4e8a26afc08 Mon Sep 17 00:00:00 2001
+From 487dcfab7a4b16ad53b582c860fc6207d04d948b Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Thu, 30 Sep 2021 11:27:43 -0500
 Subject: [PATCH] Clang build script: Disable hwasan
