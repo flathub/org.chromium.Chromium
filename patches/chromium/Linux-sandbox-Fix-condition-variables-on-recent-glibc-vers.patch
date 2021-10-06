@@ -1,0 +1,30 @@
+From f29651830f61895cc06ae4567f24b94c807b6e4b Mon Sep 17 00:00:00 2001
+From: Ryan Gonzalez <rymg19@gmail.com>
+Date: Wed, 6 Oct 2021 16:37:45 -0500
+Subject: [PATCH] Linux sandbox: Fix condition variables on recent glibc
+ versions
+
+glibc 2.33+ (unintentionally, based on code comments) passes
+FUTEX_CLOCK_REALTIME when waiting for condition variables, thus all of
+libpulse's attempts to do so result in EPERM, and the audio process
+aborts.
+---
+ sandbox/policy/linux/bpf_audio_policy_linux.cc | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/sandbox/policy/linux/bpf_audio_policy_linux.cc b/sandbox/policy/linux/bpf_audio_policy_linux.cc
+index ed23b3e1e950f..1ca63de3862b6 100644
+--- a/sandbox/policy/linux/bpf_audio_policy_linux.cc
++++ b/sandbox/policy/linux/bpf_audio_policy_linux.cc
+@@ -85,7 +85,7 @@ ResultExpr AudioProcessPolicy::EvaluateSyscall(int system_call_number) const {
+     {
+       const Arg<int> op(1);
+ #if defined(USE_PULSEAUDIO)
+-      return Switch(op & ~FUTEX_PRIVATE_FLAG)
++      return Switch(op & ~(FUTEX_PRIVATE_FLAG | FUTEX_CLOCK_REALTIME))
+           .SANDBOX_BPF_DSL_CASES(
+               (FUTEX_CMP_REQUEUE, FUTEX_LOCK_PI, FUTEX_UNLOCK_PI, FUTEX_WAIT,
+                FUTEX_WAIT_BITSET, FUTEX_WAKE),
+-- 
+2.32.0
+

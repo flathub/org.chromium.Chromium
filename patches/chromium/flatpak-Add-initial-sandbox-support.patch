@@ -1,4 +1,4 @@
-From f888a924cd6dec39264d6727f82a47d39a532875 Mon Sep 17 00:00:00 2001
+From a9d14e40f03a27dda80f171f8c0640fbc2d44c1f Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Tue, 17 Mar 2020 13:18:27 -0500
 Subject: [PATCH] flatpak: Add initial sandbox support
@@ -1305,5 +1305,5 @@ index 72a2161d61cdb..3b2f2c7235a6c 100644
  }
  
 -- 
-2.31.1
+2.32.0
 
