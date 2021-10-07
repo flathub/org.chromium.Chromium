@@ -64,22 +64,6 @@ sdk-extensions:
 modules:
   - libsecret.json
 
-  - name: libcups
-    make-args: [libs]
-    no-make-install: true
-    post-install:
-      - make install-headers install-libs
-    cleanup:
-      - /include
-    sources:
-      - type: git
-        url: https://github.com/OpenPrinting/cups.git
-        tag: v2.3.3op2
-        commit: 3b566f73587ffa8ad9690f2399efc4508b3a9016
-        x-checker-data:
-          type: git
-          tag-pattern: ^v([\d.]+)
-
   - name: gtk-cups-backend
     buildsystem: meson
     make-args: [modules/printbackends/libprintbackend-cups.so]
@@ -89,8 +73,8 @@ modules:
     sources:
       - type: git
         url: https://gitlab.gnome.org/GNOME/gtk.git
-        tag: 3.24.23
-        commit: 016e8c55ab924c9ef4d32c8cb06253b1dc1be60d
+        tag: 3.24.30
+        commit: d4e2d05cd9518ba04d6fbe1cbcec27142788ac95
       # From https://gitlab.gnome.org/GNOME/gnome-build-meta/-/blob/master/files/gtk3-werror.patch
       - type: patch
         path: gtk3-werror.patch
