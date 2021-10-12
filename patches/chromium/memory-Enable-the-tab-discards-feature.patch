@@ -1,4 +1,4 @@
-From 2bbb660669791be3c1a884c1a730be8f5f58caec Mon Sep 17 00:00:00 2001
+From 2a06184c049d6f330935ec7d0d70417d991bec12 Mon Sep 17 00:00:00 2001
 From: Mario Sanchez Prada <mario@endlessm.com>
 Date: Thu, 28 Jan 2016 13:53:08 +0000
 Subject: [PATCH] memory: Enable the tab discards feature
@@ -25,5 +25,5 @@ index 6f76e5aad4fb8..e08dfbc98773a 100644
    // PerformanceManager.
    if (!base::FeatureList::IsEnabled(
 -- 
-2.31.1
+2.32.0
 

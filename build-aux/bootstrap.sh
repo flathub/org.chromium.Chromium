@@ -1,12 +1,9 @@
 #!/bin/bash -e
 
-if [[ -d third_party/llvm-2 ]]; then
-  rm -rf third_party/llvm
-  mv third_party/llvm{-2,}
+# Needed to build GN itself.
+. /usr/lib/sdk/llvm12/enable.sh
 
-  # HACK: hwasan doesn't build for some reason
-  sed -i 's/;hwasan//' tools/clang/scripts/build.py
-
+if [[ ! -d third_party/llvm-build/Release+Assets/bin ]]; then
   python3 tools/clang/scripts/build.py --disable-asserts \
       --skip-checkout --use-system-cmake \
       --gcc-toolchain=/usr --bootstrap-llvm=/usr/lib/sdk/llvm12 \
