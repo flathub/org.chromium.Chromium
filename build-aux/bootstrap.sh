@@ -32,6 +32,7 @@ tools/gn/bootstrap/bootstrap.py -v --no-clean --gn-gen-args='
     rtc_link_pipewire=true
     rtc_pipewire_version="0.3"
     enable_hangout_services_extension=true
+    disable_fieldtrial_testing_config=true
 '
 mkdir -p out/ReleaseFree
 cp out/Release{,Free}/args.gn
