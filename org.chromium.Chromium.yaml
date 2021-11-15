@@ -141,8 +141,8 @@ modules:
     sources:
       - type: git
         url: https://github.com/refi64/cobalt
-        tag: v2021.09.1
-        commit: 6081cef971331b350f6f83d18e208fd7397550e3
+        tag: v2021.10.1
+        commit: ff38b201b83ca01c112ffc0ed05defdcdfd53e8a
         x-checker-data:
           type: git
           tag-pattern: ^v([\d.]+)$
@@ -170,15 +170,15 @@ modules:
       - ./install.sh
     sources:
       - type: archive
-        url: https://commondatastorage.googleapis.com/chromium-browser-official/chromium-95.0.4638.69.tar.xz
-        sha256: 38a37d737c6c9a7198402ca614746b2dbb7abbb793bb2cb02dc796b62a22efe7
+        url: https://commondatastorage.googleapis.com/chromium-browser-official/chromium-96.0.4664.45.tar.xz
+        sha256: 488c6ad983ebf7781cb4d704f70496e8aa2165611b46656d7aa62f269c760407
         x-checker-data:
           type: chromium
           component: chromium
           is-main-source: true
       - type: archive
-        url: https://commondatastorage.googleapis.com/chromium-browser-clang/Linux_x64/clang-llvmorg-14-init-3191-g0e03450a-1.tgz
-        sha256: dd7479d43ce61401e057a5dee8b7e32bc2bd0d0e15d4f46c6858daf9170c9978
+        url: https://commondatastorage.googleapis.com/chromium-browser-clang/Linux_x64/clang-llvmorg-14-init-5759-g02895eed-1.tgz
+        sha256: 5c2d11236c7254d48b02535ff58897830bc64e7258434d658c7d606e8d01b179
         dest: third_party/llvm-build/Release+Asserts
         strip-components: 0
         only-arches: [x86_64]
@@ -191,7 +191,7 @@ modules:
         only-arches: [aarch64]
       - type: git
         url: https://github.com/llvm/llvm-project
-        commit: llvmorg-14-init-3191-g0e03450a
+        commit: llvmorg-14-init-5759-g02895eed
         dest: third_party/llvm
         only-arches: [aarch64]
         x-checker-data:
