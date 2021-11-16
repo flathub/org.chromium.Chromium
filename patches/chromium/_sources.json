@@ -15,9 +15,7 @@
       "patches/chromium/Enable-new-dtags-on-non-component-builds.patch",
       "patches/chromium/Add-support-for-respecting-system-proxy-settings-when-runn.patch",
       "patches/chromium/Clang-build-script-Allow-passing-a-prebuilt-Clang-for-boos.patch",
-      "patches/chromium/Clang-build-script-Disable-hwasan.patch",
-      "patches/chromium/Linux-sandbox-Fix-conflict-between-syscall-broker-and-fsta.patch",
-      "patches/chromium/Linux-sandbox-Fix-condition-variables-on-recent-glibc-vers.patch"
+      "patches/chromium/Clang-build-script-Disable-hwasan.patch"
     ]
   }
 ]

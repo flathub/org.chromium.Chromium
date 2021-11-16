@@ -1,4 +1,4 @@
-From 99802b4f776b726aab2e645f5d024272bd9d2d06 Mon Sep 17 00:00:00 2001
+From c34c0f1d004915c465982578b57e77e91a5b3e7f Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Tue, 17 Nov 2020 13:00:39 -0600
 Subject: [PATCH] flatpak: Expose Widevine into the sandbox
@@ -319,5 +319,5 @@ index 8def31e9ce245..e00c759164a94 100644
                         base::WaitableEvent* event,
                         dbus::Response* response,
 -- 
-2.32.0
+2.33.1
 
