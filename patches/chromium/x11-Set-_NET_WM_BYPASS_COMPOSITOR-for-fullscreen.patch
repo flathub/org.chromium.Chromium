@@ -1,4 +1,4 @@
-From e0569d22b8caf9a50d6039f3cf27528204fb2489 Mon Sep 17 00:00:00 2001
+From 4aaeb183c31c2d2cb40f67bd4f89a433f1d6f92e Mon Sep 17 00:00:00 2001
 From: Daniel Drake <drake@endlessm.com>
 Date: Fri, 3 Jul 2015 14:59:24 -0600
 Subject: [PATCH] x11: Set _NET_WM_BYPASS_COMPOSITOR for fullscreen
@@ -10,10 +10,10 @@ This improves performance at full screen.
  2 files changed, 9 insertions(+)
 
 diff --git a/ui/platform_window/x11/x11_window.cc b/ui/platform_window/x11/x11_window.cc
-index b8389ec9f2f6e..4ff49f05123e5 100644
+index 3ef183213bc60..c4d3f16cd445f 100644
 --- a/ui/platform_window/x11/x11_window.cc
 +++ b/ui/platform_window/x11/x11_window.cc
-@@ -604,6 +604,8 @@ void X11Window::ToggleFullscreen() {
+@@ -607,6 +607,8 @@ void X11Window::ToggleFullscreen() {
    state_ = new_state;
    SetFullscreen(fullscreen);
  
@@ -22,7 +22,7 @@ index b8389ec9f2f6e..4ff49f05123e5 100644
    if (unmaximize_and_remaximize)
      Maximize();
  
-@@ -1753,6 +1755,12 @@ void X11Window::SetFullscreen(bool fullscreen) {
+@@ -1778,6 +1780,12 @@ void X11Window::SetFullscreen(bool fullscreen) {
                   x11::Atom::None);
  }
  
@@ -36,10 +36,10 @@ index b8389ec9f2f6e..4ff49f05123e5 100644
    // Focus and stacking order are independent in X11.  Since we cannot guarantee
    // a window is topmost iff it has focus, just use the focus state to determine
 diff --git a/ui/platform_window/x11/x11_window.h b/ui/platform_window/x11/x11_window.h
-index d3ac2c56bf880..f4a02efb6ef9d 100644
+index 67482087785d9..92dc2e2109a16 100644
 --- a/ui/platform_window/x11/x11_window.h
 +++ b/ui/platform_window/x11/x11_window.h
-@@ -229,6 +229,7 @@ class X11_WINDOW_EXPORT X11Window
+@@ -227,6 +227,7 @@ class X11_WINDOW_EXPORT X11Window : public PlatformWindow,
    void CloseXWindow();
    void Map(bool inactive = false);
    void SetFullscreen(bool fullscreen);
@@ -48,5 +48,5 @@ index d3ac2c56bf880..f4a02efb6ef9d 100644
    bool IsTargetedBy(const x11::Event& xev) const;
    void HandleEvent(const x11::Event& xev);
 -- 
-2.32.0
+2.33.1
 
