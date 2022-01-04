@@ -1,4 +1,4 @@
-From 5a6d804b0402a4fac0295a799a479636811809e6 Mon Sep 17 00:00:00 2001
+From 6cb03a27ba8af100411f9542527f734121022f92 Mon Sep 17 00:00:00 2001
 From: Mario Sanchez Prada <mario@endlessm.com>
 Date: Tue, 25 Oct 2016 16:57:00 +0000
 Subject: [PATCH] ffmpeg: Don't lie about AAC and H264 decoders when not
@@ -31,7 +31,7 @@ https://phabricator.endlessm.com/T30300
  2 files changed, 83 insertions(+), 7 deletions(-)
 
 diff --git a/media/base/BUILD.gn b/media/base/BUILD.gn
-index 49851ba619716..f8ede1dce03a8 100644
+index 882c4de1291ca..93a9168d82945 100644
 --- a/media/base/BUILD.gn
 +++ b/media/base/BUILD.gn
 @@ -398,6 +398,10 @@ source_set("base") {

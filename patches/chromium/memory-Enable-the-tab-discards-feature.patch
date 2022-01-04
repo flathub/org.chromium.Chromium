@@ -1,4 +1,4 @@
-From 87933966dfd3dad3dfae3e75efc9ba3936be2d63 Mon Sep 17 00:00:00 2001
+From 47272326672e98826d723a99d08058b2b3d173ae Mon Sep 17 00:00:00 2001
 From: Mario Sanchez Prada <mario@endlessm.com>
 Date: Thu, 28 Jan 2016 13:53:08 +0000
 Subject: [PATCH] memory: Enable the tab discards feature
@@ -11,7 +11,7 @@ is reached.
  1 file changed, 2 insertions(+), 1 deletion(-)
 
 diff --git a/chrome/browser/resource_coordinator/tab_manager.cc b/chrome/browser/resource_coordinator/tab_manager.cc
-index 411ca0378a6e9..568be0bd0442c 100644
+index 0e9270fca8082..b261d31a1929b 100644
 --- a/chrome/browser/resource_coordinator/tab_manager.cc
 +++ b/chrome/browser/resource_coordinator/tab_manager.cc
 @@ -143,7 +143,8 @@ void TabManager::Start() {
