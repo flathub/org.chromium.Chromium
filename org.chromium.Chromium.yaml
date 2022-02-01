@@ -171,15 +171,15 @@ modules:
       - ./install.sh
     sources:
       - type: archive
-        url: https://commondatastorage.googleapis.com/chromium-browser-official/chromium-97.0.4692.99.tar.xz
-        sha256: c91bae205705b367f2cfc1f72ce1ee99b2ceb5edfc584e15c60a6ab5ff01ecba
+        url: https://commondatastorage.googleapis.com/chromium-browser-official/chromium-98.0.4758.80.tar.xz
+        sha256: c87266e20f860a32c48affc70a769368d1b876dbad768e3aa93ee3c335944171
         x-checker-data:
           type: chromium
           component: chromium
           is-main-source: true
       - type: archive
-        url: https://commondatastorage.googleapis.com/chromium-browser-clang/Linux_x64/clang-llvmorg-14-init-8033-gabb2a91b-2.tgz
-        sha256: 720e10810f0005a4a8640728e72f06c283d4c51362f2889b513c6d6c3a136582
+        url: https://commondatastorage.googleapis.com/chromium-browser-clang/Linux_x64/clang-llvmorg-14-init-11564-g37fbf238-3.tgz
+        sha256: e79cb8f1e65b44b932b9fd98365b3771e913e7275d9e92e59eca4334c5689a28
         dest: third_party/llvm-build/Release+Asserts
         strip-components: 0
         only-arches: [x86_64]
@@ -192,7 +192,7 @@ modules:
         only-arches: [aarch64]
       - type: git
         url: https://github.com/llvm/llvm-project
-        commit: llvmorg-14-init-8033-gabb2a91b
+        commit: llvmorg-14-init-11564-g37fbf238
         dest: third_party/llvm
         only-arches: [aarch64]
         x-checker-data:
