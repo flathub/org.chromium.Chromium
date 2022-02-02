@@ -1,4 +1,4 @@
-From 7c2a02511a1e80810971bf7102d047c409ba9808 Mon Sep 17 00:00:00 2001
+From f7f34b13ddf8894f81b0894b873fc0b02c4b8047 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Tue, 19 Jan 2021 15:41:16 -0600
 Subject: [PATCH] Enable accelerated mjpeg decode on Linux
@@ -11,10 +11,10 @@ Subject: [PATCH] Enable accelerated mjpeg decode on Linux
  4 files changed, 26 insertions(+), 8 deletions(-)
 
 diff --git a/chrome/browser/about_flags.cc b/chrome/browser/about_flags.cc
-index 1ace853084cdc..6c985c4e3cb2b 100644
+index d1b66475ef744..44a76452be4fc 100644
 --- a/chrome/browser/about_flags.cc
 +++ b/chrome/browser/about_flags.cc
-@@ -3887,10 +3887,10 @@ const FeatureEntry kFeatureEntries[] = {
+@@ -3822,10 +3822,10 @@ const FeatureEntry kFeatureEntries[] = {
       flag_descriptions::kWebXrForceRuntimeDescription, kOsDesktop,
       MULTI_VALUE_TYPE(kWebXrForceRuntimeChoices)},
  #endif  // ENABLE_VR
@@ -28,10 +28,10 @@ index 1ace853084cdc..6c985c4e3cb2b 100644
  #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
      {"system-keyboard-lock", flag_descriptions::kSystemKeyboardLockName,
 diff --git a/chrome/browser/flag_descriptions.cc b/chrome/browser/flag_descriptions.cc
-index ba1068f339d06..ac6232eaedd02 100644
+index e333a38ef3737..44cfdf4afcee1 100644
 --- a/chrome/browser/flag_descriptions.cc
 +++ b/chrome/browser/flag_descriptions.cc
-@@ -3948,9 +3948,7 @@ const char kUseAngleGL[] = "OpenGL";
+@@ -3977,9 +3977,7 @@ const char kUseAngleGL[] = "OpenGL";
  
  #endif  // defined(OS_WIN) || defined(OS_MAC)
  
@@ -42,7 +42,7 @@ index ba1068f339d06..ac6232eaedd02 100644
  
  const char kAcceleratedMjpegDecodeName[] =
      "Hardware-accelerated mjpeg decode for captured frame";
-@@ -3958,6 +3956,19 @@ const char kAcceleratedMjpegDecodeDescription[] =
+@@ -3987,6 +3985,19 @@ const char kAcceleratedMjpegDecodeDescription[] =
      "Enable hardware-accelerated mjpeg decode for captured frame where "
      "available.";
  
@@ -63,10 +63,10 @@ index ba1068f339d06..ac6232eaedd02 100644
      "Allow disabling mouse acceleration";
  const char kAllowDisableMouseAccelerationDescription[] =
 diff --git a/chrome/browser/flag_descriptions.h b/chrome/browser/flag_descriptions.h
-index 38570d9ed2a83..6918fd0dc2e42 100644
+index d2eda3689e8f2..2958b581c8a6a 100644
 --- a/chrome/browser/flag_descriptions.h
 +++ b/chrome/browser/flag_descriptions.h
-@@ -2270,12 +2270,19 @@ extern const char kUseAngleGL[];
+@@ -2295,12 +2295,19 @@ extern const char kUseAngleGL[];
  
  #endif  // defined(OS_WIN) || defined(OS_MAC)
  
@@ -89,10 +89,10 @@ index 38570d9ed2a83..6918fd0dc2e42 100644
  extern const char kAllowDisableMouseAccelerationName[];
  extern const char kAllowDisableMouseAccelerationDescription[];
 diff --git a/media/base/media_switches.cc b/media/base/media_switches.cc
-index 5b3a99467707e..aa2fe8a8ddbf6 100644
+index a15162b9ff43b..815448a619e18 100644
 --- a/media/base/media_switches.cc
 +++ b/media/base/media_switches.cc
-@@ -927,7 +927,7 @@ bool IsVideoCaptureAcceleratedJpegDecodingEnabled() {
+@@ -956,7 +956,7 @@ bool IsVideoCaptureAcceleratedJpegDecodingEnabled() {
            switches::kUseFakeMjpegDecodeAccelerator)) {
      return true;
    }
@@ -102,5 +102,5 @@ index 5b3a99467707e..aa2fe8a8ddbf6 100644
  #else
    return false;
 -- 
-2.33.1
+2.34.1
 

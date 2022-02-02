@@ -1,4 +1,4 @@
-From 6cb03a27ba8af100411f9542527f734121022f92 Mon Sep 17 00:00:00 2001
+From af96c1b44d7388851093956ba32815b01557aa9c Mon Sep 17 00:00:00 2001
 From: Mario Sanchez Prada <mario@endlessm.com>
 Date: Tue, 25 Oct 2016 16:57:00 +0000
 Subject: [PATCH] ffmpeg: Don't lie about AAC and H264 decoders when not
@@ -31,7 +31,7 @@ https://phabricator.endlessm.com/T30300
  2 files changed, 83 insertions(+), 7 deletions(-)
 
 diff --git a/media/base/BUILD.gn b/media/base/BUILD.gn
-index 882c4de1291ca..93a9168d82945 100644
+index 86557c5ae9b43..33f420edf6bfb 100644
 --- a/media/base/BUILD.gn
 +++ b/media/base/BUILD.gn
 @@ -398,6 +398,10 @@ source_set("base") {
@@ -46,7 +46,7 @@ index 882c4de1291ca..93a9168d82945 100644
  
    if (is_chromeos_ash) {
 diff --git a/media/base/mime_util_internal.cc b/media/base/mime_util_internal.cc
-index 2a0ee050032ee..59c3d8dbeb676 100644
+index b0fcd4422b0d2..9beacd0091476 100644
 --- a/media/base/mime_util_internal.cc
 +++ b/media/base/mime_util_internal.cc
 @@ -4,6 +4,8 @@
@@ -67,7 +67,7 @@ index 2a0ee050032ee..59c3d8dbeb676 100644
  namespace media {
  namespace internal {
  
-@@ -283,6 +287,54 @@ void MimeUtil::InitializeMimeTypeMaps() {
+@@ -279,6 +283,54 @@ void MimeUtil::InitializeMimeTypeMaps() {
    AddSupportedMediaFormats();
  }
  
@@ -122,7 +122,7 @@ index 2a0ee050032ee..59c3d8dbeb676 100644
  // Each call to AddContainerWithCodecs() contains a media type
  // (https://en.wikipedia.org/wiki/Media_type) and corresponding media codec(s)
  // supported by these types/containers.
-@@ -317,11 +369,22 @@ void MimeUtil::AddSupportedMediaFormats() {
+@@ -313,11 +365,22 @@ void MimeUtil::AddSupportedMediaFormats() {
    mp4_video_codecs.emplace(VP9);
  
  #if BUILDFLAG(USE_PROPRIETARY_CODECS)
@@ -147,7 +147,7 @@ index 2a0ee050032ee..59c3d8dbeb676 100644
  
  #if BUILDFLAG(ENABLE_PLATFORM_AC3_EAC3_AUDIO)
    mp4_audio_codecs.emplace(AC3);
-@@ -332,7 +395,9 @@ void MimeUtil::AddSupportedMediaFormats() {
+@@ -328,7 +391,9 @@ void MimeUtil::AddSupportedMediaFormats() {
    mp4_audio_codecs.emplace(MPEG_H_AUDIO);
  #endif  // BUILDFLAG(ENABLE_PLATFORM_MPEG_H_AUDIO)
  
@@ -158,7 +158,7 @@ index 2a0ee050032ee..59c3d8dbeb676 100644
  #if BUILDFLAG(ENABLE_PLATFORM_HEVC)
    mp4_video_codecs.emplace(HEVC);
  #endif  // BUILDFLAG(ENABLE_PLATFORM_HEVC)
-@@ -366,15 +431,22 @@ void MimeUtil::AddSupportedMediaFormats() {
+@@ -362,15 +427,22 @@ void MimeUtil::AddSupportedMediaFormats() {
    AddContainerWithCodecs("audio/mp3", implicit_codec);
    AddContainerWithCodecs("audio/x-mp3", implicit_codec);
    AddContainerWithCodecs("audio/mp4", mp4_audio_codecs);
@@ -186,5 +186,5 @@ index 2a0ee050032ee..59c3d8dbeb676 100644
    CodecSet video_3gpp_codecs(aac);
    video_3gpp_codecs.emplace(H264);
 -- 
-2.33.1
+2.34.1
 
