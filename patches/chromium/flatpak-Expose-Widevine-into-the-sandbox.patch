@@ -1,4 +1,4 @@
-From 5ad79a5fd629f179bcef80f10a11cc3a968bf772 Mon Sep 17 00:00:00 2001
+From fbfe44899f71136cc301aebd098d608ce0604171 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Tue, 17 Nov 2020 13:00:39 -0600
 Subject: [PATCH] flatpak: Expose Widevine into the sandbox
@@ -258,7 +258,7 @@ index 7b6d9c2425773..4b93799e0b4c7 100644
      dbus::MessageWriter entry_writer(nullptr);
      options_writer.OpenDictEntry(&entry_writer);
 diff --git a/sandbox/linux/services/flatpak_sandbox.h b/sandbox/linux/services/flatpak_sandbox.h
-index 8def31e9ce245..e00c759164a94 100644
+index 167bbc85945ad..de8e7165b4573 100644
 --- a/sandbox/linux/services/flatpak_sandbox.h
 +++ b/sandbox/linux/services/flatpak_sandbox.h
 @@ -9,6 +9,8 @@
@@ -267,10 +267,10 @@ index 8def31e9ce245..e00c759164a94 100644
  #include "base/containers/flat_set.h"
 +#include "base/files/file_path.h"
 +#include "base/files/scoped_file.h"
- #include "base/macros.h"
  #include "base/no_destructor.h"
  #include "base/process/kill.h"
-@@ -35,6 +37,20 @@ namespace sandbox {
+ #include "base/process/launch.h"
+@@ -34,6 +36,20 @@ namespace sandbox {
  // it is known inside the sandbox's PID namespace.
  class SANDBOX_EXPORT FlatpakSandbox {
   public:
@@ -291,7 +291,7 @@ index 8def31e9ce245..e00c759164a94 100644
    static FlatpakSandbox* GetInstance();
  
    // Represents the level of sandboxing inside a Flatpak. kNone means this is
-@@ -56,7 +72,8 @@ class SANDBOX_EXPORT FlatpakSandbox {
+@@ -55,7 +71,8 @@ class SANDBOX_EXPORT FlatpakSandbox {
    // GetRelativePid. This is the reason why a vanilla ProcessId is returned
    // rather than a base::Process instance.
    base::Process LaunchProcess(const base::CommandLine& cmdline,
@@ -301,7 +301,7 @@ index 8def31e9ce245..e00c759164a94 100644
  
    // Indefinitely waits for the given process and fills the exit code pointer
    // if given and non-null. Returns false on wait failure.
-@@ -85,11 +102,13 @@ class SANDBOX_EXPORT FlatpakSandbox {
+@@ -84,11 +101,13 @@ class SANDBOX_EXPORT FlatpakSandbox {
    void OnSpawnExitedSignal(dbus::Signal* signal);
  
    base::ProcessId Spawn(const base::CommandLine& cmdline,
@@ -319,5 +319,5 @@ index 8def31e9ce245..e00c759164a94 100644
                         base::WaitableEvent* event,
                         dbus::Response* response,
 -- 
-2.33.1
+2.34.1
 

@@ -1,4 +1,4 @@
-From 8a1b71f6495d3696989c6eb4f6b84a4d6b61b83c Mon Sep 17 00:00:00 2001
+From f7b14d9f18591a6d7879f9d3218cc7d90a09a501 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Fri, 28 May 2021 10:41:25 -0500
 Subject: [PATCH] Clang build script: Allow passing a prebuilt Clang for
@@ -9,10 +9,10 @@ Subject: [PATCH] Clang build script: Allow passing a prebuilt Clang for
  1 file changed, 12 insertions(+)
 
 diff --git a/tools/clang/scripts/build.py b/tools/clang/scripts/build.py
-index 9737e7d40b4be..714917935f8cd 100755
+index ca6dee23bab7c..0c75cac3dabcc 100755
 --- a/tools/clang/scripts/build.py
 +++ b/tools/clang/scripts/build.py
-@@ -408,6 +408,10 @@ def main():
+@@ -496,6 +496,10 @@ def main():
    parser.add_argument('--gcc-toolchain', help='what gcc toolchain to use for '
                        'building; --gcc-toolchain=/opt/foo picks '
                        '/opt/foo/bin/gcc')
@@ -23,7 +23,7 @@ index 9737e7d40b4be..714917935f8cd 100755
    parser.add_argument('--pgo', action='store_true', help='build with PGO')
    parser.add_argument('--thinlto',
                        action='store_true',
-@@ -587,6 +591,14 @@ def main():
+@@ -677,6 +681,14 @@ def main():
          '-DLLVM_LOCAL_RPATH=' + os.path.join(args.gcc_toolchain, 'lib64')
      ]
  
@@ -39,5 +39,5 @@ index 9737e7d40b4be..714917935f8cd 100755
      # For libc++, we only want the headers.
      base_cmake_args.extend([
 -- 
-2.33.1
+2.34.1
 

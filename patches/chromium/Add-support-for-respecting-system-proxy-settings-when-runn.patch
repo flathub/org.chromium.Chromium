@@ -1,4 +1,4 @@
-From 84fe533a33e85892e027c13aea0c072f82d93714 Mon Sep 17 00:00:00 2001
+From 970bde194cf63e72ebdedaf290b75f737171ad32 Mon Sep 17 00:00:00 2001
 From: Andre Moreira Magalhaes <andre.magalhaes@endlessos.org>
 Date: Thu, 17 Dec 2020 19:05:10 -0300
 Subject: [PATCH] Add support for respecting system proxy settings when running
@@ -48,16 +48,16 @@ Closes https://github.com/flathub/org.chromium.Chromium/issues/36
  .../configured_proxy_resolution_service.cc    |   5 +-
  .../proxy_config_service_linux.cc             |  10 +-
  net/proxy_resolution/proxy_resolver_linux.cc  | 127 ++++++++++++++++++
- net/proxy_resolution/proxy_resolver_linux.h   |  31 +++++
- 8 files changed, 206 insertions(+), 4 deletions(-)
+ net/proxy_resolution/proxy_resolver_linux.h   |  29 ++++
+ 8 files changed, 204 insertions(+), 4 deletions(-)
  create mode 100644 net/proxy_resolution/proxy_resolver_linux.cc
  create mode 100644 net/proxy_resolution/proxy_resolver_linux.h
 
 diff --git a/chrome/app/generated_resources.grd b/chrome/app/generated_resources.grd
-index 8787f93c66757..d1c9155504699 100644
+index 2306904107da5..3476f28a4401c 100644
 --- a/chrome/app/generated_resources.grd
 +++ b/chrome/app/generated_resources.grd
-@@ -10141,6 +10141,12 @@ Please help our engineers fix this problem. Tell us what happened right before y
+@@ -10266,6 +10266,12 @@ Please help our engineers fix this problem. Tell us what happened right before y
  
            &lt;p&gt;But you can still configure via the command line.  Please see &lt;code&gt;man <ph name="PRODUCT_BINARY_NAME">$2<ex>google-chrome</ex></ph>&lt;/code&gt; for more information on flags and environment variables.&lt;/p&gt;
          </message>
@@ -71,10 +71,10 @@ index 8787f93c66757..d1c9155504699 100644
  
        <message name="IDS_IMAGE_FILES" desc="The description of the image file extensions in the select file dialog.">
 diff --git a/chrome/browser/net/system_network_context_manager.cc b/chrome/browser/net/system_network_context_manager.cc
-index 404fef661c16b..1b10bb45456e4 100644
+index 42c690510e8b4..12be560e8ccd7 100644
 --- a/chrome/browser/net/system_network_context_manager.cc
 +++ b/chrome/browser/net/system_network_context_manager.cc
-@@ -86,6 +86,7 @@
+@@ -87,6 +87,7 @@
  #if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
  #include "chrome/common/chrome_paths_internal.h"
  #include "chrome/grit/chromium_strings.h"
@@ -82,7 +82,7 @@ index 404fef661c16b..1b10bb45456e4 100644
  #include "ui/base/l10n/l10n_util.h"
  #endif  // defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
  
-@@ -659,7 +660,13 @@ void SystemNetworkContextManager::ConfigureDefaultNetworkContextParams(
+@@ -674,7 +675,13 @@ void SystemNetworkContextManager::ConfigureDefaultNetworkContextParams(
    // or if it does work, now.
    // Should be possible now that a private isolate is used.
    // http://crbug.com/474654
@@ -98,12 +98,12 @@ index 404fef661c16b..1b10bb45456e4 100644
        LOG(ERROR) << "Cannot use V8 Proxy resolver in single process mode.";
      } else {
 diff --git a/chrome/browser/ui/webui/about_ui.cc b/chrome/browser/ui/webui/about_ui.cc
-index 154122538d67d..4b1490bb735fc 100644
+index e259e360b09a0..c85f809fd6ced 100644
 --- a/chrome/browser/ui/webui/about_ui.cc
 +++ b/chrome/browser/ui/webui/about_ui.cc
-@@ -76,6 +76,10 @@
- #include "third_party/cros_system_api/dbus/service_constants.h"
- #endif
+@@ -87,6 +87,10 @@
+ #include "ui/base/l10n/l10n_util.h"
+ #endif  // defined(OS_CHROMEOS)
  
 +#if defined(OS_LINUX)
 +#include "sandbox/linux/services/flatpak_sandbox.h"
@@ -112,7 +112,7 @@ index 154122538d67d..4b1490bb735fc 100644
  using content::BrowserThread;
  
  namespace {
-@@ -561,8 +565,16 @@ std::string AboutLinuxProxyConfig() {
+@@ -664,8 +668,16 @@ std::string AboutLinuxProxyConfig() {
    data.append("<style>body { max-width: 70ex; padding: 2ex 5ex; }</style>");
    AppendBody(&data);
    base::FilePath binary = base::CommandLine::ForCurrentProcess()->GetProgram();
@@ -131,7 +131,7 @@ index 154122538d67d..4b1490bb735fc 100644
                                  base::ASCIIToUTF16(binary.BaseName().value())));
    AppendFooter(&data);
 diff --git a/net/BUILD.gn b/net/BUILD.gn
-index 1d738b603b6d2..c33a1b2e97364 100644
+index c50c2478331ce..bcade8f5a0349 100644
 --- a/net/BUILD.gn
 +++ b/net/BUILD.gn
 @@ -1213,6 +1213,13 @@ component("net") {
@@ -157,10 +157,10 @@ index 1d738b603b6d2..c33a1b2e97364 100644
  
    if (is_android) {
 diff --git a/net/proxy_resolution/configured_proxy_resolution_service.cc b/net/proxy_resolution/configured_proxy_resolution_service.cc
-index 42826c7e162fc..bf25b67b5751d 100644
+index a582cd962204b..72a23691ec1d8 100644
 --- a/net/proxy_resolution/configured_proxy_resolution_service.cc
 +++ b/net/proxy_resolution/configured_proxy_resolution_service.cc
-@@ -53,6 +53,7 @@
+@@ -54,6 +54,7 @@
  #include "net/proxy_resolution/proxy_resolver_mac.h"
  #elif defined(OS_LINUX)
  #include "net/proxy_resolution/proxy_config_service_linux.h"
@@ -168,7 +168,7 @@ index 42826c7e162fc..bf25b67b5751d 100644
  #elif defined(OS_ANDROID)
  #include "net/proxy_resolution/proxy_config_service_android.h"
  #endif
-@@ -265,6 +266,8 @@ class ProxyResolverFactoryForSystem : public MultiThreadedProxyResolverFactory {
+@@ -266,6 +267,8 @@ class ProxyResolverFactoryForSystem : public MultiThreadedProxyResolverFactory {
      return std::make_unique<ProxyResolverFactoryWinHttp>();
  #elif defined(OS_APPLE)
      return std::make_unique<ProxyResolverFactoryMac>();
@@ -177,7 +177,7 @@ index 42826c7e162fc..bf25b67b5751d 100644
  #else
      NOTREACHED();
      return nullptr;
-@@ -272,7 +275,7 @@ class ProxyResolverFactoryForSystem : public MultiThreadedProxyResolverFactory {
+@@ -273,7 +276,7 @@ class ProxyResolverFactoryForSystem : public MultiThreadedProxyResolverFactory {
    }
  
    static bool IsSupported() {
@@ -187,10 +187,10 @@ index 42826c7e162fc..bf25b67b5751d 100644
  #else
      return false;
 diff --git a/net/proxy_resolution/proxy_config_service_linux.cc b/net/proxy_resolution/proxy_config_service_linux.cc
-index b241dcf35cd00..2669a57db04eb 100644
+index a506b3bcd8d79..0fb59b42f97f0 100644
 --- a/net/proxy_resolution/proxy_config_service_linux.cc
 +++ b/net/proxy_resolution/proxy_config_service_linux.cc
-@@ -34,6 +34,7 @@
+@@ -33,6 +33,7 @@
  #include "base/timer/timer.h"
  #include "net/base/proxy_server.h"
  #include "net/base/proxy_string_util.h"
@@ -198,7 +198,7 @@ index b241dcf35cd00..2669a57db04eb 100644
  
  #if defined(USE_GIO)
  #include <gio/gio.h>
-@@ -1050,11 +1051,18 @@ ProxyConfigServiceLinux::Delegate::GetConfigFromSettings() {
+@@ -1049,11 +1050,18 @@ ProxyConfigServiceLinux::Delegate::GetConfigFromSettings() {
    config.set_from_system(true);
  
    std::string mode;
@@ -353,10 +353,10 @@ index 0000000000000..d7dfb790154bc
 +}  // namespace net
 diff --git a/net/proxy_resolution/proxy_resolver_linux.h b/net/proxy_resolution/proxy_resolver_linux.h
 new file mode 100644
-index 0000000000000..0a7a22aa44d59
+index 0000000000000..7ae45eeae1a43
 --- /dev/null
 +++ b/net/proxy_resolution/proxy_resolver_linux.h
-@@ -0,0 +1,31 @@
+@@ -0,0 +1,29 @@
 +// Copyright (c) 2020 Endless OS Foundation LLC
 +// Use of this source code is governed by a BSD-style license that can be
 +// found in the LICENSE file.
@@ -364,7 +364,6 @@ index 0000000000000..0a7a22aa44d59
 +#ifndef NET_PROXY_RESOLUTION_PROXY_RESOLVER_LINUX_H_
 +#define NET_PROXY_RESOLUTION_PROXY_RESOLVER_LINUX_H_
 +
-+#include "base/macros.h"
 +#include "net/base/completion_once_callback.h"
 +#include "net/base/net_export.h"
 +#include "net/proxy_resolution/proxy_resolver_factory.h"
@@ -375,19 +374,18 @@ index 0000000000000..0a7a22aa44d59
 +class NET_EXPORT ProxyResolverFactoryLinux : public ProxyResolverFactory {
 + public:
 +  ProxyResolverFactoryLinux();
++  ProxyResolverFactoryLinux(const ProxyResolverFactoryLinux&) = delete;
++  ProxyResolverFactoryLinux(ProxyResolverFactoryLinux&&) = delete;
 +
 +  int CreateProxyResolver(const scoped_refptr<PacFileData>& pac_script,
 +                          std::unique_ptr<ProxyResolver>* resolver,
 +                          CompletionOnceCallback callback,
 +                          std::unique_ptr<Request>* request) override;
-+
-+ private:
-+  DISALLOW_COPY_AND_ASSIGN(ProxyResolverFactoryLinux);
 +};
 +
 +}  // namespace net
 +
 +#endif  // NET_PROXY_RESOLUTION_PROXY_RESOLVER_LINUX_H_
 -- 
-2.33.1
+2.34.1
 
