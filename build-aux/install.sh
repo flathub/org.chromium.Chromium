@@ -3,7 +3,9 @@
 mkdir -p /app/chromium
 
 pushd out/Release
-for path in chrome chrome_crashpad_handler icudtl.dat *.so *.pak *.bin *.png locales MEIPreload swiftshader; do
+for path in chrome chrome_crashpad_handler icudtl.dat *.so libvulkan.so.1 *.pak *.bin *.png locales MEIPreload swiftshader vk_swiftshader_icd.json; do
+    # All the 'libVk*' names are just for debugging, stuff like "libVkICD_mock_icd" and "libVkLayer_khronos_validation".
+    [[ "$path" == libVk* ]] && continue
     cp -rv $path /app/chromium
 done
 popd
