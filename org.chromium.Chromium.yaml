@@ -171,8 +171,8 @@ modules:
       - ./install.sh
     sources:
       - type: archive
-        url: https://commondatastorage.googleapis.com/chromium-browser-official/chromium-98.0.4758.80.tar.xz
-        sha256: c87266e20f860a32c48affc70a769368d1b876dbad768e3aa93ee3c335944171
+        url: https://commondatastorage.googleapis.com/chromium-browser-official/chromium-98.0.4758.102.tar.xz
+        sha256: 415b47e912766cd07f9f52e95bc6470b835acf1d6f566ae32e66ba8be608f33e
         x-checker-data:
           type: chromium
           component: chromium
