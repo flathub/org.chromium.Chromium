@@ -1,4 +1,4 @@
-From de4f9fd52b1a3112414a54270c55ae1156cc6be4 Mon Sep 17 00:00:00 2001
+From f48eb7a46df1fa967c6fa47d009768cbc27c5de2 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Thu, 19 Nov 2020 16:20:05 -0600
 Subject: [PATCH] Enable new-dtags on non-component builds
@@ -8,7 +8,7 @@ Subject: [PATCH] Enable new-dtags on non-component builds
  1 file changed, 16 insertions(+), 7 deletions(-)
 
 diff --git a/build/config/gcc/BUILD.gn b/build/config/gcc/BUILD.gn
-index ff47e2542c66d..f00b831201846 100644
+index 893dae136a2a7..94d87ac9745d1 100644
 --- a/build/config/gcc/BUILD.gn
 +++ b/build/config/gcc/BUILD.gn
 @@ -100,13 +100,22 @@ config("executable_config") {
