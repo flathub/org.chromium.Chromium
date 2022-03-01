@@ -16,6 +16,7 @@
       "patches/chromium/Add-support-for-respecting-system-proxy-settings-when-runn.patch",
       "patches/chromium/Clang-build-script-Allow-passing-a-prebuilt-Clang-for-boos.patch",
       "patches/chromium/Clang-build-script-Disable-hwasan.patch",
+      "patches/chromium/clang-build-script-Support-disabling-the-bundled-libxml2.patch",
       "patches/ffmpeg/Enable-support-for-libfdk-aac-and-OpenH264.patch",
       "patches/ffmpeg/ffmpeg-Handle-transient-decode-errors-arising-from-libfdk-.patch",
       "patches/ffmpeg/Update-build-configuration.patch"

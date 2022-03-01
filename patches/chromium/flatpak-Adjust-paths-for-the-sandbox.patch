@@ -1,4 +1,4 @@
-From dbdb46e278e5fbc801080e8440a81842ae083f12 Mon Sep 17 00:00:00 2001
+From dcc15f0276558318f19001f7514f8b3e215488ae Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Tue, 25 Aug 2020 19:26:07 -0500
 Subject: [PATCH] flatpak: Adjust paths for the sandbox
@@ -9,10 +9,10 @@ Subject: [PATCH] flatpak: Adjust paths for the sandbox
  2 files changed, 41 insertions(+), 13 deletions(-)
 
 diff --git a/chrome/common/BUILD.gn b/chrome/common/BUILD.gn
-index b4f5e2b714bff..e605a7f1e6a71 100644
+index 227e618fbb8f0..fa97e7759b1f3 100644
 --- a/chrome/common/BUILD.gn
 +++ b/chrome/common/BUILD.gn
-@@ -656,6 +656,10 @@ static_library("constants") {
+@@ -626,6 +626,10 @@ static_library("constants") {
        "//third_party/widevine/cdm:headers",
      ]
    }
@@ -24,7 +24,7 @@ index b4f5e2b714bff..e605a7f1e6a71 100644
  
  # Use a static library here because many test binaries depend on this but don't
 diff --git a/chrome/common/chrome_paths.cc b/chrome/common/chrome_paths.cc
-index c5f2b6ebfda69..4e98679cde6aa 100644
+index 8e466ff4dd171..9e913bde98e0c 100644
 --- a/chrome/common/chrome_paths.cc
 +++ b/chrome/common/chrome_paths.cc
 @@ -4,6 +4,7 @@
@@ -39,7 +39,7 @@ index c5f2b6ebfda69..4e98679cde6aa 100644
  #include "base/win/registry.h"
  #endif
  
-+#if defined(OS_LINUX)
++#if BUILDFLAG(IS_LINUX)
 +#include "sandbox/linux/services/flatpak_sandbox.h"
 +#endif
 +
@@ -59,7 +59,7 @@ index c5f2b6ebfda69..4e98679cde6aa 100644
      case chrome::DIR_CRASH_DUMPS:
 @@ -413,6 +418,14 @@ bool PathProvider(int key, base::FilePath* result) {
        break;
- #if defined(OS_POSIX) && !defined(OS_MAC) && !defined(OS_OPENBSD)
+ #if BUILDFLAG(IS_POSIX) && !BUILDFLAG(IS_MAC) && !BUILDFLAG(IS_OPENBSD)
      case chrome::DIR_POLICY_FILES: {
 +#if defined(OS_LINUX)
 +      if (sandbox::FlatpakSandbox::GetInstance()->GetSandboxLevel() >
@@ -74,7 +74,7 @@ index c5f2b6ebfda69..4e98679cde6aa 100644
  #else
 @@ -436,7 +449,13 @@ bool PathProvider(int key, base::FilePath* result) {
  #endif
- #if defined(OS_LINUX) || defined(OS_CHROMEOS)
+ #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
      case chrome::DIR_STANDALONE_EXTERNAL_EXTENSIONS: {
 -      cur = base::FilePath(kFilepathSinglePrefExtensions);
 +      if (sandbox::FlatpakSandbox::GetInstance()->GetSandboxLevel() >
@@ -100,7 +100,7 @@ index c5f2b6ebfda69..4e98679cde6aa 100644
        if (!base::PathService::Get(base::DIR_MODULE, &cur))
 @@ -483,19 +502,25 @@ bool PathProvider(int key, base::FilePath* result) {
      case chrome::DIR_NATIVE_MESSAGING:
- #if defined(OS_MAC)
+ #if BUILDFLAG(IS_MAC)
  #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 -      cur = base::FilePath(FILE_PATH_LITERAL(
 -           "/Library/Google/Chrome/NativeMessagingHosts"));
@@ -110,7 +110,7 @@ index c5f2b6ebfda69..4e98679cde6aa 100644
        cur = base::FilePath(FILE_PATH_LITERAL(
            "/Library/Application Support/Chromium/NativeMessagingHosts"));
  #endif
- #else  // defined(OS_MAC)
+ #else  // BUILDFLAG(IS_MAC)
 +      if (sandbox::FlatpakSandbox::GetInstance()->GetSandboxLevel() >
 +          sandbox::FlatpakSandbox::SandboxLevel::kNone) {
 +        cur = base::FilePath(FILE_PATH_LITERAL(
@@ -128,7 +128,7 @@ index c5f2b6ebfda69..4e98679cde6aa 100644
 +      cur = base::FilePath(
 +          FILE_PATH_LITERAL("/etc/chromium/native-messaging-hosts"));
  #endif
- #endif  // !defined(OS_MAC)
+ #endif  // !BUILDFLAG(IS_MAC)
        break;
 @@ -536,8 +561,7 @@ bool PathProvider(int key, base::FilePath* result) {
  
