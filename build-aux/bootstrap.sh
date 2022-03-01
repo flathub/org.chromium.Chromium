@@ -5,7 +5,7 @@
 
 if [[ ! -d third_party/llvm-build/Release+Assets/bin ]]; then
   python3 tools/clang/scripts/build.py --disable-asserts \
-      --skip-checkout --use-system-cmake \
+      --skip-checkout --use-system-cmake --use-system-libxml \
       --gcc-toolchain=/usr --bootstrap-llvm=/usr/lib/sdk/llvm13 \
       --without-android --without-fuchsia
 fi

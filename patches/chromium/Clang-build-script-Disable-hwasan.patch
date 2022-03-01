@@ -1,4 +1,4 @@
-From 0cdf45f070ac96e5449530f2836d98d73e45c56c Mon Sep 17 00:00:00 2001
+From f633dbd96f33c7472607d89aca53a2a88165b098 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Thu, 30 Sep 2021 11:27:43 -0500
 Subject: [PATCH] Clang build script: Disable hwasan
@@ -10,10 +10,10 @@ and we don't really need this for the Flatpak anyway.
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/tools/clang/scripts/build.py b/tools/clang/scripts/build.py
-index 0c75cac3dabcc..2bd555cd86626 100755
+index 48937fa8fd9dc..071b498bda6cc 100755
 --- a/tools/clang/scripts/build.py
 +++ b/tools/clang/scripts/build.py
-@@ -663,7 +663,7 @@ def main():
+@@ -669,7 +669,7 @@ def main():
        # See crbug.com/1126219: Use native symbolizer instead of DIA
        '-DLLVM_ENABLE_DIA_SDK=OFF',
        # See crbug.com/1205046: don't build scudo (and others we don't need).
