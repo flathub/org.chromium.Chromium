@@ -1,4 +1,4 @@
-From a92f2687695843b156f90be3a8a0d856a19c9a22 Mon Sep 17 00:00:00 2001
+From c6f071817882d01eba273653bb99b4de4b82b340 Mon Sep 17 00:00:00 2001
 From: Daniel Drake <drake@endlessm.com>
 Date: Fri, 3 Jul 2015 14:59:24 -0600
 Subject: [PATCH] x11: Set _NET_WM_BYPASS_COMPOSITOR for fullscreen
@@ -10,7 +10,7 @@ This improves performance at full screen.
  2 files changed, 9 insertions(+)
 
 diff --git a/ui/platform_window/x11/x11_window.cc b/ui/platform_window/x11/x11_window.cc
-index 4fa2992394329..c85df2243ecdb 100644
+index 549190ed1823a..efba6f9160729 100644
 --- a/ui/platform_window/x11/x11_window.cc
 +++ b/ui/platform_window/x11/x11_window.cc
 @@ -606,6 +606,8 @@ void X11Window::ToggleFullscreen() {

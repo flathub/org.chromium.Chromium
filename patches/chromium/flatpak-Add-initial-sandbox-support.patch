@@ -1,4 +1,4 @@
-From eaa0fce25b77bef7753bd073aca0b318c8069625 Mon Sep 17 00:00:00 2001
+From ee8beffcf94d400f75db1526d653609d1b59b9f7 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Tue, 17 Mar 2020 13:18:27 -0500
 Subject: [PATCH] flatpak: Add initial sandbox support
@@ -10,7 +10,7 @@ Subject: [PATCH] flatpak: Add initial sandbox support
  .../ui/webui/sandbox/sandbox_internals_ui.cc  |   6 +-
  .../zygote_host/zygote_host_impl_linux.cc     |  39 +-
  .../zygote_host/zygote_host_impl_linux.h      |   1 +
- content/common/child_process_host_impl.cc     |   8 +-
+ content/common/child_process_host_impl.cc     |  10 +-
  content/zygote/zygote_linux.cc                |   6 +-
  content/zygote/zygote_linux.h                 |   2 +
  content/zygote/zygote_main_linux.cc           |  16 +-
@@ -22,7 +22,7 @@ Subject: [PATCH] flatpak: Add initial sandbox support
  sandbox/policy/linux/sandbox_linux.cc         |   8 +
  sandbox/policy/linux/sandbox_linux.h          |   7 +
  .../service_process_launcher.cc               |  12 +-
- 18 files changed, 905 insertions(+), 18 deletions(-)
+ 18 files changed, 906 insertions(+), 19 deletions(-)
  create mode 100644 sandbox/linux/services/flatpak_pid_map.cc
  create mode 100644 sandbox/linux/services/flatpak_pid_map.h
  create mode 100644 sandbox/linux/services/flatpak_sandbox.cc
@@ -41,10 +41,10 @@ index 5a473b051598d..9385dadd92503 100644
  /.externalToolBuilders/
  /.settings/
 diff --git a/base/threading/thread_restrictions.h b/base/threading/thread_restrictions.h
-index 5b6ad6a3c78b2..3bcc4a580f2a7 100644
+index d2bc6440c3f95..59199727b1a4c 100644
 --- a/base/threading/thread_restrictions.h
 +++ b/base/threading/thread_restrictions.h
-@@ -306,6 +306,10 @@ class ScopedAllowThreadJoinForWebRtcTransport;
+@@ -313,6 +313,10 @@ class ScopedAllowThreadJoinForWebRtcTransport;
  }
  }
  
@@ -55,7 +55,7 @@ index 5b6ad6a3c78b2..3bcc4a580f2a7 100644
  namespace service_manager {
  class ServiceProcessLauncher;
  }
-@@ -469,6 +473,7 @@ class BASE_EXPORT ScopedAllowBlocking {
+@@ -480,6 +484,7 @@ class BASE_EXPORT ScopedAllowBlocking {
    friend class remote_cocoa::
        DroppedScreenShotCopierMac;  // https://crbug.com/1148078
    friend class remoting::ScopedBypassIOThreadRestrictions;  // crbug.com/1144161
@@ -63,7 +63,7 @@ index 5b6ad6a3c78b2..3bcc4a580f2a7 100644
    friend class web::WebSubThread;
    friend class ::WebEngineBrowserMainParts;
    friend class weblayer::BrowserContextImpl;
-@@ -570,6 +575,7 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitives {
+@@ -584,6 +589,7 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitives {
    friend class rlz_lib::FinancialPing;
    friend class shell_integration_linux::
        LaunchXdgUtilityScopedAllowBaseSyncPrimitives;
@@ -94,7 +94,7 @@ index 4fa81a019090b..aaeba2d7d0ee7 100644
  
    addStatusRow('Layer 1 Sandbox', layer1SandboxType, layer1SandboxCssClass);
 diff --git a/chrome/browser/ui/webui/sandbox/sandbox_internals_ui.cc b/chrome/browser/ui/webui/sandbox/sandbox_internals_ui.cc
-index 26c9270399948..6587d1fcbb9e6 100644
+index ca29326919ab0..70f80b9c622d6 100644
 --- a/chrome/browser/ui/webui/sandbox/sandbox_internals_ui.cc
 +++ b/chrome/browser/ui/webui/sandbox/sandbox_internals_ui.cc
 @@ -14,6 +14,7 @@
@@ -103,7 +103,7 @@ index 26c9270399948..6587d1fcbb9e6 100644
  #include "content/public/browser/web_ui_data_source.h"
 +#include "sandbox/policy/linux/sandbox_linux.h"
  
- #if defined(OS_WIN)
+ #if BUILDFLAG(IS_WIN)
  #include "chrome/browser/ui/webui/sandbox/sandbox_handler.h"
 @@ -39,6 +40,8 @@ static void SetSandboxStatusData(content::WebUIDataSource* source) {
  
@@ -125,7 +125,7 @@ index 26c9270399948..6587d1fcbb9e6 100644
                       status & sandbox::policy::SandboxLinux::kNetNS;
    // A second-layer sandbox is also required to be adequately sandboxed.
 diff --git a/content/browser/zygote_host/zygote_host_impl_linux.cc b/content/browser/zygote_host/zygote_host_impl_linux.cc
-index a63289307dacd..3869ecdd83f7c 100644
+index 43446957cfd84..d592acba7077e 100644
 --- a/content/browser/zygote_host/zygote_host_impl_linux.cc
 +++ b/content/browser/zygote_host/zygote_host_impl_linux.cc
 @@ -13,11 +13,13 @@
@@ -234,19 +234,22 @@ index 21b8323eb4965..c69d687f8e871 100644
  
    // This lock protects the |zygote_pids_| set.
 diff --git a/content/common/child_process_host_impl.cc b/content/common/child_process_host_impl.cc
-index e573e26f0a498..590a88558b191 100644
+index 6a2971e66094d..ea2c2f5c1669d 100644
 --- a/content/common/child_process_host_impl.cc
 +++ b/content/common/child_process_host_impl.cc
-@@ -41,6 +41,7 @@
+@@ -41,8 +41,9 @@
  
- #if defined(OS_LINUX) || defined(OS_CHROMEOS)
+ #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
  #include "base/linux_util.h"
 +#include "sandbox/linux/services/flatpak_sandbox.h"
- #elif defined(OS_MAC)
- #include "base/mac/foundation_util.h"
+ #elif BUILDFLAG(IS_MAC)
+-#include "base/mac/foundation_util.h"
++include "base/mac/foundation_util.h"
  #include "content/common/mac_helpers.h"
+ #endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
+ 
 @@ -74,7 +75,12 @@ base::FilePath ChildProcessHost::GetChildPath(int flags) {
- #if defined(OS_LINUX) || defined(OS_CHROMEOS)
+ #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
    // Use /proc/self/exe rather than our known binary path so updates
    // can't swap out the binary from underneath us.
 -  if (child_path.empty() && flags & CHILD_ALLOW_SELF)
@@ -260,7 +263,7 @@ index e573e26f0a498..590a88558b191 100644
  #endif
  
 diff --git a/content/zygote/zygote_linux.cc b/content/zygote/zygote_linux.cc
-index a93ff40a79742..f3d42f1f090ce 100644
+index be67fab52311d..100a066dc778c 100644
 --- a/content/zygote/zygote_linux.cc
 +++ b/content/zygote/zygote_linux.cc
 @@ -116,7 +116,7 @@ bool Zygote::ProcessRequests() {
@@ -360,7 +363,7 @@ index c47d2c8aaa363..eaa1db6425977 100644
                  base::GlobalDescriptors::Descriptor(
                      static_cast<uint32_t>(kSandboxIPCChannel), GetSandboxFD()));
 diff --git a/sandbox/linux/BUILD.gn b/sandbox/linux/BUILD.gn
-index abbcc5096929a..6ca1ec2bce165 100644
+index ec24cd81e2748..3a8d77817d9c4 100644
 --- a/sandbox/linux/BUILD.gn
 +++ b/sandbox/linux/BUILD.gn
 @@ -302,6 +302,10 @@ if (is_linux || is_chromeos) {
@@ -1274,13 +1277,13 @@ index 1723c39cb80d2..85056d2796c61 100644
    std::unique_ptr<SetuidSandboxClient> setuid_sandbox_client_;
  #if BUILDFLAG(USING_SANITIZER)
 diff --git a/services/service_manager/service_process_launcher.cc b/services/service_manager/service_process_launcher.cc
-index 5f32c48eb61e9..dda0a1399dec9 100644
+index a9520e7822636..d259b61bf57cd 100644
 --- a/services/service_manager/service_process_launcher.cc
 +++ b/services/service_manager/service_process_launcher.cc
 @@ -40,6 +40,7 @@
  #include "services/service_manager/switches.h"
  
- #if defined(OS_LINUX) || defined(OS_CHROMEOS)
+ #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
 +#include "sandbox/linux/services/flatpak_sandbox.h"
  #include "sandbox/linux/services/namespace_sandbox.h"
  #endif
