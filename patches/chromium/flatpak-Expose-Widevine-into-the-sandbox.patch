@@ -1,4 +1,4 @@
-From 0e9cf34d59b490d6dbcea034cfa3fbafc07a7940 Mon Sep 17 00:00:00 2001
+From fbfe44899f71136cc301aebd098d608ce0604171 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Tue, 17 Nov 2020 13:00:39 -0600
 Subject: [PATCH] flatpak: Expose Widevine into the sandbox
@@ -10,7 +10,7 @@ Subject: [PATCH] flatpak: Expose Widevine into the sandbox
  3 files changed, 131 insertions(+), 24 deletions(-)
 
 diff --git a/content/browser/zygote_host/zygote_host_impl_linux.cc b/content/browser/zygote_host/zygote_host_impl_linux.cc
-index d592acba7077e..24894cb53a04f 100644
+index 3869ecdd83f7c..34d49907fd4bf 100644
 --- a/content/browser/zygote_host/zygote_host_impl_linux.cc
 +++ b/content/browser/zygote_host/zygote_host_impl_linux.cc
 @@ -10,14 +10,20 @@
