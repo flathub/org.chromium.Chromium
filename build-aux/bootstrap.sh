@@ -1,4 +1,4 @@
-#!/bin/bash -e
+#!/bin/bash -ex
 
 # Needed to build GN itself.
 . /usr/lib/sdk/llvm13/enable.sh

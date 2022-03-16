@@ -1,4 +1,4 @@
-#!/bin/bash -e
+#!/bin/bash -ex
 
 ln_overwrite_all() {
   rm -rf "$2"
