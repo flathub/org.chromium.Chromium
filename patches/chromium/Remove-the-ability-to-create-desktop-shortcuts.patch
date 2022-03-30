@@ -1,4 +1,4 @@
-From 32fbc5bea39dc6079a4c7d306064ff70b659e502 Mon Sep 17 00:00:00 2001
+From 3898a88cd4135a96686ff10bf1048e0fe904f8d6 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Wed, 11 Nov 2020 16:51:49 -0600
 Subject: [PATCH] Remove the ability to create desktop shortcuts
@@ -9,7 +9,7 @@ Subject: [PATCH] Remove the ability to create desktop shortcuts
  2 files changed, 2 insertions(+), 10 deletions(-)
 
 diff --git a/chrome/browser/ui/views/create_application_shortcut_view.cc b/chrome/browser/ui/views/create_application_shortcut_view.cc
-index 8739e629f6e2b..34c79e5950d56 100644
+index 779ef8ae48cf2..d0420c7254963 100644
 --- a/chrome/browser/ui/views/create_application_shortcut_view.cc
 +++ b/chrome/browser/ui/views/create_application_shortcut_view.cc
 @@ -116,10 +116,6 @@ void CreateChromeApplicationShortcutView::InitControls() {
@@ -52,7 +52,7 @@ index 8739e629f6e2b..34c79e5950d56 100644
      creation_locations.applications_menu_location =
          web_app::APP_MENU_LOCATION_SUBDIR_CHROMEAPPS;
 diff --git a/chrome/browser/ui/views/create_application_shortcut_view.h b/chrome/browser/ui/views/create_application_shortcut_view.h
-index 31b7d16b818ea..81c81f9f6e233 100644
+index 1e19c95829274..17202b06ff115 100644
 --- a/chrome/browser/ui/views/create_application_shortcut_view.h
 +++ b/chrome/browser/ui/views/create_application_shortcut_view.h
 @@ -76,7 +76,6 @@ class CreateChromeApplicationShortcutView : public views::DialogDelegateView {
@@ -64,5 +64,5 @@ index 31b7d16b818ea..81c81f9f6e233 100644
    raw_ptr<views::Checkbox> quick_launch_check_box_ = nullptr;
  
 -- 
-2.34.1
+2.33.1
 

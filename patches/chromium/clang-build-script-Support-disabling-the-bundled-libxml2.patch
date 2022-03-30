@@ -1,4 +1,4 @@
-From 9dba4e39a4db8513d316bbe8ee3cd98a44923fc8 Mon Sep 17 00:00:00 2001
+From 2f641be6ebe054103e7d1f0070783717c0cc3621 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Tue, 1 Mar 2022 19:29:12 -0600
 Subject: [PATCH] clang build script: Support disabling the bundled libxml2
@@ -11,7 +11,7 @@ attempting to build a toolchain without network access.
  1 file changed, 17 insertions(+), 7 deletions(-)
 
 diff --git a/tools/clang/scripts/build.py b/tools/clang/scripts/build.py
-index 071b498bda6cc..d899cc7accc37 100755
+index 2281b4fc1561a..07d8805f43e42 100755
 --- a/tools/clang/scripts/build.py
 +++ b/tools/clang/scripts/build.py
 @@ -525,6 +525,8 @@ def main():
@@ -34,7 +34,7 @@ index 071b498bda6cc..d899cc7accc37 100755
    # Don't buffer stdout, so that print statements are immediately flushed.
    # LLVM tests print output without newlines, so with buffering they won't be
    # immediately printed.
-@@ -726,13 +732,17 @@ def main():
+@@ -729,13 +735,17 @@ def main():
      rpmalloc_dir = DownloadRPMalloc()
      base_cmake_args.append('-DLLVM_INTEGRATED_CRT_ALLOC=' + rpmalloc_dir)
  
@@ -60,5 +60,5 @@ index 071b498bda6cc..d899cc7accc37 100755
    if args.bootstrap:
      print('Building bootstrap compiler')
 -- 
-2.34.1
+2.33.1
 
