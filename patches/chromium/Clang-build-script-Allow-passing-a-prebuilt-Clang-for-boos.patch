@@ -1,4 +1,4 @@
-From f91d252e4dc8cc86496585473359323dcb77f224 Mon Sep 17 00:00:00 2001
+From b6b3925ea86f2a83f2fbf02cfe1a674e2e8ba825 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Fri, 28 May 2021 10:41:25 -0500
 Subject: [PATCH] Clang build script: Allow passing a prebuilt Clang for
@@ -9,10 +9,10 @@ Subject: [PATCH] Clang build script: Allow passing a prebuilt Clang for
  1 file changed, 12 insertions(+)
 
 diff --git a/tools/clang/scripts/build.py b/tools/clang/scripts/build.py
-index 399c8cac68d42..536065eeed510 100755
+index a68eb85b25a1f..c4926a9dced76 100755
 --- a/tools/clang/scripts/build.py
 +++ b/tools/clang/scripts/build.py
-@@ -502,6 +502,10 @@ def main():
+@@ -479,6 +479,10 @@ def main():
    parser.add_argument('--gcc-toolchain', help='what gcc toolchain to use for '
                        'building; --gcc-toolchain=/opt/foo picks '
                        '/opt/foo/bin/gcc')
@@ -23,8 +23,8 @@ index 399c8cac68d42..536065eeed510 100755
    parser.add_argument('--pgo', action='store_true', help='build with PGO')
    parser.add_argument('--thinlto',
                        action='store_true',
-@@ -684,6 +688,14 @@ def main():
-         '-DLLVM_LOCAL_RPATH=' + os.path.join(args.gcc_toolchain, 'lib64')
+@@ -672,6 +676,14 @@ def main():
+         os.path.join(args.gcc_toolchain, 'lib32')
      ]
  
 +  # --bootstrap-llvm should overwrite --gcc-toolchain's compilers.
@@ -39,5 +39,5 @@ index 399c8cac68d42..536065eeed510 100755
      # For libc++, we only want the headers.
      base_cmake_args.extend([
 -- 
-2.33.1
+2.35.1
 
