@@ -1,4 +1,4 @@
-From 496ce15367dcefa754819e2ba9ea715b3d76d483 Mon Sep 17 00:00:00 2001
+From fdacfe263485e4bd98a6c6212100c75f4b0f9191 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Tue, 17 Mar 2020 13:18:27 -0500
 Subject: [PATCH] flatpak: Add initial sandbox support
@@ -29,10 +29,10 @@ Subject: [PATCH] flatpak: Add initial sandbox support
  create mode 100644 sandbox/linux/services/flatpak_sandbox.h
 
 diff --git a/.gitignore b/.gitignore
-index 5a473b051598d..9385dadd92503 100644
+index 21b41b8c3e3b9..69f3a2a915ee4 100644
 --- a/.gitignore
 +++ b/.gitignore
-@@ -64,6 +64,7 @@ vs-chromium-project.txt
+@@ -66,6 +66,7 @@ vs-chromium-project.txt
  /.clangd
  /.clangd/
  /.clangd-index/
@@ -41,12 +41,12 @@ index 5a473b051598d..9385dadd92503 100644
  /.externalToolBuilders/
  /.settings/
 diff --git a/base/threading/thread_restrictions.h b/base/threading/thread_restrictions.h
-index a149a6ab313c4..1ec06f8b923a9 100644
+index a22b32052cfeb..f4d4e470fdf45 100644
 --- a/base/threading/thread_restrictions.h
 +++ b/base/threading/thread_restrictions.h
-@@ -315,6 +315,10 @@ class ScopedAllowThreadJoinForWebRtcTransport;
- }
- }
+@@ -321,6 +321,10 @@ class ScopedAllowThreadJoinForWebRtcTransport;
+ }  // namespace protocol
+ }  // namespace remoting
  
 +namespace sandbox {
 +class FlatpakSandbox;
@@ -55,7 +55,7 @@ index a149a6ab313c4..1ec06f8b923a9 100644
  namespace service_manager {
  class ServiceProcessLauncher;
  }
-@@ -482,6 +486,7 @@ class BASE_EXPORT ScopedAllowBlocking {
+@@ -488,6 +492,7 @@ class BASE_EXPORT ScopedAllowBlocking {
    friend class remote_cocoa::
        DroppedScreenShotCopierMac;  // https://crbug.com/1148078
    friend class remoting::ScopedBypassIOThreadRestrictions;  // crbug.com/1144161
@@ -63,7 +63,7 @@ index a149a6ab313c4..1ec06f8b923a9 100644
    friend class web::WebSubThread;
    friend class ::WebEngineBrowserMainParts;
    friend class weblayer::BrowserContextImpl;
-@@ -588,6 +593,7 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitives {
+@@ -597,6 +602,7 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitives {
    friend class rlz_lib::FinancialPing;
    friend class shell_integration_linux::
        LaunchXdgUtilityScopedAllowBaseSyncPrimitives;
@@ -72,7 +72,7 @@ index a149a6ab313c4..1ec06f8b923a9 100644
    friend class syncer::GetLocalChangesRequest;
    friend class webrtc::DesktopConfigurationMonitor;
 diff --git a/chrome/browser/resources/sandbox_internals/sandbox_internals.js b/chrome/browser/resources/sandbox_internals/sandbox_internals.js
-index 4fa81a019090b..aaeba2d7d0ee7 100644
+index 564ce08578dd4..6345f2558510d 100644
 --- a/chrome/browser/resources/sandbox_internals/sandbox_internals.js
 +++ b/chrome/browser/resources/sandbox_internals/sandbox_internals.js
 @@ -139,6 +139,7 @@ function androidHandler() {
@@ -1212,7 +1212,7 @@ index 0000000000000..167bbc85945ad
 +
 +#endif  // SANDBOX_LINUX_SERVICES_FLATPAK_SANDBOX_H_
 diff --git a/sandbox/policy/linux/sandbox_linux.cc b/sandbox/policy/linux/sandbox_linux.cc
-index 28cc740fb45fa..27e1a8a9788c3 100644
+index d2e85c5706d76..d81d947518097 100644
 --- a/sandbox/policy/linux/sandbox_linux.cc
 +++ b/sandbox/policy/linux/sandbox_linux.cc
 @@ -34,6 +34,7 @@
@@ -1277,10 +1277,10 @@ index 1723c39cb80d2..85056d2796c61 100644
    std::unique_ptr<SetuidSandboxClient> setuid_sandbox_client_;
  #if BUILDFLAG(USING_SANITIZER)
 diff --git a/services/service_manager/service_process_launcher.cc b/services/service_manager/service_process_launcher.cc
-index a9520e7822636..d259b61bf57cd 100644
+index 975482df1c047..f5e5265a305b2 100644
 --- a/services/service_manager/service_process_launcher.cc
 +++ b/services/service_manager/service_process_launcher.cc
-@@ -40,6 +40,7 @@
+@@ -39,6 +39,7 @@
  #include "services/service_manager/switches.h"
  
  #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
@@ -1288,7 +1288,7 @@ index a9520e7822636..d259b61bf57cd 100644
  #include "sandbox/linux/services/namespace_sandbox.h"
  #endif
  
-@@ -276,8 +277,15 @@ void ServiceProcessLauncher::ProcessState::StopInBackground() {
+@@ -275,8 +276,15 @@ void ServiceProcessLauncher::ProcessState::StopInBackground() {
      return;
  
    int rv = -1;
@@ -1307,5 +1307,5 @@ index a9520e7822636..d259b61bf57cd 100644
  }
  
 -- 
-2.33.1
+2.35.1
 

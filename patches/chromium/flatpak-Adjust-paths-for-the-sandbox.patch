@@ -1,18 +1,18 @@
-From 1d2d9da61a14ebe627b8039bb927b1e1f4703239 Mon Sep 17 00:00:00 2001
+From 8fc50596b758a3dbe59abb99f7675d27ea94220b Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Tue, 25 Aug 2020 19:26:07 -0500
 Subject: [PATCH] flatpak: Adjust paths for the sandbox
 
 ---
- chrome/common/BUILD.gn        |  4 +++
- chrome/common/chrome_paths.cc | 50 ++++++++++++++++++++++++++---------
- 2 files changed, 41 insertions(+), 13 deletions(-)
+ chrome/common/BUILD.gn        |  4 ++++
+ chrome/common/chrome_paths.cc | 43 +++++++++++++++++++++++++++--------
+ 2 files changed, 38 insertions(+), 9 deletions(-)
 
 diff --git a/chrome/common/BUILD.gn b/chrome/common/BUILD.gn
-index e1dd4b21c378c..3d7d267933f24 100644
+index 4a50fdd3dc653..9f65e583f5c1b 100644
 --- a/chrome/common/BUILD.gn
 +++ b/chrome/common/BUILD.gn
-@@ -627,6 +627,10 @@ static_library("constants") {
+@@ -626,6 +626,10 @@ static_library("constants") {
        "//third_party/widevine/cdm:headers",
      ]
    }
@@ -24,7 +24,7 @@ index e1dd4b21c378c..3d7d267933f24 100644
  
  # Use a static library here because many test binaries depend on this but don't
 diff --git a/chrome/common/chrome_paths.cc b/chrome/common/chrome_paths.cc
-index 97f406b0a0419..fe0cf717cf413 100644
+index 311ac9bfe054d..45f1837ef7971 100644
 --- a/chrome/common/chrome_paths.cc
 +++ b/chrome/common/chrome_paths.cc
 @@ -4,6 +4,7 @@
@@ -46,7 +46,7 @@ index 97f406b0a0419..fe0cf717cf413 100644
  #if BUILDFLAG(ENABLE_WIDEVINE)
  #include "third_party/widevine/cdm/widevine_cdm_common.h"  // nogncheck
  #endif
-@@ -192,8 +197,8 @@ bool PathProvider(int key, base::FilePath* result) {
+@@ -196,8 +201,8 @@ bool PathProvider(int key, base::FilePath* result) {
  #else
        if (!GetUserDownloadsDirectory(&cur))
          return false;
@@ -57,7 +57,7 @@ index 97f406b0a0419..fe0cf717cf413 100644
  #endif
        break;
      case chrome::DIR_CRASH_DUMPS:
-@@ -409,6 +414,14 @@ bool PathProvider(int key, base::FilePath* result) {
+@@ -431,6 +436,14 @@ bool PathProvider(int key, base::FilePath* result) {
        break;
  #if BUILDFLAG(IS_POSIX) && !BUILDFLAG(IS_MAC) && !BUILDFLAG(IS_OPENBSD)
      case chrome::DIR_POLICY_FILES: {
@@ -72,7 +72,7 @@ index 97f406b0a0419..fe0cf717cf413 100644
  #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
        cur = base::FilePath(FILE_PATH_LITERAL("/etc/opt/chrome/policies"));
  #else
-@@ -432,7 +445,13 @@ bool PathProvider(int key, base::FilePath* result) {
+@@ -454,7 +467,13 @@ bool PathProvider(int key, base::FilePath* result) {
  #endif
  #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
      case chrome::DIR_STANDALONE_EXTERNAL_EXTENSIONS: {
@@ -87,18 +87,7 @@ index 97f406b0a0419..fe0cf717cf413 100644
        break;
      }
  #endif
-@@ -446,8 +465,8 @@ bool PathProvider(int key, base::FilePath* result) {
-         return false;
- 
-       cur = cur.Append(FILE_PATH_LITERAL("Google"))
--               .Append(FILE_PATH_LITERAL("Chrome"))
--               .Append(FILE_PATH_LITERAL("External Extensions"));
-+                .Append(FILE_PATH_LITERAL("Chrome"))
-+                .Append(FILE_PATH_LITERAL("External Extensions"));
-       create_dir = false;
- #else
-       if (!base::PathService::Get(base::DIR_MODULE, &cur))
-@@ -479,19 +498,25 @@ bool PathProvider(int key, base::FilePath* result) {
+@@ -500,19 +519,25 @@ bool PathProvider(int key, base::FilePath* result) {
      case chrome::DIR_NATIVE_MESSAGING:
  #if BUILDFLAG(IS_MAC)
  #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
@@ -130,16 +119,6 @@ index 97f406b0a0419..fe0cf717cf413 100644
  #endif
  #endif  // !BUILDFLAG(IS_MAC)
        break;
-@@ -532,8 +557,7 @@ bool PathProvider(int key, base::FilePath* result) {
- 
-   // TODO(bauerb): http://crbug.com/259796
-   base::ThreadRestrictions::ScopedAllowIO allow_io;
--  if (create_dir && !base::PathExists(cur) &&
--      !base::CreateDirectory(cur))
-+  if (create_dir && !base::PathExists(cur) && !base::CreateDirectory(cur))
-     return false;
- 
-   *result = cur;
 -- 
-2.33.1
+2.35.1
 
