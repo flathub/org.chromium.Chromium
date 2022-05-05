@@ -1,0 +1,23 @@
+From 5f2d09cc2338eb75e014badfc037532c561c7d6d Mon Sep 17 00:00:00 2001
+From: Jan Grulich <grulja@gmail.com>
+Date: Thu, 5 May 2022 14:50:34 +0200
+Subject: Add CFI-ICALL to avoid crash in PipeWire functions
+
+We already use RTC_NO_SANITIZE("cfi-icall") for most of the code and
+it looks this one can be triggered recently with pw_loop_signal_event()
+call.
+
+Bug: webrtc:13659
+
+diff --git a/third_party/webrtc/modules/desktop_capture/linux/wayland/shared_screencast_stream.cc b/third_party/webrtc/modules/desktop_capture/linux/wayland/shared_screencast_stream.cc
+index 9e81df4..2b0eb14 100644
+--- a/third_party/webrtc/modules/desktop_capture/linux/wayland/shared_screencast_stream.cc
++++ b/third_party/webrtc/modules/desktop_capture/linux/wayland/shared_screencast_stream.cc
+@@ -638,6 +638,7 @@ DesktopVector SharedScreenCastStreamPrivate::CaptureCursorPosition() {
+   return mouse_cursor_position_;
+ }
+ 
++RTC_NO_SANITIZE("cfi-icall")
+ void SharedScreenCastStreamPrivate::ProcessBuffer(pw_buffer* buffer) {
+   spa_buffer* spa_buffer = buffer->buffer;
+   ScopedBuf map;
