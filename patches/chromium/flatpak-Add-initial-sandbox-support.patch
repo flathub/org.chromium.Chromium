@@ -1,4 +1,4 @@
-From fdacfe263485e4bd98a6c6212100c75f4b0f9191 Mon Sep 17 00:00:00 2001
+From 465c5dc6bb9477f043df49f0f2c9fa7eed4d8536 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Tue, 17 Mar 2020 13:18:27 -0500
 Subject: [PATCH] flatpak: Add initial sandbox support
@@ -19,20 +19,21 @@ Subject: [PATCH] flatpak: Add initial sandbox support
  sandbox/linux/services/flatpak_pid_map.h      |  46 ++
  sandbox/linux/services/flatpak_sandbox.cc     | 577 ++++++++++++++++++
  sandbox/linux/services/flatpak_sandbox.h      | 118 ++++
+ sandbox/policy/BUILD.gn                       |   3 +
  sandbox/policy/linux/sandbox_linux.cc         |   8 +
  sandbox/policy/linux/sandbox_linux.h          |   7 +
  .../service_process_launcher.cc               |  12 +-
- 18 files changed, 906 insertions(+), 19 deletions(-)
+ 19 files changed, 909 insertions(+), 19 deletions(-)
  create mode 100644 sandbox/linux/services/flatpak_pid_map.cc
  create mode 100644 sandbox/linux/services/flatpak_pid_map.h
  create mode 100644 sandbox/linux/services/flatpak_sandbox.cc
  create mode 100644 sandbox/linux/services/flatpak_sandbox.h
 
 diff --git a/.gitignore b/.gitignore
-index 21b41b8c3e3b9..69f3a2a915ee4 100644
+index cc0150c39bf63..9bb0085950243 100644
 --- a/.gitignore
 +++ b/.gitignore
-@@ -66,6 +66,7 @@ vs-chromium-project.txt
+@@ -69,6 +69,7 @@ vs-chromium-project.txt
  /.clangd
  /.clangd/
  /.clangd-index/
@@ -41,10 +42,10 @@ index 21b41b8c3e3b9..69f3a2a915ee4 100644
  /.externalToolBuilders/
  /.settings/
 diff --git a/base/threading/thread_restrictions.h b/base/threading/thread_restrictions.h
-index a22b32052cfeb..f4d4e470fdf45 100644
+index 5f1deb141679a..561b89bee2d0d 100644
 --- a/base/threading/thread_restrictions.h
 +++ b/base/threading/thread_restrictions.h
-@@ -321,6 +321,10 @@ class ScopedAllowThreadJoinForWebRtcTransport;
+@@ -315,6 +315,10 @@ class ScopedAllowThreadJoinForWebRtcTransport;
  }  // namespace protocol
  }  // namespace remoting
  
@@ -55,7 +56,7 @@ index a22b32052cfeb..f4d4e470fdf45 100644
  namespace service_manager {
  class ServiceProcessLauncher;
  }
-@@ -488,6 +492,7 @@ class BASE_EXPORT ScopedAllowBlocking {
+@@ -482,6 +486,7 @@ class BASE_EXPORT ScopedAllowBlocking {
    friend class remote_cocoa::
        DroppedScreenShotCopierMac;  // https://crbug.com/1148078
    friend class remoting::ScopedBypassIOThreadRestrictions;  // crbug.com/1144161
@@ -63,7 +64,7 @@ index a22b32052cfeb..f4d4e470fdf45 100644
    friend class web::WebSubThread;
    friend class ::WebEngineBrowserMainParts;
    friend class weblayer::BrowserContextImpl;
-@@ -597,6 +602,7 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitives {
+@@ -587,6 +592,7 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitives {
    friend class rlz_lib::FinancialPing;
    friend class shell_integration_linux::
        LaunchXdgUtilityScopedAllowBaseSyncPrimitives;
@@ -263,7 +264,7 @@ index 6a2971e66094d..ea2c2f5c1669d 100644
  #endif
  
 diff --git a/content/zygote/zygote_linux.cc b/content/zygote/zygote_linux.cc
-index be67fab52311d..100a066dc778c 100644
+index 9badc3a5fbac2..5bf8a59ea63db 100644
 --- a/content/zygote/zygote_linux.cc
 +++ b/content/zygote/zygote_linux.cc
 @@ -116,7 +116,7 @@ bool Zygote::ProcessRequests() {
@@ -1211,11 +1212,25 @@ index 0000000000000..167bbc85945ad
 +}  // namespace sandbox
 +
 +#endif  // SANDBOX_LINUX_SERVICES_FLATPAK_SANDBOX_H_
+diff --git a/sandbox/policy/BUILD.gn b/sandbox/policy/BUILD.gn
+index 8db34a7ca3e71..e8a7bfb095027 100644
+--- a/sandbox/policy/BUILD.gn
++++ b/sandbox/policy/BUILD.gn
+@@ -91,6 +91,9 @@ component("policy") {
+       "//sandbox/linux:suid_sandbox_client",
+     ]
+   }
++  if (is_linux) {
++    public_deps += [ "//sandbox/linux:sandbox_services" ]
++  }
+   if (is_chromeos_ash) {
+     sources += [
+       "linux/bpf_ime_policy_linux.cc",
 diff --git a/sandbox/policy/linux/sandbox_linux.cc b/sandbox/policy/linux/sandbox_linux.cc
-index d2e85c5706d76..d81d947518097 100644
+index 6e744e6a252b7..f62ded6dff707 100644
 --- a/sandbox/policy/linux/sandbox_linux.cc
 +++ b/sandbox/policy/linux/sandbox_linux.cc
-@@ -34,6 +34,7 @@
+@@ -33,6 +33,7 @@
  #include "sandbox/constants.h"
  #include "sandbox/linux/seccomp-bpf-helpers/sigsys_handlers.h"
  #include "sandbox/linux/services/credentials.h"
@@ -1223,7 +1238,7 @@ index d2e85c5706d76..d81d947518097 100644
  #include "sandbox/linux/services/libc_interceptor.h"
  #include "sandbox/linux/services/namespace_sandbox.h"
  #include "sandbox/linux/services/proc_util.h"
-@@ -198,6 +199,9 @@ void SandboxLinux::PreinitializeSandbox() {
+@@ -197,6 +198,9 @@ void SandboxLinux::PreinitializeSandbox() {
    const int yama_status = Yama::GetStatus();
    yama_is_enforcing_ = (yama_status & Yama::STATUS_PRESENT) &&
                         (yama_status & Yama::STATUS_ENFORCING);
@@ -1233,7 +1248,7 @@ index d2e85c5706d76..d81d947518097 100644
    pre_initialized_ = true;
  }
  
-@@ -236,6 +240,10 @@ int SandboxLinux::GetStatus() {
+@@ -235,6 +239,10 @@ int SandboxLinux::GetStatus() {
          sandbox_status_flags_ |= kPIDNS;
        if (NamespaceSandbox::InNewNetNamespace())
          sandbox_status_flags_ |= kNetNS;
@@ -1277,10 +1292,10 @@ index 1723c39cb80d2..85056d2796c61 100644
    std::unique_ptr<SetuidSandboxClient> setuid_sandbox_client_;
  #if BUILDFLAG(USING_SANITIZER)
 diff --git a/services/service_manager/service_process_launcher.cc b/services/service_manager/service_process_launcher.cc
-index 975482df1c047..f5e5265a305b2 100644
+index d26daaccff116..608d26b5228b0 100644
 --- a/services/service_manager/service_process_launcher.cc
 +++ b/services/service_manager/service_process_launcher.cc
-@@ -39,6 +39,7 @@
+@@ -38,6 +38,7 @@
  #include "services/service_manager/switches.h"
  
  #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
@@ -1288,7 +1303,7 @@ index 975482df1c047..f5e5265a305b2 100644
  #include "sandbox/linux/services/namespace_sandbox.h"
  #endif
  
-@@ -275,8 +276,15 @@ void ServiceProcessLauncher::ProcessState::StopInBackground() {
+@@ -274,8 +275,15 @@ void ServiceProcessLauncher::ProcessState::StopInBackground() {
      return;
  
    int rv = -1;
@@ -1307,5 +1322,5 @@ index 975482df1c047..f5e5265a305b2 100644
  }
  
 -- 
-2.35.1
+2.36.1
 

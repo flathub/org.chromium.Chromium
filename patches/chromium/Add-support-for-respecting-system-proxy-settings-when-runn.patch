@@ -1,4 +1,4 @@
-From 6dbd2ed8c66cf964f0b7ffa0e7a7589ac6d93fdc Mon Sep 17 00:00:00 2001
+From e5992d7f1d592c343fc21452cd7ef5bbf8ead95b Mon Sep 17 00:00:00 2001
 From: Andre Moreira Magalhaes <andre.magalhaes@endlessos.org>
 Date: Thu, 17 Dec 2020 19:05:10 -0300
 Subject: [PATCH] Add support for respecting system proxy settings when running
@@ -54,10 +54,10 @@ Closes https://github.com/flathub/org.chromium.Chromium/issues/36
  create mode 100644 net/proxy_resolution/proxy_resolver_linux.h
 
 diff --git a/chrome/app/generated_resources.grd b/chrome/app/generated_resources.grd
-index e40d39db62028..c1f6b7055a0e1 100644
+index 9ce6ab120cf29..4717ff15bd290 100644
 --- a/chrome/app/generated_resources.grd
 +++ b/chrome/app/generated_resources.grd
-@@ -10638,6 +10638,12 @@ Please help our engineers fix this problem. Tell us what happened right before y
+@@ -10982,6 +10982,12 @@ Please help our engineers fix this problem. Tell us what happened right before y
  
            &lt;p&gt;But you can still configure via the command line.  Please see &lt;code&gt;man <ph name="PRODUCT_BINARY_NAME">$2<ex>google-chrome</ex></ph>&lt;/code&gt; for more information on flags and environment variables.&lt;/p&gt;
          </message>
@@ -71,10 +71,10 @@ index e40d39db62028..c1f6b7055a0e1 100644
  
        <message name="IDS_IMAGE_FILES" desc="The description of the image file extensions in the select file dialog.">
 diff --git a/chrome/browser/net/system_network_context_manager.cc b/chrome/browser/net/system_network_context_manager.cc
-index 36bb83872c694..3953959c815e8 100644
+index 0269a74140c80..b2de516a7ae9f 100644
 --- a/chrome/browser/net/system_network_context_manager.cc
 +++ b/chrome/browser/net/system_network_context_manager.cc
-@@ -94,6 +94,7 @@
+@@ -93,6 +93,7 @@
  #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
  #include "chrome/common/chrome_paths_internal.h"
  #include "chrome/grit/chromium_strings.h"
@@ -82,7 +82,7 @@ index 36bb83872c694..3953959c815e8 100644
  #include "ui/base/l10n/l10n_util.h"
  #endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
  
-@@ -757,7 +758,13 @@ void SystemNetworkContextManager::ConfigureDefaultNetworkContextParams(
+@@ -753,7 +754,13 @@ void SystemNetworkContextManager::ConfigureDefaultNetworkContextParams(
    // or if it does work, now.
    // Should be possible now that a private isolate is used.
    // http://crbug.com/474654
@@ -98,10 +98,10 @@ index 36bb83872c694..3953959c815e8 100644
        LOG(ERROR) << "Cannot use V8 Proxy resolver in single process mode.";
      } else {
 diff --git a/chrome/browser/ui/webui/about_ui.cc b/chrome/browser/ui/webui/about_ui.cc
-index 4cdfd09241abc..c156e834cdd12 100644
+index 5f63072942905..8b03ac522672c 100644
 --- a/chrome/browser/ui/webui/about_ui.cc
 +++ b/chrome/browser/ui/webui/about_ui.cc
-@@ -90,6 +90,10 @@
+@@ -89,6 +89,10 @@
  #include "ui/base/l10n/l10n_util.h"
  #endif  // BUILDFLAG(IS_CHROMEOS)
  
@@ -112,7 +112,7 @@ index 4cdfd09241abc..c156e834cdd12 100644
  using content::BrowserThread;
  
  namespace {
-@@ -627,8 +631,16 @@ std::string AboutLinuxProxyConfig() {
+@@ -630,8 +634,16 @@ std::string AboutLinuxProxyConfig() {
    data.append("<style>body { max-width: 70ex; padding: 2ex 5ex; }</style>");
    AppendBody(&data);
    base::FilePath binary = base::CommandLine::ForCurrentProcess()->GetProgram();
@@ -131,10 +131,10 @@ index 4cdfd09241abc..c156e834cdd12 100644
                                  base::ASCIIToUTF16(binary.BaseName().value())));
    AppendFooter(&data);
 diff --git a/net/BUILD.gn b/net/BUILD.gn
-index 91750734be4d4..4f77dc054dce8 100644
+index 5302673ba18bc..63a587a48a199 100644
 --- a/net/BUILD.gn
 +++ b/net/BUILD.gn
-@@ -1222,6 +1222,13 @@ component("net") {
+@@ -1207,6 +1207,13 @@ component("net") {
      ]
    }
  
@@ -148,7 +148,7 @@ index 91750734be4d4..4f77dc054dce8 100644
    if (is_mac) {
      sources += [
        "base/network_notification_thread_mac.cc",
-@@ -1650,6 +1657,7 @@ source_set("net_deps") {
+@@ -1633,6 +1640,7 @@ source_set("net_deps") {
  
    if (use_gio) {
      public_configs += [ "//build/linux:gio_config" ]
@@ -157,10 +157,10 @@ index 91750734be4d4..4f77dc054dce8 100644
  
    if (is_android) {
 diff --git a/net/proxy_resolution/configured_proxy_resolution_service.cc b/net/proxy_resolution/configured_proxy_resolution_service.cc
-index 753baa9cb442d..b21af655e31fb 100644
+index 2c02537409255..76dd1ba69a5b3 100644
 --- a/net/proxy_resolution/configured_proxy_resolution_service.cc
 +++ b/net/proxy_resolution/configured_proxy_resolution_service.cc
-@@ -54,6 +54,7 @@
+@@ -55,6 +55,7 @@
  #include "net/proxy_resolution/proxy_resolver_mac.h"
  #elif BUILDFLAG(IS_LINUX)
  #include "net/proxy_resolution/proxy_config_service_linux.h"
@@ -168,7 +168,7 @@ index 753baa9cb442d..b21af655e31fb 100644
  #elif BUILDFLAG(IS_ANDROID)
  #include "net/proxy_resolution/proxy_config_service_android.h"
  #endif
-@@ -266,6 +267,8 @@ class ProxyResolverFactoryForSystem : public MultiThreadedProxyResolverFactory {
+@@ -267,6 +268,8 @@ class ProxyResolverFactoryForSystem : public MultiThreadedProxyResolverFactory {
      return std::make_unique<ProxyResolverFactoryWinHttp>();
  #elif BUILDFLAG(IS_APPLE)
      return std::make_unique<ProxyResolverFactoryMac>();
@@ -177,7 +177,7 @@ index 753baa9cb442d..b21af655e31fb 100644
  #else
      NOTREACHED();
      return nullptr;
-@@ -273,7 +276,7 @@ class ProxyResolverFactoryForSystem : public MultiThreadedProxyResolverFactory {
+@@ -274,7 +277,7 @@ class ProxyResolverFactoryForSystem : public MultiThreadedProxyResolverFactory {
    }
  
    static bool IsSupported() {
@@ -187,7 +187,7 @@ index 753baa9cb442d..b21af655e31fb 100644
  #else
      return false;
 diff --git a/net/proxy_resolution/proxy_config_service_linux.cc b/net/proxy_resolution/proxy_config_service_linux.cc
-index a506b3bcd8d79..0fb59b42f97f0 100644
+index 16f3ca6489113..490e23977c912 100644
 --- a/net/proxy_resolution/proxy_config_service_linux.cc
 +++ b/net/proxy_resolution/proxy_config_service_linux.cc
 @@ -33,6 +33,7 @@
@@ -387,5 +387,5 @@ index 0000000000000..7ae45eeae1a43
 +
 +#endif  // NET_PROXY_RESOLUTION_PROXY_RESOLVER_LINUX_H_
 -- 
-2.35.1
+2.36.1
 
