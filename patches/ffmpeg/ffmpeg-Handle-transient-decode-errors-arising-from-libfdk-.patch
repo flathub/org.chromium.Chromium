@@ -1,4 +1,4 @@
-From 745a4536042bb2376c395830498ae92da7d0096f Mon Sep 17 00:00:00 2001
+From dcefb625c26fd7526fde620f006a888fdb152dc6 Mon Sep 17 00:00:00 2001
 From: Jan Schmidt <jan@centricular.com>
 Date: Wed, 1 May 2019 17:49:42 +0200
 Subject: [PATCH] ffmpeg: Handle transient decode errors arising from
@@ -20,13 +20,13 @@ https://phabricator.endlessm.com/T23374
  1 file changed, 8 insertions(+), 4 deletions(-)
 
 diff --git a/third_party/ffmpeg/libavcodec/libfdk-aacdec.c b/third_party/ffmpeg/libavcodec/libfdk-aacdec.c
-index ffa1fdcce3..1fe7255885 100644
+index e9096a08e6..a389d4fdfd 100644
 --- a/third_party/ffmpeg/libavcodec/libfdk-aacdec.c
 +++ b/third_party/ffmpeg/libavcodec/libfdk-aacdec.c
-@@ -361,11 +361,15 @@ static int fdk_aac_decode_frame(AVCodecContext *avctx, void *data,
-     }
- 
-     err = aacDecoder_DecodeFrame(s->handle, (INT_PCM *) s->decoder_buffer, s->decoder_buffer_size / sizeof(INT_PCM), 0);
+@@ -410,11 +410,15 @@ static int fdk_aac_decode_frame(AVCodecContext *avctx, void *data,
+     err = aacDecoder_DecodeFrame(s->handle, (INT_PCM *) s->decoder_buffer,
+                                  s->decoder_buffer_size / sizeof(INT_PCM),
+                                  flags);
 -    if (err == AAC_DEC_NOT_ENOUGH_BITS) {
 -        ret = avpkt->size - valid;
 -        goto end;
@@ -44,5 +44,5 @@ index ffa1fdcce3..1fe7255885 100644
                 "aacDecoder_DecodeFrame() failed: %x\n", err);
          ret = AVERROR_UNKNOWN;
 -- 
-2.35.1
+2.36.1
 

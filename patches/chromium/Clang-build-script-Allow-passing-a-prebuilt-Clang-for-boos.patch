@@ -1,18 +1,18 @@
-From b6b3925ea86f2a83f2fbf02cfe1a674e2e8ba825 Mon Sep 17 00:00:00 2001
+From 75fe77c0e972d1dc99bb316b90f9f7f825ea3012 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Fri, 28 May 2021 10:41:25 -0500
 Subject: [PATCH] Clang build script: Allow passing a prebuilt Clang for
  boostrapping
 
 ---
- tools/clang/scripts/build.py | 12 ++++++++++++
- 1 file changed, 12 insertions(+)
+ tools/clang/scripts/build.py | 18 +++++++++++++++---
+ 1 file changed, 15 insertions(+), 3 deletions(-)
 
 diff --git a/tools/clang/scripts/build.py b/tools/clang/scripts/build.py
-index a68eb85b25a1f..c4926a9dced76 100755
+index e038871d086bd..6693466a076d9 100755
 --- a/tools/clang/scripts/build.py
 +++ b/tools/clang/scripts/build.py
-@@ -479,6 +479,10 @@ def main():
+@@ -491,6 +491,10 @@ def main():
    parser.add_argument('--gcc-toolchain', help='what gcc toolchain to use for '
                        'building; --gcc-toolchain=/opt/foo picks '
                        '/opt/foo/bin/gcc')
@@ -23,21 +23,34 @@ index a68eb85b25a1f..c4926a9dced76 100755
    parser.add_argument('--pgo', action='store_true', help='build with PGO')
    parser.add_argument('--thinlto',
                        action='store_true',
-@@ -672,6 +676,14 @@ def main():
+@@ -662,9 +666,6 @@ def main():
+ 
+   if sys.platform.startswith('linux'):
+     MaybeDownloadHostGcc(args)
+-    DownloadPinnedClang()
+-    cc = os.path.join(PINNED_CLANG_DIR, 'bin', 'clang')
+-    cxx = os.path.join(PINNED_CLANG_DIR, 'bin', 'clang++')
+     # Use the libraries in the specified gcc installation for building.
+     cflags.append('--gcc-toolchain=' + args.gcc_toolchain)
+     cxxflags.append('--gcc-toolchain=' + args.gcc_toolchain)
+@@ -683,6 +684,17 @@ def main():
          os.path.join(args.gcc_toolchain, 'lib32')
      ]
  
-+  # --bootstrap-llvm should overwrite --gcc-toolchain's compilers.
 +  if args.bootstrap_llvm:
 +    cc = os.path.join(args.bootstrap_llvm, 'bin', 'clang')
 +    cxx = os.path.join(args.bootstrap_llvm, 'bin', 'clang++')
 +    if not os.access(cc, os.X_OK):
 +      print('Invalid --bootstrap-llvm: ' + args.bootstrap_llvm)
 +      return 1
++  else:
++    DownloadPinnedClang()
++    cc = os.path.join(PINNED_CLANG_DIR, 'bin', 'clang')
++    cxx = os.path.join(PINNED_CLANG_DIR, 'bin', 'clang++')
 +
    if sys.platform == 'darwin':
      # For libc++, we only want the headers.
      base_cmake_args.extend([
 -- 
-2.35.1
+2.36.1
 
