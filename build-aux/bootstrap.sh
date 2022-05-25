@@ -3,7 +3,7 @@
 # Needed to build GN itself.
 . /usr/lib/sdk/llvm13/enable.sh
 
-if [[ ! -d third_party/llvm-build/Release+Assets/bin ]]; then
+if [[ ! -d third_party/llvm-build/Release+Asserts/bin ]]; then
   python3 tools/clang/scripts/build.py --disable-asserts \
       --skip-checkout --use-system-cmake --use-system-libxml \
       --gcc-toolchain=/usr --bootstrap-llvm=/usr/lib/sdk/llvm13 \
