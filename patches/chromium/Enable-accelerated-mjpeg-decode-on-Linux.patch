@@ -1,4 +1,4 @@
-From 404e98e45cd0a70804d010235cde08fb829d4d8b Mon Sep 17 00:00:00 2001
+From dae93092d5f1ab50f0ddf1c1aac39f650c1e4813 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Tue, 19 Jan 2021 15:41:16 -0600
 Subject: [PATCH] Enable accelerated mjpeg decode on Linux
@@ -11,10 +11,10 @@ Subject: [PATCH] Enable accelerated mjpeg decode on Linux
  4 files changed, 17 insertions(+), 9 deletions(-)
 
 diff --git a/chrome/browser/about_flags.cc b/chrome/browser/about_flags.cc
-index 4e330d3370029..f729200d5894b 100644
+index bee1d114bf9a0..ca8467155dc03 100644
 --- a/chrome/browser/about_flags.cc
 +++ b/chrome/browser/about_flags.cc
-@@ -4308,10 +4308,10 @@ const FeatureEntry kFeatureEntries[] = {
+@@ -4319,10 +4319,10 @@ const FeatureEntry kFeatureEntries[] = {
       flag_descriptions::kWebXrForceRuntimeDescription, kOsDesktop,
       MULTI_VALUE_TYPE(kWebXrForceRuntimeChoices)},
  #endif  // ENABLE_VR
@@ -28,10 +28,10 @@ index 4e330d3370029..f729200d5894b 100644
  #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
      {"system-keyboard-lock", flag_descriptions::kSystemKeyboardLockName,
 diff --git a/chrome/browser/flag_descriptions.cc b/chrome/browser/flag_descriptions.cc
-index f89f2842ffc17..ee8c63477d664 100644
+index e0c2c965173a4..20587786bbafe 100644
 --- a/chrome/browser/flag_descriptions.cc
 +++ b/chrome/browser/flag_descriptions.cc
-@@ -4027,9 +4027,7 @@ const char kUseAngleGL[] = "OpenGL";
+@@ -4058,9 +4058,7 @@ const char kUseAngleGL[] = "OpenGL";
  
  #endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
  
@@ -42,7 +42,7 @@ index f89f2842ffc17..ee8c63477d664 100644
  
  const char kAcceleratedMjpegDecodeName[] =
      "Hardware-accelerated mjpeg decode for captured frame";
-@@ -4037,6 +4035,12 @@ const char kAcceleratedMjpegDecodeDescription[] =
+@@ -4068,6 +4066,12 @@ const char kAcceleratedMjpegDecodeDescription[] =
      "Enable hardware-accelerated mjpeg decode for captured frame where "
      "available.";
  
@@ -56,10 +56,10 @@ index f89f2842ffc17..ee8c63477d664 100644
      "Allow disabling touchpad haptic feedback";
  const char kAllowDisableTouchpadHapticFeedbackDescription[] =
 diff --git a/chrome/browser/flag_descriptions.h b/chrome/browser/flag_descriptions.h
-index bb76767a3cc0e..f5ebab710303d 100644
+index dd878ed3aede7..15ffe74dd498c 100644
 --- a/chrome/browser/flag_descriptions.h
 +++ b/chrome/browser/flag_descriptions.h
-@@ -2301,13 +2301,17 @@ extern const char kUseAngleGL[];
+@@ -2321,13 +2321,17 @@ extern const char kUseAngleGL[];
  
  #endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
  
@@ -81,10 +81,10 @@ index bb76767a3cc0e..f5ebab710303d 100644
  extern const char kAllowDisableTouchpadHapticFeedbackDescription[];
  
 diff --git a/media/base/media_switches.cc b/media/base/media_switches.cc
-index ebd93cf54a210..58abed629c16e 100644
+index 1559ee3204c09..828e3ab48c639 100644
 --- a/media/base/media_switches.cc
 +++ b/media/base/media_switches.cc
-@@ -1014,7 +1014,7 @@ bool IsVideoCaptureAcceleratedJpegDecodingEnabled() {
+@@ -1073,7 +1073,7 @@ bool IsVideoCaptureAcceleratedJpegDecodingEnabled() {
            switches::kUseFakeMjpegDecodeAccelerator)) {
      return true;
    }
