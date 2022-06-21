@@ -1,4 +1,4 @@
-From d9a113a472428b7096b8e4ed838dd0b543f3db41 Mon Sep 17 00:00:00 2001
+From 931ea4320cfe1881d3cb453d11153f6e75a7dccc Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Tue, 1 Mar 2022 19:29:12 -0600
 Subject: [PATCH] clang build script: Support disabling the bundled libxml2
@@ -11,7 +11,7 @@ attempting to build a toolchain without network access.
  1 file changed, 17 insertions(+), 7 deletions(-)
 
 diff --git a/tools/clang/scripts/build.py b/tools/clang/scripts/build.py
-index 40a67c93af113..6efa328fe8320 100755
+index c8410dcfa937f..91bdc5798759d 100755
 --- a/tools/clang/scripts/build.py
 +++ b/tools/clang/scripts/build.py
 @@ -514,6 +514,8 @@ def main():

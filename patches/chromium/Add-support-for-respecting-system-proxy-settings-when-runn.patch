@@ -1,4 +1,4 @@
-From e5992d7f1d592c343fc21452cd7ef5bbf8ead95b Mon Sep 17 00:00:00 2001
+From 88814f8f2776196a9bb8c086d7edfbe9eb5d833c Mon Sep 17 00:00:00 2001
 From: Andre Moreira Magalhaes <andre.magalhaes@endlessos.org>
 Date: Thu, 17 Dec 2020 19:05:10 -0300
 Subject: [PATCH] Add support for respecting system proxy settings when running
@@ -54,10 +54,10 @@ Closes https://github.com/flathub/org.chromium.Chromium/issues/36
  create mode 100644 net/proxy_resolution/proxy_resolver_linux.h
 
 diff --git a/chrome/app/generated_resources.grd b/chrome/app/generated_resources.grd
-index 9ce6ab120cf29..4717ff15bd290 100644
+index fd80e02aa3b19..185ce2eef2ecb 100644
 --- a/chrome/app/generated_resources.grd
 +++ b/chrome/app/generated_resources.grd
-@@ -10982,6 +10982,12 @@ Please help our engineers fix this problem. Tell us what happened right before y
+@@ -10951,6 +10951,12 @@ Please help our engineers fix this problem. Tell us what happened right before y
  
            &lt;p&gt;But you can still configure via the command line.  Please see &lt;code&gt;man <ph name="PRODUCT_BINARY_NAME">$2<ex>google-chrome</ex></ph>&lt;/code&gt; for more information on flags and environment variables.&lt;/p&gt;
          </message>
@@ -98,7 +98,7 @@ index 0269a74140c80..b2de516a7ae9f 100644
        LOG(ERROR) << "Cannot use V8 Proxy resolver in single process mode.";
      } else {
 diff --git a/chrome/browser/ui/webui/about_ui.cc b/chrome/browser/ui/webui/about_ui.cc
-index 5f63072942905..8b03ac522672c 100644
+index 452b1241bbd87..63b0e3c2fd7a5 100644
 --- a/chrome/browser/ui/webui/about_ui.cc
 +++ b/chrome/browser/ui/webui/about_ui.cc
 @@ -89,6 +89,10 @@
@@ -131,10 +131,10 @@ index 5f63072942905..8b03ac522672c 100644
                                  base::ASCIIToUTF16(binary.BaseName().value())));
    AppendFooter(&data);
 diff --git a/net/BUILD.gn b/net/BUILD.gn
-index 5302673ba18bc..63a587a48a199 100644
+index c2905c5fd3234..fe3c9da8a896e 100644
 --- a/net/BUILD.gn
 +++ b/net/BUILD.gn
-@@ -1207,6 +1207,13 @@ component("net") {
+@@ -1201,6 +1201,13 @@ component("net") {
      ]
    }
  
@@ -148,7 +148,7 @@ index 5302673ba18bc..63a587a48a199 100644
    if (is_mac) {
      sources += [
        "base/network_notification_thread_mac.cc",
-@@ -1633,6 +1640,7 @@ source_set("net_deps") {
+@@ -1638,6 +1645,7 @@ source_set("net_deps") {
  
    if (use_gio) {
      public_configs += [ "//build/linux:gio_config" ]

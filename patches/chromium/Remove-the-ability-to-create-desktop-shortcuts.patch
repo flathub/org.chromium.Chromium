@@ -1,4 +1,4 @@
-From 2e9d60a0387a049135bb931cefd1b698a9d2b3a2 Mon Sep 17 00:00:00 2001
+From 67a93f98c3502da9f09bd004c884e41a7a409d0d Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Wed, 11 Nov 2020 16:51:49 -0600
 Subject: [PATCH] Remove the ability to create desktop shortcuts
@@ -9,10 +9,10 @@ Subject: [PATCH] Remove the ability to create desktop shortcuts
  2 files changed, 2 insertions(+), 10 deletions(-)
 
 diff --git a/chrome/browser/ui/views/create_application_shortcut_view.cc b/chrome/browser/ui/views/create_application_shortcut_view.cc
-index 779ef8ae48cf2..d0420c7254963 100644
+index 60e37aaf9b7b7..d937413dc12ec 100644
 --- a/chrome/browser/ui/views/create_application_shortcut_view.cc
 +++ b/chrome/browser/ui/views/create_application_shortcut_view.cc
-@@ -116,10 +116,6 @@ void CreateChromeApplicationShortcutView::InitControls() {
+@@ -112,10 +112,6 @@ void CreateChromeApplicationShortcutView::InitControls() {
    create_shortcuts_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
    create_shortcuts_label->SetMultiLine(true);
  
@@ -23,7 +23,7 @@ index 779ef8ae48cf2..d0420c7254963 100644
    std::unique_ptr<views::Checkbox> menu_check_box;
    std::unique_ptr<views::Checkbox> quick_launch_check_box;
  
-@@ -155,7 +151,6 @@ void CreateChromeApplicationShortcutView::InitControls() {
+@@ -151,7 +147,6 @@ void CreateChromeApplicationShortcutView::InitControls() {
        views::BoxLayout::Orientation::kVertical, gfx::Insets(),
        provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL)));
    AddChildView(std::move(create_shortcuts_label));
@@ -31,7 +31,7 @@ index 779ef8ae48cf2..d0420c7254963 100644
    if (menu_check_box)
      menu_check_box_ = AddChildView(std::move(menu_check_box));
    if (quick_launch_check_box)
-@@ -177,9 +172,8 @@ bool CreateChromeApplicationShortcutView::IsDialogButtonEnabled(
+@@ -173,9 +168,8 @@ bool CreateChromeApplicationShortcutView::IsDialogButtonEnabled(
    if (!shortcut_info_)
      return false;  // Dialog's not ready because app info hasn't been loaded.
  
@@ -43,7 +43,7 @@ index 779ef8ae48cf2..d0420c7254963 100644
           (quick_launch_check_box_ && quick_launch_check_box_->GetChecked());
  }
  
-@@ -198,7 +192,6 @@ void CreateChromeApplicationShortcutView::OnDialogAccepted() {
+@@ -194,7 +188,6 @@ void CreateChromeApplicationShortcutView::OnDialogAccepted() {
      return;
  
    web_app::ShortcutLocations creation_locations;

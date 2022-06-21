@@ -1,4 +1,4 @@
-From 465c5dc6bb9477f043df49f0f2c9fa7eed4d8536 Mon Sep 17 00:00:00 2001
+From 581ef9bfb4eb3561e77b23a7716ed94db2bddd23 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Tue, 17 Mar 2020 13:18:27 -0500
 Subject: [PATCH] flatpak: Add initial sandbox support
@@ -30,10 +30,10 @@ Subject: [PATCH] flatpak: Add initial sandbox support
  create mode 100644 sandbox/linux/services/flatpak_sandbox.h
 
 diff --git a/.gitignore b/.gitignore
-index cc0150c39bf63..9bb0085950243 100644
+index b58c0d6e0a610..f11c36c7ba4ed 100644
 --- a/.gitignore
 +++ b/.gitignore
-@@ -69,6 +69,7 @@ vs-chromium-project.txt
+@@ -74,6 +74,7 @@ vs-chromium-project.txt
  /.clangd
  /.clangd/
  /.clangd-index/
@@ -42,10 +42,10 @@ index cc0150c39bf63..9bb0085950243 100644
  /.externalToolBuilders/
  /.settings/
 diff --git a/base/threading/thread_restrictions.h b/base/threading/thread_restrictions.h
-index 5f1deb141679a..561b89bee2d0d 100644
+index 114677b5163b8..656d137195b02 100644
 --- a/base/threading/thread_restrictions.h
 +++ b/base/threading/thread_restrictions.h
-@@ -315,6 +315,10 @@ class ScopedAllowThreadJoinForWebRtcTransport;
+@@ -321,6 +321,10 @@ class ScopedAllowThreadJoinForWebRtcTransport;
  }  // namespace protocol
  }  // namespace remoting
  
@@ -56,7 +56,7 @@ index 5f1deb141679a..561b89bee2d0d 100644
  namespace service_manager {
  class ServiceProcessLauncher;
  }
-@@ -482,6 +486,7 @@ class BASE_EXPORT ScopedAllowBlocking {
+@@ -488,6 +492,7 @@ class BASE_EXPORT ScopedAllowBlocking {
    friend class remote_cocoa::
        DroppedScreenShotCopierMac;  // https://crbug.com/1148078
    friend class remoting::ScopedBypassIOThreadRestrictions;  // crbug.com/1144161
@@ -64,14 +64,14 @@ index 5f1deb141679a..561b89bee2d0d 100644
    friend class web::WebSubThread;
    friend class ::WebEngineBrowserMainParts;
    friend class weblayer::BrowserContextImpl;
-@@ -587,6 +592,7 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitives {
+@@ -595,6 +600,7 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitives {
    friend class rlz_lib::FinancialPing;
    friend class shell_integration_linux::
        LaunchXdgUtilityScopedAllowBaseSyncPrimitives;
 +  friend class sandbox::FlatpakSandbox;
+   friend class storage::ObfuscatedFileUtil;
    friend class syncer::HttpBridge;
    friend class syncer::GetLocalChangesRequest;
-   friend class webrtc::DesktopConfigurationMonitor;
 diff --git a/chrome/browser/resources/sandbox_internals/sandbox_internals.js b/chrome/browser/resources/sandbox_internals/sandbox_internals.js
 index 564ce08578dd4..6345f2558510d 100644
 --- a/chrome/browser/resources/sandbox_internals/sandbox_internals.js
@@ -301,10 +301,10 @@ index cf713acee5f64..f8d12684c111d 100644
    // ---------------------------------------------------------------------------
    // Requests from the browser...
 diff --git a/content/zygote/zygote_main_linux.cc b/content/zygote/zygote_main_linux.cc
-index c47d2c8aaa363..eaa1db6425977 100644
+index 27259ae9fafcd..17f01b2a24bf9 100644
 --- a/content/zygote/zygote_main_linux.cc
 +++ b/content/zygote/zygote_main_linux.cc
-@@ -34,6 +34,7 @@
+@@ -35,6 +35,7 @@
  #include "content/public/common/zygote/zygote_fork_delegate_linux.h"
  #include "content/zygote/zygote_linux.h"
  #include "sandbox/linux/services/credentials.h"
@@ -312,7 +312,7 @@ index c47d2c8aaa363..eaa1db6425977 100644
  #include "sandbox/linux/services/init_process_reaper.h"
  #include "sandbox/linux/services/libc_interceptor.h"
  #include "sandbox/linux/services/namespace_sandbox.h"
-@@ -149,6 +150,7 @@ static void EnterNamespaceSandbox(sandbox::policy::SandboxLinux* linux_sandbox,
+@@ -150,6 +151,7 @@ static void EnterNamespaceSandbox(sandbox::policy::SandboxLinux* linux_sandbox,
  
  static void EnterLayerOneSandbox(sandbox::policy::SandboxLinux* linux_sandbox,
                                   const bool using_layer1_sandbox,
@@ -320,7 +320,7 @@ index c47d2c8aaa363..eaa1db6425977 100644
                                   base::OnceClosure post_fork_parent_callback) {
    DCHECK(linux_sandbox);
  
-@@ -170,7 +172,8 @@ static void EnterLayerOneSandbox(sandbox::policy::SandboxLinux* linux_sandbox,
+@@ -171,7 +173,8 @@ static void EnterLayerOneSandbox(sandbox::policy::SandboxLinux* linux_sandbox,
    } else if (sandbox::NamespaceSandbox::InNewUserNamespace()) {
      EnterNamespaceSandbox(linux_sandbox, std::move(post_fork_parent_callback));
    } else {
@@ -330,7 +330,7 @@ index c47d2c8aaa363..eaa1db6425977 100644
    }
  }
  
-@@ -194,8 +197,11 @@ bool ZygoteMain(
+@@ -195,8 +198,11 @@ bool ZygoteMain(
        linux_sandbox->setuid_sandbox_client()->IsSuidSandboxChild();
    const bool using_namespace_sandbox =
        sandbox::NamespaceSandbox::InNewUserNamespace();
@@ -343,7 +343,7 @@ index c47d2c8aaa363..eaa1db6425977 100644
  
    if (using_setuid_sandbox) {
      linux_sandbox->setuid_sandbox_client()->CloseDummyFile();
-@@ -222,7 +228,7 @@ bool ZygoteMain(
+@@ -223,7 +229,7 @@ bool ZygoteMain(
  
    // Turn on the first layer of the sandbox if the configuration warrants it.
    EnterLayerOneSandbox(
@@ -352,7 +352,7 @@ index c47d2c8aaa363..eaa1db6425977 100644
        base::BindOnce(CloseFds, linux_sandbox->GetFileDescriptorsToClose()));
  
    const int sandbox_flags = linux_sandbox->GetStatus();
-@@ -234,6 +240,10 @@ bool ZygoteMain(
+@@ -235,6 +241,10 @@ bool ZygoteMain(
        !!(sandbox_flags & sandbox::policy::SandboxLinux::kUserNS);
    CHECK_EQ(using_namespace_sandbox, namespace_sandbox_engaged);
  
@@ -1213,10 +1213,10 @@ index 0000000000000..167bbc85945ad
 +
 +#endif  // SANDBOX_LINUX_SERVICES_FLATPAK_SANDBOX_H_
 diff --git a/sandbox/policy/BUILD.gn b/sandbox/policy/BUILD.gn
-index 8db34a7ca3e71..e8a7bfb095027 100644
+index 3cfc7a365d3f4..d5f5fa3134dc2 100644
 --- a/sandbox/policy/BUILD.gn
 +++ b/sandbox/policy/BUILD.gn
-@@ -91,6 +91,9 @@ component("policy") {
+@@ -97,6 +97,9 @@ component("policy") {
        "//sandbox/linux:suid_sandbox_client",
      ]
    }
