@@ -3,6 +3,11 @@
 # Needed to build GN itself.
 . /usr/lib/sdk/llvm13/enable.sh
 
+# GN will use these variables to configure its own build, but they introduce
+# compat issues w/ Clang and aren't used by Chromium itself anyway, so just
+# unset them here.
+unset CFLAGS CXXFLAGS LDFLAGS
+
 if [[ ! -d third_party/llvm-build/Release+Asserts/bin ]]; then
   python3 tools/clang/scripts/build.py --disable-asserts \
       --skip-checkout --use-system-cmake --use-system-libxml \
