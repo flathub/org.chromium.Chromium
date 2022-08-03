@@ -11,7 +11,9 @@ unset CFLAGS CXXFLAGS LDFLAGS
 if [[ ! -d third_party/llvm-build/Release+Asserts/bin ]]; then
   python3 tools/clang/scripts/build.py --disable-asserts \
       --skip-checkout --use-system-cmake --use-system-libxml \
-      --gcc-toolchain=/usr --bootstrap-llvm=/usr/lib/sdk/llvm13 \
+      --gcc-toolchain=/usr \
+      --host-cc=/usr/lib/sdk/llvm13/bin/clang \
+      --host-cxx=/usr/lib/sdk/llvm13/bin/clang++ \
       --without-android --without-fuchsia
 fi
 

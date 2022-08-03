@@ -1,4 +1,4 @@
-From 581ef9bfb4eb3561e77b23a7716ed94db2bddd23 Mon Sep 17 00:00:00 2001
+From 9caae36f5c99d8bb204eb7f6000de389273e5cd7 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Tue, 17 Mar 2020 13:18:27 -0500
 Subject: [PATCH] flatpak: Add initial sandbox support
@@ -6,7 +6,7 @@ Subject: [PATCH] flatpak: Add initial sandbox support
 ---
  .gitignore                                    |   1 +
  base/threading/thread_restrictions.h          |   6 +
- .../sandbox_internals/sandbox_internals.js    |   4 +
+ .../sandbox_internals/sandbox_internals.ts    |   4 +
  .../ui/webui/sandbox/sandbox_internals_ui.cc  |   6 +-
  .../zygote_host/zygote_host_impl_linux.cc     |  39 +-
  .../zygote_host/zygote_host_impl_linux.h      |   1 +
@@ -42,10 +42,10 @@ index b58c0d6e0a610..f11c36c7ba4ed 100644
  /.externalToolBuilders/
  /.settings/
 diff --git a/base/threading/thread_restrictions.h b/base/threading/thread_restrictions.h
-index 114677b5163b8..656d137195b02 100644
+index 0f46415c50b2d..50bfa31855923 100644
 --- a/base/threading/thread_restrictions.h
 +++ b/base/threading/thread_restrictions.h
-@@ -321,6 +321,10 @@ class ScopedAllowThreadJoinForWebRtcTransport;
+@@ -317,6 +317,10 @@ class ScopedAllowThreadJoinForWebRtcTransport;
  }  // namespace protocol
  }  // namespace remoting
  
@@ -56,7 +56,7 @@ index 114677b5163b8..656d137195b02 100644
  namespace service_manager {
  class ServiceProcessLauncher;
  }
-@@ -488,6 +492,7 @@ class BASE_EXPORT ScopedAllowBlocking {
+@@ -484,6 +488,7 @@ class BASE_EXPORT ScopedAllowBlocking {
    friend class remote_cocoa::
        DroppedScreenShotCopierMac;  // https://crbug.com/1148078
    friend class remoting::ScopedBypassIOThreadRestrictions;  // crbug.com/1144161
@@ -64,7 +64,7 @@ index 114677b5163b8..656d137195b02 100644
    friend class web::WebSubThread;
    friend class ::WebEngineBrowserMainParts;
    friend class weblayer::BrowserContextImpl;
-@@ -595,6 +600,7 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitives {
+@@ -589,6 +594,7 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitives {
    friend class rlz_lib::FinancialPing;
    friend class shell_integration_linux::
        LaunchXdgUtilityScopedAllowBaseSyncPrimitives;
@@ -72,11 +72,11 @@ index 114677b5163b8..656d137195b02 100644
    friend class storage::ObfuscatedFileUtil;
    friend class syncer::HttpBridge;
    friend class syncer::GetLocalChangesRequest;
-diff --git a/chrome/browser/resources/sandbox_internals/sandbox_internals.js b/chrome/browser/resources/sandbox_internals/sandbox_internals.js
-index 564ce08578dd4..6345f2558510d 100644
---- a/chrome/browser/resources/sandbox_internals/sandbox_internals.js
-+++ b/chrome/browser/resources/sandbox_internals/sandbox_internals.js
-@@ -139,6 +139,7 @@ function androidHandler() {
+diff --git a/chrome/browser/resources/sandbox_internals/sandbox_internals.ts b/chrome/browser/resources/sandbox_internals/sandbox_internals.ts
+index f1468494a8301..4ab9ce516c59b 100644
+--- a/chrome/browser/resources/sandbox_internals/sandbox_internals.ts
++++ b/chrome/browser/resources/sandbox_internals/sandbox_internals.ts
+@@ -140,6 +140,7 @@ function addGoodBadRow(name: string, result: boolean): HTMLElement {
  function linuxHandler() {
    const suidSandbox = loadTimeData.getBoolean('suid');
    const nsSandbox = loadTimeData.getBoolean('userNs');
@@ -84,7 +84,7 @@ index 564ce08578dd4..6345f2558510d 100644
  
    let layer1SandboxType = 'None';
    let layer1SandboxCssClass = StatusClass.BAD;
-@@ -148,6 +149,9 @@ function linuxHandler() {
+@@ -149,6 +150,9 @@ function linuxHandler() {
    } else if (nsSandbox) {
      layer1SandboxType = 'Namespace';
      layer1SandboxCssClass = StatusClass.GOOD;
@@ -1213,7 +1213,7 @@ index 0000000000000..167bbc85945ad
 +
 +#endif  // SANDBOX_LINUX_SERVICES_FLATPAK_SANDBOX_H_
 diff --git a/sandbox/policy/BUILD.gn b/sandbox/policy/BUILD.gn
-index 3cfc7a365d3f4..d5f5fa3134dc2 100644
+index 9a9c8714504ed..5b62d7c909bc0 100644
 --- a/sandbox/policy/BUILD.gn
 +++ b/sandbox/policy/BUILD.gn
 @@ -97,6 +97,9 @@ component("policy") {

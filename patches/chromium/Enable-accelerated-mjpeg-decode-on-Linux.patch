@@ -1,4 +1,4 @@
-From dae93092d5f1ab50f0ddf1c1aac39f650c1e4813 Mon Sep 17 00:00:00 2001
+From 84d3c7e449b16e69736a3f34c59a074202219499 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Tue, 19 Jan 2021 15:41:16 -0600
 Subject: [PATCH] Enable accelerated mjpeg decode on Linux
@@ -11,10 +11,10 @@ Subject: [PATCH] Enable accelerated mjpeg decode on Linux
  4 files changed, 17 insertions(+), 9 deletions(-)
 
 diff --git a/chrome/browser/about_flags.cc b/chrome/browser/about_flags.cc
-index bee1d114bf9a0..ca8467155dc03 100644
+index f70e3c7f3924f..7eee8d12b1c21 100644
 --- a/chrome/browser/about_flags.cc
 +++ b/chrome/browser/about_flags.cc
-@@ -4319,10 +4319,10 @@ const FeatureEntry kFeatureEntries[] = {
+@@ -4485,10 +4485,10 @@ const FeatureEntry kFeatureEntries[] = {
       flag_descriptions::kWebXrForceRuntimeDescription, kOsDesktop,
       MULTI_VALUE_TYPE(kWebXrForceRuntimeChoices)},
  #endif  // ENABLE_VR
@@ -28,10 +28,10 @@ index bee1d114bf9a0..ca8467155dc03 100644
  #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
      {"system-keyboard-lock", flag_descriptions::kSystemKeyboardLockName,
 diff --git a/chrome/browser/flag_descriptions.cc b/chrome/browser/flag_descriptions.cc
-index e0c2c965173a4..20587786bbafe 100644
+index 1b6f7d10af491..b74841e4ff37e 100644
 --- a/chrome/browser/flag_descriptions.cc
 +++ b/chrome/browser/flag_descriptions.cc
-@@ -4058,9 +4058,7 @@ const char kUseAngleGL[] = "OpenGL";
+@@ -4168,9 +4168,7 @@ const char kUseAngleGL[] = "OpenGL";
  
  #endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
  
@@ -42,7 +42,7 @@ index e0c2c965173a4..20587786bbafe 100644
  
  const char kAcceleratedMjpegDecodeName[] =
      "Hardware-accelerated mjpeg decode for captured frame";
-@@ -4068,6 +4066,12 @@ const char kAcceleratedMjpegDecodeDescription[] =
+@@ -4178,6 +4176,12 @@ const char kAcceleratedMjpegDecodeDescription[] =
      "Enable hardware-accelerated mjpeg decode for captured frame where "
      "available.";
  
@@ -52,14 +52,14 @@ index e0c2c965173a4..20587786bbafe 100644
 +
 +#if BUILDFLAG(IS_CHROMEOS_ASH)
 +
- const char kAllowDisableTouchpadHapticFeedbackName[] =
-     "Allow disabling touchpad haptic feedback";
- const char kAllowDisableTouchpadHapticFeedbackDescription[] =
+ const char kAdaptiveChargingForTestingName[] =
+     "Show adaptive charging notifications for testing";
+ const char kAdaptiveChargingForTestingDescription[] =
 diff --git a/chrome/browser/flag_descriptions.h b/chrome/browser/flag_descriptions.h
-index dd878ed3aede7..15ffe74dd498c 100644
+index 79f198906587f..cf7511bffaf42 100644
 --- a/chrome/browser/flag_descriptions.h
 +++ b/chrome/browser/flag_descriptions.h
-@@ -2321,13 +2321,17 @@ extern const char kUseAngleGL[];
+@@ -2388,13 +2388,17 @@ extern const char kUseAngleGL[];
  
  #endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
  
@@ -77,14 +77,14 @@ index dd878ed3aede7..15ffe74dd498c 100644
 +
 +#if BUILDFLAG(IS_CHROMEOS_ASH)
 +
- extern const char kAllowDisableTouchpadHapticFeedbackName[];
- extern const char kAllowDisableTouchpadHapticFeedbackDescription[];
+ extern const char kAdaptiveChargingName[];
+ extern const char kAdaptiveChargingDescription[];
  
 diff --git a/media/base/media_switches.cc b/media/base/media_switches.cc
-index 1559ee3204c09..828e3ab48c639 100644
+index 0362b7b7068b6..8a5da84066298 100644
 --- a/media/base/media_switches.cc
 +++ b/media/base/media_switches.cc
-@@ -1073,7 +1073,7 @@ bool IsVideoCaptureAcceleratedJpegDecodingEnabled() {
+@@ -1083,7 +1083,7 @@ bool IsVideoCaptureAcceleratedJpegDecodingEnabled() {
            switches::kUseFakeMjpegDecodeAccelerator)) {
      return true;
    }
