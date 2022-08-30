@@ -172,15 +172,15 @@ modules:
       - ./install.sh
     sources:
       - type: archive
-        url: https://commondatastorage.googleapis.com/chromium-browser-official/chromium-104.0.5112.101.tar.xz
-        sha256: 60f015e1559de4044cdfa3bdc1f8fde535927c8ab15b0959ccc9b6feec832f5b
+        url: https://commondatastorage.googleapis.com/chromium-browser-official/chromium-105.0.5195.52.tar.xz
+        sha256: dc71b2be9c30c2a7a250b3dbfb26f9b0d1aa2df7335b53ed44a203ff69947c42
         x-checker-data:
           type: chromium
           component: chromium
           is-main-source: true
       - type: archive
-        url: https://commondatastorage.googleapis.com/chromium-browser-clang/Linux_x64/clang-llvmorg-15-init-11722-g3f3a235a-2.tgz
-        sha256: 0a5a0fa88e0b907c5c5a9dc0f1ccc66d4d993be1cc232932a5fc1f6b362c1925
+        url: https://commondatastorage.googleapis.com/chromium-browser-clang/Linux_x64/clang-llvmorg-15-init-15652-g89a99ec9-1.tgz
+        sha256: 79e8d47cbc6897b395742d9d0680f85bd4c278107d4da64b01991d3f0e58323a
         dest: third_party/llvm-build/Release+Asserts
         strip-components: 0
         only-arches: [x86_64]
@@ -193,7 +193,7 @@ modules:
         only-arches: [aarch64]
       - type: git
         url: https://github.com/llvm/llvm-project
-        commit: llvmorg-15-init-11722-g3f3a235a
+        commit: llvmorg-15-init-15652-g89a99ec9
         dest: third_party/llvm
         only-arches: [aarch64]
         x-checker-data:
