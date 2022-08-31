@@ -60,7 +60,7 @@ add-extensions:
 
 sdk-extensions:
   - org.freedesktop.Sdk.Extension.llvm13
-  - org.freedesktop.Sdk.Extension.node12
+  - org.freedesktop.Sdk.Extension.node16
   - org.freedesktop.Sdk.Extension.openjdk11
 
 modules:

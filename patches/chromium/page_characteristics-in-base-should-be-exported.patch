@@ -1,4 +1,4 @@
-From 90766e9a5e70b8e3b93a5e011f1ac882bad94fc5 Mon Sep 17 00:00:00 2001
+From 1133eb90b1e31fb20aeecc466fd84511a4057b1d Mon Sep 17 00:00:00 2001
 From: Qi Tiezheng <qitiezheng@360.cn>
 Date: Fri, 29 Jul 2022 14:50:19 +0000
 Subject: [PATCH] page_characteristics in base should be exported
@@ -34,7 +34,7 @@ Cr-Commit-Position: refs/heads/main@{#1029784}
  1 file changed, 2 insertions(+)
 
 diff --git a/base/allocator/partition_allocator/page_allocator_constants.h b/base/allocator/partition_allocator/page_allocator_constants.h
-index 5ed440c3f15d7..004dcfd963039 100644
+index 751c2b3a5f6e8..78248050edf0b 100644
 --- a/base/allocator/partition_allocator/page_allocator_constants.h
 +++ b/base/allocator/partition_allocator/page_allocator_constants.h
 @@ -7,6 +7,7 @@
@@ -46,8 +46,8 @@ index 5ed440c3f15d7..004dcfd963039 100644
  #include "build/build_config.h"
  
 @@ -45,6 +46,7 @@ struct PageCharacteristics {
-   std::atomic<int> size;
-   std::atomic<int> shift;
+   std::atomic<size_t> size;
+   std::atomic<size_t> shift;
  };
 +PA_COMPONENT_EXPORT(PARTITION_ALLOC)
  extern PageCharacteristics page_characteristics;
