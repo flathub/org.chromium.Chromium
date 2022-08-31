@@ -1,4 +1,4 @@
-From a821d3691156827370cbb7dc2683b76b064515f7 Mon Sep 17 00:00:00 2001
+From 073ce02260bdde8a2531599682277121a54569ce Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Thu, 30 Sep 2021 11:27:43 -0500
 Subject: [PATCH] Clang build script: Disable hwasan
@@ -10,18 +10,18 @@ and we don't really need this for the Flatpak anyway.
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/tools/clang/scripts/build.py b/tools/clang/scripts/build.py
-index 9313a10005f03..1d2ba413eabb1 100755
+index fa2005870adda..4b13582846a1d 100755
 --- a/tools/clang/scripts/build.py
 +++ b/tools/clang/scripts/build.py
-@@ -662,7 +662,7 @@ def main():
-       # See crbug.com/1126219: Use native symbolizer instead of DIA
-       '-DLLVM_ENABLE_DIA_SDK=OFF',
+@@ -490,7 +490,7 @@ def compiler_rt_cmake_flags(*, sanitizers, profile):
+       'COMPILER_RT_BUILD_SANITIZERS=' + ('ON' if sanitizers else 'OFF'),
+       'COMPILER_RT_BUILD_XRAY=OFF',
        # See crbug.com/1205046: don't build scudo (and others we don't need).
--      '-DCOMPILER_RT_SANITIZERS_TO_BUILD=asan;dfsan;msan;hwasan;tsan;cfi',
-+      '-DCOMPILER_RT_SANITIZERS_TO_BUILD=asan;dfsan;msan;tsan;cfi',
-       # The default value differs per platform, force it off everywhere.
-       '-DLLVM_ENABLE_PER_TARGET_RUNTIME_DIR=OFF',
-       # Don't use curl.
+-      'COMPILER_RT_SANITIZERS_TO_BUILD=asan;dfsan;msan;hwasan;tsan;cfi',
++      'COMPILER_RT_SANITIZERS_TO_BUILD=asan;dfsan;msan;tsan;cfi',
+       # We explicitly list all targets we want to build, do not autodetect
+       # targets.
+       'COMPILER_RT_DEFAULT_TARGET_ONLY=ON',
 -- 
 2.36.1
 

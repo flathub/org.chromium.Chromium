@@ -1,4 +1,4 @@
-From d5eca80f3eaba616b42a429310fca73f3416ff85 Mon Sep 17 00:00:00 2001
+From f40041b5c758d155e71591a8b519bc8ac030c333 Mon Sep 17 00:00:00 2001
 From: Jan Schmidt <jan@centricular.com>
 Date: Wed, 1 May 2019 17:49:42 +0200
 Subject: [PATCH] ffmpeg: Handle transient decode errors arising from
