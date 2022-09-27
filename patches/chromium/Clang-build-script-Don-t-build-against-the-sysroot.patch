@@ -1,74 +1,26 @@
-From 522d27e942fcad0b461952bca194e2ef18a3cdd1 Mon Sep 17 00:00:00 2001
+From b9bbbd73d71cf599d554e12c565d67e1082bdf6e Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Wed, 31 Aug 2022 10:09:01 -0500
 Subject: [PATCH] Clang build script: Don't build against the sysroot
 
 ---
- tools/clang/scripts/build.py | 85 ++++--------------------------------
- 1 file changed, 8 insertions(+), 77 deletions(-)
+ tools/clang/scripts/build.py | 37 +++++++++---------------------------
+ 1 file changed, 9 insertions(+), 28 deletions(-)
 
 diff --git a/tools/clang/scripts/build.py b/tools/clang/scripts/build.py
-index b009735edeaa7..8ce8566e46f53 100755
+index 73f863c8f07dc..8310a464ae3f4 100755
 --- a/tools/clang/scripts/build.py
 +++ b/tools/clang/scripts/build.py
-@@ -745,56 +745,6 @@ def main():
-         '-DLIBCXX_ENABLE_EXPERIMENTAL_LIBRARY=OFF',
-     ])
+@@ -714,7 +714,7 @@ def main():
+     # TODO: check if this works now.
+     base_cmake_args.append('-DLLVM_ENABLE_LLD=ON')
  
 -  if sys.platform.startswith('linux'):
--    # Download sysroots. This uses basically Chromium's sysroots, but with
--    # minor changes:
--    # - glibc version bumped to 2.18 to make __cxa_thread_atexit_impl
--    #   work (clang can require 2.18; chromium currently doesn't)
--    # - libcrypt.so.1 reversioned so that crypt() is picked up from glibc
--    # The sysroot was built at
--    # https://chromium-review.googlesource.com/c/chromium/src/+/3684954/1
--    # and the hashes here are from sysroots.json in that CL.
--    toolchain_bucket = 'https://commondatastorage.googleapis.com/chrome-linux-sysroot/toolchain/'
--
--    # amd64
--    # hash from https://chromium-review.googlesource.com/c/chromium/src/+/3684954/1/build/linux/sysroot_scripts/sysroots.json#3
--    toolchain_hash = '2028cdaf24259d23adcff95393b8cc4f0eef714b'
--    toolchain_name = 'debian_bullseye_amd64_sysroot'
--    U = toolchain_bucket + toolchain_hash + '/' + toolchain_name + '.tar.xz'
--    sysroot_amd64 = os.path.join(LLVM_BUILD_TOOLS_DIR, toolchain_name)
--    DownloadAndUnpack(U, sysroot_amd64)
--
--    # i386
--    # hash from https://chromium-review.googlesource.com/c/chromium/src/+/3684954/1/build/linux/sysroot_scripts/sysroots.json#23
--    toolchain_hash = 'a033618b5e092c86e96d62d3c43f7363df6cebe7'
--    toolchain_name = 'debian_bullseye_i386_sysroot'
--    U = toolchain_bucket + toolchain_hash + '/' + toolchain_name + '.tar.xz'
--    sysroot_i386 = os.path.join(LLVM_BUILD_TOOLS_DIR, toolchain_name)
--    DownloadAndUnpack(U, sysroot_i386)
--
--    # arm
--    # hash from https://chromium-review.googlesource.com/c/chromium/src/+/3684954/1/build/linux/sysroot_scripts/sysroots.json#8
--    toolchain_hash = '0b9a3c54d2d5f6b1a428369aaa8d7ba7b227f701'
--    toolchain_name = 'debian_bullseye_arm_sysroot'
--    U = toolchain_bucket + toolchain_hash + '/' + toolchain_name + '.tar.xz'
--    sysroot_arm = os.path.join(LLVM_BUILD_TOOLS_DIR, toolchain_name)
--    DownloadAndUnpack(U, sysroot_arm)
--
--    # arm64
--    # hash from https://chromium-review.googlesource.com/c/chromium/src/+/3684954/1/build/linux/sysroot_scripts/sysroots.json#12
--    toolchain_hash = '0e28d9832614729bb5b731161ff96cb4d516f345'
--    toolchain_name = 'debian_bullseye_arm64_sysroot'
--    U = toolchain_bucket + toolchain_hash + '/' + toolchain_name + '.tar.xz'
--    sysroot_arm64 = os.path.join(LLVM_BUILD_TOOLS_DIR, toolchain_name)
--    DownloadAndUnpack(U, sysroot_arm64)
--
--    # Add the sysroot to base_cmake_args.
--    if platform.machine() == 'aarch64':
--      base_cmake_args.append('-DCMAKE_SYSROOT=' + sysroot_arm64)
--    else:
--      # amd64 is the default toolchain.
--      base_cmake_args.append('-DCMAKE_SYSROOT=' + sysroot_amd64)
--
-   if sys.platform == 'win32':
-     base_cmake_args.append('-DLLVM_USE_CRT_RELEASE=MT')
- 
-@@ -1061,33 +1011,14 @@ def main():
++  if sys.platform.startswith('linux') and False:
+     # Download sysroots. This uses basically Chromium's sysroots, but with
+     # minor changes:
+     # - glibc version bumped to 2.18 to make __cxa_thread_atexit_impl
+@@ -1011,33 +1011,14 @@ def main():
    runtimes_triples_args = []
  
    if sys.platform.startswith('linux'):
@@ -111,5 +63,5 @@ index b009735edeaa7..8ce8566e46f53 100755
      runtimes_triples_args.append(
          ('i386-pc-windows-msvc',
 -- 
-2.36.1
+2.37.2
 

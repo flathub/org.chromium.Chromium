@@ -1,4 +1,4 @@
-From 8971f6025eb250e3b528d279573e557991c225dc Mon Sep 17 00:00:00 2001
+From cbcac91af7c077a4a31f52be5ae40523edb2750e Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Tue, 20 Jul 2021 14:18:31 -0500
 Subject: [PATCH] Enable support for libfdk-aac and OpenH264
@@ -73,5 +73,5 @@ index e86c7e0b6f..06b9dee6ba 100755
  
  # Files permitted to report an UNKNOWN license. All files mentioned here should
 -- 
-2.36.1
+2.37.2
 

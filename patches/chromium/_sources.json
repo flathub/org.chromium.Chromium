@@ -17,7 +17,6 @@
       "patches/chromium/Clang-build-script-Disable-hwasan.patch",
       "patches/chromium/clang-build-script-Support-disabling-the-bundled-libxml2.patch",
       "patches/chromium/Clang-build-script-Don-t-build-against-the-sysroot.patch",
-      "patches/chromium/page_characteristics-in-base-should-be-exported.patch",
       "patches/chromium/Always-use-system-libffi-on-Linux.patch"
     ]
   }

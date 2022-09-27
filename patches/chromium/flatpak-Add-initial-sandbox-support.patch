@@ -1,4 +1,4 @@
-From f280ca7aca8f88b0ac6c668fa93e778337d3ba3b Mon Sep 17 00:00:00 2001
+From 26447a0bcc8dad50b3d22f5d2526aef0aaecfab8 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Tue, 17 Mar 2020 13:18:27 -0500
 Subject: [PATCH] flatpak: Add initial sandbox support
@@ -30,7 +30,7 @@ Subject: [PATCH] flatpak: Add initial sandbox support
  create mode 100644 sandbox/linux/services/flatpak_sandbox.h
 
 diff --git a/.gitignore b/.gitignore
-index baf86ec0cde41..cfe67708d7619 100644
+index 651d8ec7d8e98..7398b96ccde8a 100644
 --- a/.gitignore
 +++ b/.gitignore
 @@ -75,6 +75,7 @@ vs-chromium-project.txt
@@ -42,7 +42,7 @@ index baf86ec0cde41..cfe67708d7619 100644
  /.externalToolBuilders/
  /.settings/
 diff --git a/base/threading/thread_restrictions.h b/base/threading/thread_restrictions.h
-index 5455aa07547f7..6d57ef05a40b0 100644
+index b5f91fe46d23b..21600d2871001 100644
 --- a/base/threading/thread_restrictions.h
 +++ b/base/threading/thread_restrictions.h
 @@ -318,6 +318,10 @@ class ScopedAllowThreadJoinForWebRtcTransport;
@@ -73,7 +73,7 @@ index 5455aa07547f7..6d57ef05a40b0 100644
    friend class syncer::HttpBridge;
    friend class syncer::GetLocalChangesRequest;
 diff --git a/chrome/browser/resources/sandbox_internals/sandbox_internals.ts b/chrome/browser/resources/sandbox_internals/sandbox_internals.ts
-index f1468494a8301..4ab9ce516c59b 100644
+index 0c36dc323b7ea..600e7ec6e7e72 100644
 --- a/chrome/browser/resources/sandbox_internals/sandbox_internals.ts
 +++ b/chrome/browser/resources/sandbox_internals/sandbox_internals.ts
 @@ -140,6 +140,7 @@ function addGoodBadRow(name: string, result: boolean): HTMLElement {
@@ -1227,7 +1227,7 @@ index 02088ff8c4642..42069c3ce080c 100644
      sources += [
        "linux/bpf_ime_policy_linux.cc",
 diff --git a/sandbox/policy/linux/sandbox_linux.cc b/sandbox/policy/linux/sandbox_linux.cc
-index 6e744e6a252b7..f62ded6dff707 100644
+index 225d25c800ded..2ac8d3c7e7dd0 100644
 --- a/sandbox/policy/linux/sandbox_linux.cc
 +++ b/sandbox/policy/linux/sandbox_linux.cc
 @@ -33,6 +33,7 @@
@@ -1322,5 +1322,5 @@ index d26daaccff116..608d26b5228b0 100644
  }
  
 -- 
-2.36.1
+2.37.2
 
