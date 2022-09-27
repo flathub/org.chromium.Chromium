@@ -1,4 +1,4 @@
-From 64e63a5dd543f7ff846a2f5b13f2073f08c16ad2 Mon Sep 17 00:00:00 2001
+From dc88d3449a7b079d8822ad86da0afdb11c056797 Mon Sep 17 00:00:00 2001
 From: Mario Sanchez Prada <mario@endlessm.com>
 Date: Tue, 25 Oct 2016 16:57:00 +0000
 Subject: [PATCH] ffmpeg: Don't lie about AAC and H264 decoders when not
@@ -46,7 +46,7 @@ index ac8d570e1a26c..793501e1a8366 100644
  
    if (is_chromeos_ash) {
 diff --git a/media/base/mime_util_internal.cc b/media/base/mime_util_internal.cc
-index 1f9a1af676520..b0f381a8eec78 100644
+index 2d89808c1b0fb..9942dc7bd7ed6 100644
 --- a/media/base/mime_util_internal.cc
 +++ b/media/base/mime_util_internal.cc
 @@ -4,6 +4,8 @@
@@ -186,5 +186,5 @@ index 1f9a1af676520..b0f381a8eec78 100644
    CodecSet video_3gpp_codecs(aac);
    video_3gpp_codecs.emplace(H264);
 -- 
-2.36.1
+2.37.2
 

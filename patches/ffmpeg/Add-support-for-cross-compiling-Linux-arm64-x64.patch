@@ -1,0 +1,66 @@
+From 13991a74b3a40dd681f5e2fb5d839ef8c14c54ae Mon Sep 17 00:00:00 2001
+From: Ryan Gonzalez <rymg19@gmail.com>
+Date: Sun, 4 Sep 2022 18:25:21 -0500
+Subject: [PATCH] Add support for cross-compiling Linux arm64 -> x64
+
+As-is, the build scripts tend to assume they're being run on an x64 host
+system, especially with regard to cross-compiling flags. However,
+actually supporting builds from arm64 to x64 only requires a small
+amount of flag rearranging.
+
+Bug: None
+Change-Id: I2b409fb020c7018f657d642fd79f782fcae30c15
+---
+ chromium/scripts/build_ffmpeg.py | 25 ++++++++++++++++++++-----
+ 1 file changed, 20 insertions(+), 5 deletions(-)
+
+diff --git a/third_party/ffmpeg/chromium/scripts/build_ffmpeg.py b/third_party/ffmpeg/chromium/scripts/build_ffmpeg.py
+index 754ccc8246..36617d7c89 100755
+--- a/third_party/ffmpeg/chromium/scripts/build_ffmpeg.py
++++ b/third_party/ffmpeg/chromium/scripts/build_ffmpeg.py
+@@ -738,9 +738,20 @@ def ConfigureAndBuild(target_arch, target_os, host_os, host_arch, parallel_jobs,
+         configure_flags['Common'].extend([
+             '--arch=x86_64',
+         ])
+-      if target_os != 'android':
+-        configure_flags['Common'].extend(['--enable-lto'])
+-      pass
++      else:
++        configure_flags['Common'].extend([
++          '--enable-lto',
++          '--arch=x86_64',
++          '--target-os=linux',
++        ])
++
++        if host_arch != 'x64':
++          configure_flags['Common'].extend([
++            '--enable-cross-compile',
++            '--cross-prefix=/usr/bin/x86_64-linux-gnu-',
++            '--extra-cflags=--target=x86_64-linux-gnu',
++            '--extra-ldflags=--target=x86_64-linux-gnu',
++          ])
+     elif target_arch == 'ia32':
+       configure_flags['Common'].extend([
+           '--arch=i686',
+@@ -823,12 +834,16 @@ def ConfigureAndBuild(target_arch, target_os, host_os, host_arch, parallel_jobs,
+           ])
+     elif target_arch == 'arm64':
+       if target_os != 'android':
+-        configure_flags['Common'].extend([
++        if host_arch != 'arm64':
++          configure_flags['Common'].extend([
+             '--enable-cross-compile',
+             '--cross-prefix=/usr/bin/aarch64-linux-gnu-',
+-            '--target-os=linux',
+             '--extra-cflags=--target=aarch64-linux-gnu',
+             '--extra-ldflags=--target=aarch64-linux-gnu',
++          ])
++
++        configure_flags['Common'].extend([
++            '--target-os=linux',
+             '--sysroot=' + os.path.join(CHROMIUM_ROOT_DIR,
+                                         'build/linux/debian_bullseye_arm64-sysroot'),
+         ])
+-- 
+2.37.2
+

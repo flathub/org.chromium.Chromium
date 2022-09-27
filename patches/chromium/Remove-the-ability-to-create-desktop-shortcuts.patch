@@ -1,4 +1,4 @@
-From 063fa8ce8fe8a770be987ab2b12e4a708d40c409 Mon Sep 17 00:00:00 2001
+From 2e478480de5fb2385bba342fd38ba9e80fbbe1a0 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Wed, 11 Nov 2020 16:51:49 -0600
 Subject: [PATCH] Remove the ability to create desktop shortcuts
@@ -9,10 +9,10 @@ Subject: [PATCH] Remove the ability to create desktop shortcuts
  2 files changed, 2 insertions(+), 10 deletions(-)
 
 diff --git a/chrome/browser/ui/views/create_application_shortcut_view.cc b/chrome/browser/ui/views/create_application_shortcut_view.cc
-index 60e37aaf9b7b7..d937413dc12ec 100644
+index 8d79cfef92998..475662f91ef33 100644
 --- a/chrome/browser/ui/views/create_application_shortcut_view.cc
 +++ b/chrome/browser/ui/views/create_application_shortcut_view.cc
-@@ -112,10 +112,6 @@ void CreateChromeApplicationShortcutView::InitControls() {
+@@ -115,10 +115,6 @@ void CreateChromeApplicationShortcutView::InitControls() {
    create_shortcuts_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
    create_shortcuts_label->SetMultiLine(true);
  
@@ -21,7 +21,7 @@ index 60e37aaf9b7b7..d937413dc12ec 100644
 -      prefs::kWebAppCreateOnDesktop);
 -
    std::unique_ptr<views::Checkbox> menu_check_box;
-   std::unique_ptr<views::Checkbox> quick_launch_check_box;
+   std::unique_ptr<views::Checkbox> pin_to_taskbar_checkbox;
  
 @@ -151,7 +147,6 @@ void CreateChromeApplicationShortcutView::InitControls() {
        views::BoxLayout::Orientation::kVertical, gfx::Insets(),
@@ -30,7 +30,7 @@ index 60e37aaf9b7b7..d937413dc12ec 100644
 -  desktop_check_box_ = AddChildView(std::move(desktop_check_box));
    if (menu_check_box)
      menu_check_box_ = AddChildView(std::move(menu_check_box));
-   if (quick_launch_check_box)
+   if (pin_to_taskbar_checkbox)
 @@ -173,9 +168,8 @@ bool CreateChromeApplicationShortcutView::IsDialogButtonEnabled(
    if (!shortcut_info_)
      return false;  // Dialog's not ready because app info hasn't been loaded.
@@ -64,5 +64,5 @@ index 1e19c95829274..17202b06ff115 100644
    raw_ptr<views::Checkbox> quick_launch_check_box_ = nullptr;
  
 -- 
-2.36.1
+2.37.2
 

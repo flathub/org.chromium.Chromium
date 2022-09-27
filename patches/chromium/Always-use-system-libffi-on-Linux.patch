@@ -1,4 +1,4 @@
-From 62f27ffc2181fe5c3b126dbb8ba27ba3375c9ad4 Mon Sep 17 00:00:00 2001
+From fbd9b9988ad67c00fbda871bf852ec9272659377 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Wed, 31 Aug 2022 12:07:42 -0500
 Subject: [PATCH] Always use system libffi on Linux
@@ -30,5 +30,5 @@ index fb4fa18bf7c60..a4041727b1c09 100644
 +  packages = [ "libffi" ]
  }
 -- 
-2.36.1
+2.37.2
 

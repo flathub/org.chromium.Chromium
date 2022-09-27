@@ -17,10 +17,10 @@
       "patches/chromium/Clang-build-script-Disable-hwasan.patch",
       "patches/chromium/clang-build-script-Support-disabling-the-bundled-libxml2.patch",
       "patches/chromium/Clang-build-script-Don-t-build-against-the-sysroot.patch",
-      "patches/chromium/page_characteristics-in-base-should-be-exported.patch",
       "patches/chromium/Always-use-system-libffi-on-Linux.patch",
       "patches/ffmpeg/Enable-support-for-libfdk-aac-and-OpenH264.patch",
       "patches/ffmpeg/ffmpeg-Handle-transient-decode-errors-arising-from-libfdk-.patch",
+      "patches/ffmpeg/Add-support-for-cross-compiling-Linux-arm64-x64.patch",
       "patches/ffmpeg/Update-build-configuration.patch"
     ]
   }
