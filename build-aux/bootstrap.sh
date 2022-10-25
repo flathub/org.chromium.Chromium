@@ -8,15 +8,23 @@
 # unset them here.
 unset CFLAGS CXXFLAGS LDFLAGS
 
-if [[ ! -d third_party/llvm-build/Release+Asserts/bin ]]; then
+if [[ -d third_party/llvm-build/Release+Asserts/bin ]]; then
+  # The build scripts check that the stamp file is present, so write it out
+  # here.
+  PYTHONPATH=tools/clang/scripts/ \
+    python3 -c 'import update; print(update.PACKAGE_VERSION)' \
+    > third_party/llvm-build/Release+Asserts/cr_build_revision
+else
   python3 tools/clang/scripts/build.py --disable-asserts \
       --skip-checkout --use-system-cmake --use-system-libxml \
       --gcc-toolchain=/usr \
       --host-cc=/usr/lib/sdk/llvm13/bin/clang \
       --host-cxx=/usr/lib/sdk/llvm13/bin/clang++ \
-      --without-android --without-fuchsia
+      --without-android --without-fuchsia \
+      --with-ml-inliner-model=
 fi
 
+# (TODO: enable use_qt in the future?)
 # DO NOT REUSE THE BELOW API KEY; it is for Flathub only.
 # http://lists.debian.org/debian-legal/2013/11/msg00006.html
 tools/gn/bootstrap/bootstrap.py -v --no-clean --gn-gen-args='
@@ -40,6 +48,8 @@ tools/gn/bootstrap/bootstrap.py -v --no-clean --gn-gen-args='
     enable_hangout_services_extension=true
     disable_fieldtrial_testing_config=true
     use_system_libwayland=false
+    use_system_libffi=true
+    use_qt=false
 '
 mkdir -p out/ReleaseFree
 cp out/Release{,Free}/args.gn

@@ -1,4 +1,4 @@
-From d94f38ea479b59dd2c0e881bf27e90bae96d85f7 Mon Sep 17 00:00:00 2001
+From 021b9dc1dc46f4f02844e4e60cffde9865f293c9 Mon Sep 17 00:00:00 2001
 From: Mario Sanchez Prada <mario@endlessm.com>
 Date: Thu, 28 Jan 2016 13:53:08 +0000
 Subject: [PATCH] memory: Enable the tab discards feature
@@ -12,7 +12,7 @@ is reached.
  2 files changed, 10 insertions(+), 8 deletions(-)
 
 diff --git a/chrome/browser/resource_coordinator/tab_manager.cc b/chrome/browser/resource_coordinator/tab_manager.cc
-index 50a7cbe9976c2..6bd55c0f63459 100644
+index 8915c5c3b1076..2a9eb50ecf4a7 100644
 --- a/chrome/browser/resource_coordinator/tab_manager.cc
 +++ b/chrome/browser/resource_coordinator/tab_manager.cc
 @@ -141,7 +141,9 @@ void TabManager::Start() {
@@ -79,7 +79,7 @@ index 50a7cbe9976c2..6bd55c0f63459 100644
  void TabManager::OnActiveTabChanged(content::WebContents* old_contents,
                                      content::WebContents* new_contents) {
 diff --git a/chrome/browser/resource_coordinator/tab_manager.h b/chrome/browser/resource_coordinator/tab_manager.h
-index c66a05d1a1529..08b6e46f50f3e 100644
+index 098a2063400f0..bff4bb5e34a9b 100644
 --- a/chrome/browser/resource_coordinator/tab_manager.h
 +++ b/chrome/browser/resource_coordinator/tab_manager.h
 @@ -99,7 +99,7 @@ class TabManager : public LifecycleUnitObserver,
@@ -110,5 +110,5 @@ index c66a05d1a1529..08b6e46f50f3e 100644
    // Called by OnTabStripModelChanged()
    void OnActiveTabChanged(content::WebContents* old_contents,
 -- 
-2.37.2
+2.37.3
 
