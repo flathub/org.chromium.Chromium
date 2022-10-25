@@ -40,6 +40,7 @@ tools/gn/bootstrap/bootstrap.py -v --no-clean --gn-gen-args='
     enable_hangout_services_extension=true
     disable_fieldtrial_testing_config=true
     use_system_libwayland=false
+    use_system_libffi=true
 '
 mkdir -p out/ReleaseFree
 cp out/Release{,Free}/args.gn
