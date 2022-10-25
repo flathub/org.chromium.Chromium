@@ -1,4 +1,4 @@
-From 061a613cc1254a809d5f32a4765c63862f9fd89b Mon Sep 17 00:00:00 2001
+From 95ba639e62d2603ead57ad8d420b8ef9d77f3ef6 Mon Sep 17 00:00:00 2001
 From: Andre Moreira Magalhaes <andre.magalhaes@endlessos.org>
 Date: Thu, 17 Dec 2020 19:05:10 -0300
 Subject: [PATCH] Add support for respecting system proxy settings when running
@@ -47,17 +47,17 @@ Closes https://github.com/flathub/org.chromium.Chromium/issues/36
  net/BUILD.gn                                  |   8 ++
  .../configured_proxy_resolution_service.cc    |   6 +-
  .../proxy_config_service_linux.cc             |  10 +-
- net/proxy_resolution/proxy_resolver_linux.cc  | 127 ++++++++++++++++++
- net/proxy_resolution/proxy_resolver_linux.h   |  29 ++++
- 8 files changed, 205 insertions(+), 4 deletions(-)
+ net/proxy_resolution/proxy_resolver_linux.cc  | 123 ++++++++++++++++++
+ net/proxy_resolution/proxy_resolver_linux.h   |  29 +++++
+ 8 files changed, 201 insertions(+), 4 deletions(-)
  create mode 100644 net/proxy_resolution/proxy_resolver_linux.cc
  create mode 100644 net/proxy_resolution/proxy_resolver_linux.h
 
 diff --git a/chrome/app/generated_resources.grd b/chrome/app/generated_resources.grd
-index 584e7361563ea..2796b7b3f1680 100644
+index 40275ee118b15..20b3c516efbe4 100644
 --- a/chrome/app/generated_resources.grd
 +++ b/chrome/app/generated_resources.grd
-@@ -11285,6 +11285,12 @@ Please help our engineers fix this problem. Tell us what happened right before y
+@@ -11350,6 +11350,12 @@ Please help our engineers fix this problem. Tell us what happened right before y
  
            &lt;p&gt;But you can still configure via the command line.  Please see &lt;code&gt;man <ph name="PRODUCT_BINARY_NAME">$2<ex>google-chrome</ex></ph>&lt;/code&gt; for more information on flags and environment variables.&lt;/p&gt;
          </message>
@@ -71,7 +71,7 @@ index 584e7361563ea..2796b7b3f1680 100644
  
        <message name="IDS_IMAGE_FILES" desc="The description of the image file extensions in the select file dialog.">
 diff --git a/chrome/browser/net/system_network_context_manager.cc b/chrome/browser/net/system_network_context_manager.cc
-index 06ba3f6d0932d..235e32494ba5f 100644
+index f24b937366c7d..9843060747ef0 100644
 --- a/chrome/browser/net/system_network_context_manager.cc
 +++ b/chrome/browser/net/system_network_context_manager.cc
 @@ -94,6 +94,7 @@
@@ -82,7 +82,7 @@ index 06ba3f6d0932d..235e32494ba5f 100644
  #include "ui/base/l10n/l10n_util.h"
  #endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
  
-@@ -781,7 +782,13 @@ void SystemNetworkContextManager::ConfigureDefaultNetworkContextParams(
+@@ -737,7 +738,13 @@ void SystemNetworkContextManager::ConfigureDefaultNetworkContextParams(
    // or if it does work, now.
    // Should be possible now that a private isolate is used.
    // http://crbug.com/474654
@@ -98,11 +98,11 @@ index 06ba3f6d0932d..235e32494ba5f 100644
        LOG(ERROR) << "Cannot use V8 Proxy resolver in single process mode.";
      } else {
 diff --git a/chrome/browser/ui/webui/about_ui.cc b/chrome/browser/ui/webui/about_ui.cc
-index d6138afa8145a..d6a8cbaa767a5 100644
+index 0adc377b22e04..b08e5a3ce28a5 100644
 --- a/chrome/browser/ui/webui/about_ui.cc
 +++ b/chrome/browser/ui/webui/about_ui.cc
-@@ -89,6 +89,10 @@
- #include "ui/base/l10n/l10n_util.h"
+@@ -88,6 +88,10 @@
+ #include "chrome/common/webui_url_constants.h"
  #endif  // BUILDFLAG(IS_CHROMEOS)
  
 +#if defined(OS_LINUX)
@@ -112,7 +112,7 @@ index d6138afa8145a..d6a8cbaa767a5 100644
  using content::BrowserThread;
  
  namespace {
-@@ -630,8 +634,16 @@ std::string AboutLinuxProxyConfig() {
+@@ -629,8 +633,16 @@ std::string AboutLinuxProxyConfig() {
    data.append("<style>body { max-width: 70ex; padding: 2ex 5ex; }</style>");
    AppendBody(&data);
    base::FilePath binary = base::CommandLine::ForCurrentProcess()->GetProgram();
@@ -131,11 +131,11 @@ index d6138afa8145a..d6a8cbaa767a5 100644
                                  base::ASCIIToUTF16(binary.BaseName().value())));
    AppendFooter(&data);
 diff --git a/net/BUILD.gn b/net/BUILD.gn
-index 52f286fde3e32..8b3439012d641 100644
+index 265a1af135019..adf387d2192bb 100644
 --- a/net/BUILD.gn
 +++ b/net/BUILD.gn
-@@ -1198,6 +1198,13 @@ component("net") {
-     ]
+@@ -1202,6 +1202,13 @@ component("net") {
+     deps += [ "//third_party/xdg_shared_mime_info" ]
    }
  
 +  if (is_linux) {
@@ -148,7 +148,7 @@ index 52f286fde3e32..8b3439012d641 100644
    if (is_mac) {
      sources += [
        "base/network_notification_thread_mac.cc",
-@@ -1635,6 +1642,7 @@ source_set("net_deps") {
+@@ -1639,6 +1646,7 @@ source_set("net_deps") {
  
    if (use_gio) {
      public_configs += [ "//build/linux:gio_config" ]
@@ -157,7 +157,7 @@ index 52f286fde3e32..8b3439012d641 100644
  
    if (is_android) {
 diff --git a/net/proxy_resolution/configured_proxy_resolution_service.cc b/net/proxy_resolution/configured_proxy_resolution_service.cc
-index 929ddb38ccc70..92899fcfcb9ab 100644
+index 45a5e755fe1d6..4316b7ab17e61 100644
 --- a/net/proxy_resolution/configured_proxy_resolution_service.cc
 +++ b/net/proxy_resolution/configured_proxy_resolution_service.cc
 @@ -50,6 +50,8 @@
@@ -188,7 +188,7 @@ index 929ddb38ccc70..92899fcfcb9ab 100644
  #else
      return false;
 diff --git a/net/proxy_resolution/proxy_config_service_linux.cc b/net/proxy_resolution/proxy_config_service_linux.cc
-index 9b51cf450a6a2..11075f83539ac 100644
+index 38cc85fdb6d3c..95643240b0a27 100644
 --- a/net/proxy_resolution/proxy_config_service_linux.cc
 +++ b/net/proxy_resolution/proxy_config_service_linux.cc
 @@ -35,6 +35,7 @@
@@ -221,10 +221,10 @@ index 9b51cf450a6a2..11075f83539ac 100644
      return ProxyConfigWithAnnotation(
 diff --git a/net/proxy_resolution/proxy_resolver_linux.cc b/net/proxy_resolution/proxy_resolver_linux.cc
 new file mode 100644
-index 0000000000000..d7dfb790154bc
+index 0000000000000..3e3a252f0ef66
 --- /dev/null
 +++ b/net/proxy_resolution/proxy_resolver_linux.cc
-@@ -0,0 +1,127 @@
+@@ -0,0 +1,123 @@
 +// Copyright (c) 2020 Endless OS Foundation LLC
 +// Use of this source code is governed by a BSD-style license that can be
 +// found in the LICENSE file.
@@ -257,7 +257,7 @@ index 0000000000000..d7dfb790154bc
 +
 +  // ProxyResolver methods:
 +  int GetProxyForURL(const GURL& url,
-+                     const NetworkIsolationKey& network_isolation_key,
++                     const NetworkAnonymizationKey& network_anonymization_key,
 +                     ProxyInfo* results,
 +                     CompletionOnceCallback callback,
 +                     std::unique_ptr<Request>* request,
@@ -274,17 +274,15 @@ index 0000000000000..d7dfb790154bc
 +  GCancellable* cancellable_;
 +};
 +
-+ProxyResolverLinuxImplPortal::ProxyResolverLinuxImplPortal()
-+{
++ProxyResolverLinuxImplPortal::ProxyResolverLinuxImplPortal() {
 +  cancellable_ = g_cancellable_new();
 +
-+  cacheInvalidateTimer_.Start(FROM_HERE,
-+      base::Seconds(kCacheExpireSeconds),
-+      this, &ProxyResolverLinuxImplPortal::InvalidateCache);
++  cacheInvalidateTimer_.Start(FROM_HERE, base::Seconds(kCacheExpireSeconds),
++                              this,
++                              &ProxyResolverLinuxImplPortal::InvalidateCache);
 +}
 +
-+ProxyResolverLinuxImplPortal::~ProxyResolverLinuxImplPortal()
-+{
++ProxyResolverLinuxImplPortal::~ProxyResolverLinuxImplPortal() {
 +  g_cancellable_cancel(cancellable_);
 +  g_clear_object(&cancellable_);
 +  cacheInvalidateTimer_.Stop();
@@ -293,7 +291,7 @@ index 0000000000000..d7dfb790154bc
 +// Runs on the worker thread
 +int ProxyResolverLinuxImplPortal::GetProxyForURL(
 +    const GURL& query_url,
-+    const NetworkIsolationKey& /* network_isolation_key */,
++    const NetworkAnonymizationKey& /* network_anonymization_key_key */,
 +    ProxyInfo* results,
 +    CompletionOnceCallback /* callback */,
 +    std::unique_ptr<Request>* /* request */,
@@ -305,15 +303,15 @@ index 0000000000000..d7dfb790154bc
 +    return OK;
 +  }
 +
-+  GProxyResolver *resolver = g_proxy_resolver_get_default();
++  GProxyResolver* resolver = g_proxy_resolver_get_default();
 +  // TODO: support async resolution if 'request' is non-null - the current
 +  // consumer is MultiThreadProxyResolver which always expects a sync
 +  // resolver
 +  // TODO: handle/warn on error
-+  g_auto(GStrv) proxy_list = g_proxy_resolver_lookup(resolver,
-+      query_url.spec().c_str(), cancellable_, NULL);
++  g_auto(GStrv) proxy_list = g_proxy_resolver_lookup(
++      resolver, query_url.spec().c_str(), cancellable_, NULL);
 +  if (proxy_list) {
-+    g_autofree gchar *proxy_list_str = g_strjoinv(";", proxy_list);
++    g_autofree gchar* proxy_list_str = g_strjoinv(";", proxy_list);
 +    if (proxy_list_str && proxy_list_str[0] != '\0') {
 +      cache_[query_url.spec()] = proxy_list_str;
 +      results->UseNamedProxy(proxy_list_str);
@@ -323,18 +321,16 @@ index 0000000000000..d7dfb790154bc
 +  return OK;
 +}
 +
-+void ProxyResolverLinuxImplPortal::InvalidateCache()
-+{
++void ProxyResolverLinuxImplPortal::InvalidateCache() {
 +  cache_.clear();
 +}
 +
-+#endif // defined(USE_GIO)
++#endif  // defined(USE_GIO)
 +
-+} // namespace
++}  // namespace
 +
 +ProxyResolverFactoryLinux::ProxyResolverFactoryLinux()
-+    : ProxyResolverFactory(false /* expects_pac_bytes */) {
-+}
++    : ProxyResolverFactory(false /* expects_pac_bytes */) {}
 +
 +int ProxyResolverFactoryLinux::CreateProxyResolver(
 +    const scoped_refptr<PacFileData>& pac_script,
@@ -388,5 +384,5 @@ index 0000000000000..7ae45eeae1a43
 +
 +#endif  // NET_PROXY_RESOLUTION_PROXY_RESOLVER_LINUX_H_
 -- 
-2.37.2
+2.37.3
 

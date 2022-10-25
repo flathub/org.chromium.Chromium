@@ -1,4 +1,4 @@
-From dc88d3449a7b079d8822ad86da0afdb11c056797 Mon Sep 17 00:00:00 2001
+From 91ca57dd037597dc3c6256cead827a626c0ce56e Mon Sep 17 00:00:00 2001
 From: Mario Sanchez Prada <mario@endlessm.com>
 Date: Tue, 25 Oct 2016 16:57:00 +0000
 Subject: [PATCH] ffmpeg: Don't lie about AAC and H264 decoders when not
@@ -31,10 +31,10 @@ https://phabricator.endlessm.com/T30300
  2 files changed, 83 insertions(+), 7 deletions(-)
 
 diff --git a/media/base/BUILD.gn b/media/base/BUILD.gn
-index ac8d570e1a26c..793501e1a8366 100644
+index fe3054a0ec0a5..4d0679ca15de8 100644
 --- a/media/base/BUILD.gn
 +++ b/media/base/BUILD.gn
-@@ -399,6 +399,10 @@ source_set("base") {
+@@ -401,6 +401,10 @@ source_set("base") {
        "//third_party/ffmpeg",
        "//third_party/ffmpeg:ffmpeg_features",
      ]
@@ -46,7 +46,7 @@ index ac8d570e1a26c..793501e1a8366 100644
  
    if (is_chromeos_ash) {
 diff --git a/media/base/mime_util_internal.cc b/media/base/mime_util_internal.cc
-index 2d89808c1b0fb..9942dc7bd7ed6 100644
+index 87b018fa7a304..f3b609158b18a 100644
 --- a/media/base/mime_util_internal.cc
 +++ b/media/base/mime_util_internal.cc
 @@ -4,6 +4,8 @@
@@ -58,15 +58,15 @@ index 2d89808c1b0fb..9942dc7bd7ed6 100644
  #include "base/command_line.h"
  #include "base/feature_list.h"
  #include "base/logging.h"
-@@ -30,6 +32,8 @@
+@@ -31,6 +33,8 @@
  #include "media/base/android/media_codec_util.h"  // nogncheck
  #endif
  
 +#include <dlfcn.h>
 +
- namespace media {
- namespace internal {
+ namespace media::internal {
  
+ // A map from codec string to MimeUtil::Codec.
 @@ -290,6 +294,54 @@ void MimeUtil::InitializeMimeTypeMaps() {
    AddSupportedMediaFormats();
  }
@@ -186,5 +186,5 @@ index 2d89808c1b0fb..9942dc7bd7ed6 100644
    CodecSet video_3gpp_codecs(aac);
    video_3gpp_codecs.emplace(H264);
 -- 
-2.37.2
+2.37.3
 

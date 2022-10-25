@@ -1,4 +1,4 @@
-From 88e7a3d8f041c798b9a293537c573bb7be7802ac Mon Sep 17 00:00:00 2001
+From cd078051689e04e971563ece8223e64f2b663fd6 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Wed, 11 Nov 2020 17:13:38 -0600
 Subject: [PATCH] Use CHROME_WRAPPER as the executable on restart
@@ -8,7 +8,7 @@ Subject: [PATCH] Use CHROME_WRAPPER as the executable on restart
  1 file changed, 6 insertions(+), 1 deletion(-)
 
 diff --git a/chrome/browser/first_run/upgrade_util_linux.cc b/chrome/browser/first_run/upgrade_util_linux.cc
-index eef5298de4043..1ea121c1db404 100644
+index 229da211ae987..22fbcd9d890f2 100644
 --- a/chrome/browser/first_run/upgrade_util_linux.cc
 +++ b/chrome/browser/first_run/upgrade_util_linux.cc
 @@ -12,6 +12,7 @@
@@ -36,5 +36,5 @@ index eef5298de4043..1ea121c1db404 100644
  
  bool IsUpdatePendingRestart() {
 -- 
-2.37.2
+2.37.3
 
