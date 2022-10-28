@@ -2,6 +2,8 @@ app-id: org.chromium.Chromium
 runtime: org.freedesktop.Platform
 runtime-version: '21.08'
 sdk: org.freedesktop.Sdk
+base: org.chromium.Chromium.BaseApp
+base-version: '21.08'
 command: chromium
 finish-args:
   - --require-version=1.8.2
@@ -64,31 +66,6 @@ sdk-extensions:
   - org.freedesktop.Sdk.Extension.openjdk11
 
 modules:
-  - libsecret.json
-
-  - name: gtk-cups-backend
-    buildsystem: meson
-    make-args: [modules/printbackends/libprintbackend-cups.so]
-    no-make-install: true
-    post-install:
-      - install -Dm 755 modules/printbackends/libprintbackend-cups.so -t /app/lib/gtkmodules/3.0.0/printbackends/
-    sources:
-      - type: git
-        url: https://gitlab.gnome.org/GNOME/gtk.git
-        tag: 3.24.30
-        commit: d4e2d05cd9518ba04d6fbe1cbcec27142788ac95
-      # From https://gitlab.gnome.org/GNOME/gnome-build-meta/-/blob/master/files/gtk3-werror.patch
-      - type: patch
-        path: gtk3-werror.patch
-
-  - name: gtk-settings
-    buildsystem: simple
-    build-commands:
-      - install -Dm 644 gtk-settings.ini /app/etc/xdg/gtk-3.0/settings.ini
-    sources:
-      - type: file
-        path: gtk-settings.ini
-
   # Based on https://github.com/flathub/shared-modules/blob/master/python2.7/python-2.7.json
   - name: python2
     config-opts:
@@ -108,46 +85,6 @@ modules:
       - type: archive
         url: https://www.python.org/ftp/python/2.7.18/Python-2.7.18.tar.xz
         sha256: b62c0e7937551d0cc02b8fd5cb0f544f9405bafc9a54d3808ed4594812edef43
-
-  - name: krb5
-    subdir: src
-    config-opts:
-      - --disable-static
-      - --disable-rpath
-    sources:
-      - type: archive
-        url: https://kerberos.org/dist/krb5/1.18/krb5-1.18.2.tar.gz
-        sha256: c6e4c9ec1a98141c3f5d66ddf1a135549050c9fab4e9a4620ee9b22085873ae0
-
-  - name: krb5-config
-    buildsystem: simple
-    build-commands:
-      - install -Dm 644 krb5.conf -t /app/etc
-    sources:
-      - type: file
-        path: krb5.conf
-
-  - name: flextop
-    buildsystem: meson
-    sources:
-      - type: git
-        url: https://github.com/refi64/flextop
-        tag: v2022.03
-        commit: 83c73e435630b94a6f44abe67cb268eae5b229b4
-        x-checker-data:
-          type: git
-          tag-pattern: ^v([\d.]+)$
-
-  - name: cobalt
-    buildsystem: meson
-    sources:
-      - type: git
-        url: https://github.com/refi64/cobalt
-        tag: v2022.03
-        commit: fccaada69563fe8e1055e825efeab1f399f50665
-        x-checker-data:
-          type: git
-          tag-pattern: ^v([\d.]+)$
 
   - name: readelf-symlink
     only-arches: [aarch64]
