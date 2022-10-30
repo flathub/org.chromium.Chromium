@@ -5,6 +5,7 @@ sdk: org.freedesktop.Sdk
 command: chromium
 finish-args:
   - --require-version=1.8.2
+  - --device=dri
   - --filesystem=home
   - --filesystem=/run/.heim_org.h5l.kcm-socket
   - --device=all
