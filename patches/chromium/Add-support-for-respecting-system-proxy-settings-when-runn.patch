@@ -1,4 +1,4 @@
-From 95ba639e62d2603ead57ad8d420b8ef9d77f3ef6 Mon Sep 17 00:00:00 2001
+From a3523d3d6603404f84e9523ced81b814d5f72039 Mon Sep 17 00:00:00 2001
 From: Andre Moreira Magalhaes <andre.magalhaes@endlessos.org>
 Date: Thu, 17 Dec 2020 19:05:10 -0300
 Subject: [PATCH] Add support for respecting system proxy settings when running
@@ -54,10 +54,10 @@ Closes https://github.com/flathub/org.chromium.Chromium/issues/36
  create mode 100644 net/proxy_resolution/proxy_resolver_linux.h
 
 diff --git a/chrome/app/generated_resources.grd b/chrome/app/generated_resources.grd
-index 40275ee118b15..20b3c516efbe4 100644
+index ce751e8080d65..fd28348f82021 100644
 --- a/chrome/app/generated_resources.grd
 +++ b/chrome/app/generated_resources.grd
-@@ -11350,6 +11350,12 @@ Please help our engineers fix this problem. Tell us what happened right before y
+@@ -11559,6 +11559,12 @@ Please help our engineers fix this problem. Tell us what happened right before y
  
            &lt;p&gt;But you can still configure via the command line.  Please see &lt;code&gt;man <ph name="PRODUCT_BINARY_NAME">$2<ex>google-chrome</ex></ph>&lt;/code&gt; for more information on flags and environment variables.&lt;/p&gt;
          </message>
@@ -131,10 +131,10 @@ index 0adc377b22e04..b08e5a3ce28a5 100644
                                  base::ASCIIToUTF16(binary.BaseName().value())));
    AppendFooter(&data);
 diff --git a/net/BUILD.gn b/net/BUILD.gn
-index 265a1af135019..adf387d2192bb 100644
+index e12e5b6936b8d..eb1c7d3de6388 100644
 --- a/net/BUILD.gn
 +++ b/net/BUILD.gn
-@@ -1202,6 +1202,13 @@ component("net") {
+@@ -1207,6 +1207,13 @@ component("net") {
      deps += [ "//third_party/xdg_shared_mime_info" ]
    }
  
@@ -148,7 +148,7 @@ index 265a1af135019..adf387d2192bb 100644
    if (is_mac) {
      sources += [
        "base/network_notification_thread_mac.cc",
-@@ -1639,6 +1646,7 @@ source_set("net_deps") {
+@@ -1646,6 +1653,7 @@ source_set("net_deps") {
  
    if (use_gio) {
      public_configs += [ "//build/linux:gio_config" ]
@@ -384,5 +384,5 @@ index 0000000000000..7ae45eeae1a43
 +
 +#endif  // NET_PROXY_RESOLUTION_PROXY_RESOLVER_LINUX_H_
 -- 
-2.37.3
+2.38.1
 

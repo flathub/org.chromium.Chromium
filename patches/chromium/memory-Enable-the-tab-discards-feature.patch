@@ -1,4 +1,4 @@
-From 021b9dc1dc46f4f02844e4e60cffde9865f293c9 Mon Sep 17 00:00:00 2001
+From 66fae3ae27194ce4d123079e86c353fa60b0eb11 Mon Sep 17 00:00:00 2001
 From: Mario Sanchez Prada <mario@endlessm.com>
 Date: Thu, 28 Jan 2016 13:53:08 +0000
 Subject: [PATCH] memory: Enable the tab discards feature
@@ -110,5 +110,5 @@ index 098a2063400f0..bff4bb5e34a9b 100644
    // Called by OnTabStripModelChanged()
    void OnActiveTabChanged(content::WebContents* old_contents,
 -- 
-2.37.3
+2.38.1
 

@@ -1,4 +1,4 @@
-From 28dbd5e32924f6c2b22db39f0272c474bab0b2dc Mon Sep 17 00:00:00 2001
+From 9c34ac70a394ead1619f1cdffb4675c6120e6b96 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Sun, 4 Sep 2022 18:25:21 -0500
 Subject: [PATCH] Add support for cross-compiling Linux arm64 -> x64
@@ -62,5 +62,5 @@ index 754ccc8246..36617d7c89 100755
                                          'build/linux/debian_bullseye_arm64-sysroot'),
          ])
 -- 
-2.37.3
+2.38.1
 

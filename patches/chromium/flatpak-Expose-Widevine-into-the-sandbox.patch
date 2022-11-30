@@ -1,4 +1,4 @@
-From 8c1053a0075c11de785a03e44468f25923347a55 Mon Sep 17 00:00:00 2001
+From c5aed9b737f8f336ea40a784c39bad0e02b77ca4 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Tue, 17 Nov 2020 13:00:39 -0600
 Subject: [PATCH] flatpak: Expose Widevine into the sandbox
@@ -10,10 +10,10 @@ Subject: [PATCH] flatpak: Expose Widevine into the sandbox
  3 files changed, 131 insertions(+), 24 deletions(-)
 
 diff --git a/content/browser/zygote_host/zygote_host_impl_linux.cc b/content/browser/zygote_host/zygote_host_impl_linux.cc
-index 684ba2e21bf57..5f0031d900f91 100644
+index 804961c6088ab..09d1976b739d7 100644
 --- a/content/browser/zygote_host/zygote_host_impl_linux.cc
 +++ b/content/browser/zygote_host/zygote_host_impl_linux.cc
-@@ -10,14 +10,20 @@
+@@ -10,7 +10,10 @@
  
  #include "base/allocator/allocator_extension.h"
  #include "base/files/file_enumerator.h"
@@ -24,25 +24,28 @@ index 684ba2e21bf57..5f0031d900f91 100644
  #include "base/posix/unix_domain_socket.h"
  #include "base/process/kill.h"
  #include "base/process/launch.h"
- #include "base/process/memory.h"
+@@ -18,9 +21,12 @@
  #include "base/strings/string_number_conversions.h"
  #include "build/build_config.h"
+ #include "build/chromeos_buildflags.h"
 +#include "chrome/common/chrome_paths.h"  // nogncheck
  #include "content/common/zygote/zygote_commands_linux.h"
+ #include "content/common/zygote/zygote_communication_linux.h"
+ #include "content/common/zygote/zygote_handle_impl_linux.h"
 +#include "content/public/common/cdm_info.h"
 +#include "content/public/common/content_client.h"
+ #include "content/public/common/zygote/zygote_handle.h"
  #include "sandbox/linux/services/credentials.h"
  #include "sandbox/linux/services/flatpak_sandbox.h"
- #include "sandbox/linux/services/namespace_sandbox.h"
-@@ -25,6 +31,7 @@
+@@ -29,6 +35,7 @@
  #include "sandbox/linux/suid/common/sandbox.h"
  #include "sandbox/policy/linux/sandbox_linux.h"
  #include "sandbox/policy/switches.h"
 +#include "third_party/widevine/cdm/buildflags.h"  // nogncheck
  
- namespace content {
- 
-@@ -177,8 +184,51 @@ pid_t ZygoteHostImpl::LaunchZygote(
+ #if BUILDFLAG(IS_CHROMEOS_ASH)
+ #include "content/common/zygote/zygote_communication_linux.h"
+@@ -187,8 +194,51 @@ pid_t ZygoteHostImpl::LaunchZygote(
    if (is_sandboxed_zygote && use_namespace_sandbox_) {
      process = sandbox::NamespaceSandbox::LaunchProcess(*cmd_line, options);
    } else if (is_sandboxed_zygote && use_flatpak_sandbox_) {
@@ -319,5 +322,5 @@ index 167bbc85945ad..de8e7165b4573 100644
                         base::WaitableEvent* event,
                         dbus::Response* response,
 -- 
-2.37.3
+2.38.1
 
