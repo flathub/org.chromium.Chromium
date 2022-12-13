@@ -31,4 +31,5 @@ fi
 # Unlink any profiles from the sync keys to avoid any expected deletions.
 unlink_profiles
 
+export LIBGL_DRIVERS_PATH=/usr/lib/$(uname -m)-linux-gnu/GL/lib/dri
 exec cobalt "$@"
