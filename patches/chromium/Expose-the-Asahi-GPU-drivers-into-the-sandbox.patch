@@ -1,0 +1,40 @@
+From e4d1901b85ced3e15844e1d32d1a813f866da54f Mon Sep 17 00:00:00 2001
+From: Ryan Gonzalez <rymg19@gmail.com>
+Date: Mon, 12 Dec 2022 20:20:25 -0600
+Subject: [PATCH] Expose the Asahi GPU drivers into the sandbox
+
+---
+ content/gpu/gpu_sandbox_hook_linux.cc | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
+
+diff --git a/content/gpu/gpu_sandbox_hook_linux.cc b/content/gpu/gpu_sandbox_hook_linux.cc
+index 896f265ca81db..77788dd52b5aa 100644
+--- a/content/gpu/gpu_sandbox_hook_linux.cc
++++ b/content/gpu/gpu_sandbox_hook_linux.cc
+@@ -366,6 +366,13 @@ void AddStandardGpuPermissions(std::vector<BrokerFilePermission>* permissions) {
+   static const char kNvidiaDeviceBasePath[] = "/dev/nvidia";
+   static const char kNvidiaDeviceModeSetPath[] = "/dev/nvidia-modeset";
+   static const char kNvidiaParamsPath[] = "/proc/driver/nvidia/params";
++  static const char kAsahiDri[] =
++#if defined(DRI_DRIVER_DIR)
++      DRI_DRIVER_DIR "/asahi_dri.so"
++#else
++      "/usr/lib64/dri/asahi_dri.so"
++#endif
++      ;
+   static const char kDevShm[] = "/dev/shm/";
+ 
+   // For shared memory.
+@@ -397,6 +404,9 @@ void AddStandardGpuPermissions(std::vector<BrokerFilePermission>* permissions) {
+       permissions->push_back(BrokerFilePermission::ReadOnly(sw_path));
+     }
+   }
++
++  // For Asahi drivers.
++  permissions->push_back(BrokerFilePermission::ReadOnly(kAsahiDri));
+ }
+ 
+ std::vector<BrokerFilePermission> FilePermissionsForGpu(
+-- 
+2.38.1
+
