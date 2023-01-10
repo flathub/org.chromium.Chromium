@@ -1,4 +1,4 @@
-From dd57c3bf8cb636c97c7a74ecc20b2f2ae96b9a2b Mon Sep 17 00:00:00 2001
+From c38fc523ec2287ccae3a74b94440d6d5558808f4 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Tue, 19 Jan 2021 15:41:16 -0600
 Subject: [PATCH] Enable accelerated mjpeg decode on Linux
@@ -11,10 +11,10 @@ Subject: [PATCH] Enable accelerated mjpeg decode on Linux
  4 files changed, 17 insertions(+), 9 deletions(-)
 
 diff --git a/chrome/browser/about_flags.cc b/chrome/browser/about_flags.cc
-index eec961dafc738..be9b613539bb4 100644
+index 154b6d5c19cff..383d2d7c8900b 100644
 --- a/chrome/browser/about_flags.cc
 +++ b/chrome/browser/about_flags.cc
-@@ -4820,10 +4820,10 @@ const FeatureEntry kFeatureEntries[] = {
+@@ -4840,10 +4840,10 @@ const FeatureEntry kFeatureEntries[] = {
       flag_descriptions::kWebXrForceRuntimeDescription, kOsDesktop,
       MULTI_VALUE_TYPE(kWebXrForceRuntimeChoices)},
  #endif  // ENABLE_VR
@@ -28,10 +28,10 @@ index eec961dafc738..be9b613539bb4 100644
  #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
      {"system-keyboard-lock", flag_descriptions::kSystemKeyboardLockName,
 diff --git a/chrome/browser/flag_descriptions.cc b/chrome/browser/flag_descriptions.cc
-index 2904162779c98..2f71c3e970e26 100644
+index 68299fccdb8d4..84cf35af8826d 100644
 --- a/chrome/browser/flag_descriptions.cc
 +++ b/chrome/browser/flag_descriptions.cc
-@@ -4753,9 +4753,7 @@ const char kBiometricAuthenticationForFillingDescription[] =
+@@ -4615,9 +4615,7 @@ const char kBiometricAuthenticationForFillingDescription[] =
      "Enables biometric authentication before filling form data";
  #endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
  
@@ -42,7 +42,7 @@ index 2904162779c98..2f71c3e970e26 100644
  
  const char kAcceleratedMjpegDecodeName[] =
      "Hardware-accelerated mjpeg decode for captured frame";
-@@ -4763,6 +4761,12 @@ const char kAcceleratedMjpegDecodeDescription[] =
+@@ -4625,6 +4623,12 @@ const char kAcceleratedMjpegDecodeDescription[] =
      "Enable hardware-accelerated mjpeg decode for captured frame where "
      "available.";
  
@@ -56,10 +56,10 @@ index 2904162779c98..2f71c3e970e26 100644
      "Show adaptive charging notifications for testing";
  const char kAdaptiveChargingForTestingDescription[] =
 diff --git a/chrome/browser/flag_descriptions.h b/chrome/browser/flag_descriptions.h
-index 3aad4196b7895..d17539c575364 100644
+index 4d7af3f052643..106bd96b4e661 100644
 --- a/chrome/browser/flag_descriptions.h
 +++ b/chrome/browser/flag_descriptions.h
-@@ -2721,13 +2721,17 @@ extern const char kBiometricAuthenticationForFillingDescription[];
+@@ -2655,13 +2655,17 @@ extern const char kBiometricAuthenticationForFillingDescription[];
  
  #endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
  
@@ -81,10 +81,10 @@ index 3aad4196b7895..d17539c575364 100644
  extern const char kAdaptiveChargingDescription[];
  
 diff --git a/media/base/media_switches.cc b/media/base/media_switches.cc
-index 24b2208d8dd95..a6185c70b960d 100644
+index fc45043177fa2..22d7b848d1236 100644
 --- a/media/base/media_switches.cc
 +++ b/media/base/media_switches.cc
-@@ -1232,7 +1232,7 @@ bool IsVideoCaptureAcceleratedJpegDecodingEnabled() {
+@@ -1262,7 +1262,7 @@ bool IsVideoCaptureAcceleratedJpegDecodingEnabled() {
            switches::kUseFakeMjpegDecodeAccelerator)) {
      return true;
    }

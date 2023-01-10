@@ -1,4 +1,4 @@
-From a3523d3d6603404f84e9523ced81b814d5f72039 Mon Sep 17 00:00:00 2001
+From 80da9cc638460d326fbb48de2a6354b3dbd069e0 Mon Sep 17 00:00:00 2001
 From: Andre Moreira Magalhaes <andre.magalhaes@endlessos.org>
 Date: Thu, 17 Dec 2020 19:05:10 -0300
 Subject: [PATCH] Add support for respecting system proxy settings when running
@@ -54,10 +54,10 @@ Closes https://github.com/flathub/org.chromium.Chromium/issues/36
  create mode 100644 net/proxy_resolution/proxy_resolver_linux.h
 
 diff --git a/chrome/app/generated_resources.grd b/chrome/app/generated_resources.grd
-index ce751e8080d65..fd28348f82021 100644
+index 4665ffec7081a..dde604919ecdc 100644
 --- a/chrome/app/generated_resources.grd
 +++ b/chrome/app/generated_resources.grd
-@@ -11559,6 +11559,12 @@ Please help our engineers fix this problem. Tell us what happened right before y
+@@ -11656,6 +11656,12 @@ Please help our engineers fix this problem. Tell us what happened right before y
  
            &lt;p&gt;But you can still configure via the command line.  Please see &lt;code&gt;man <ph name="PRODUCT_BINARY_NAME">$2<ex>google-chrome</ex></ph>&lt;/code&gt; for more information on flags and environment variables.&lt;/p&gt;
          </message>
@@ -71,10 +71,10 @@ index ce751e8080d65..fd28348f82021 100644
  
        <message name="IDS_IMAGE_FILES" desc="The description of the image file extensions in the select file dialog.">
 diff --git a/chrome/browser/net/system_network_context_manager.cc b/chrome/browser/net/system_network_context_manager.cc
-index f24b937366c7d..9843060747ef0 100644
+index 39f5f4ab69d11..1f55edfb3650f 100644
 --- a/chrome/browser/net/system_network_context_manager.cc
 +++ b/chrome/browser/net/system_network_context_manager.cc
-@@ -94,6 +94,7 @@
+@@ -95,6 +95,7 @@
  #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
  #include "chrome/common/chrome_paths_internal.h"
  #include "chrome/grit/chromium_strings.h"
@@ -82,7 +82,7 @@ index f24b937366c7d..9843060747ef0 100644
  #include "ui/base/l10n/l10n_util.h"
  #endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
  
-@@ -737,7 +738,13 @@ void SystemNetworkContextManager::ConfigureDefaultNetworkContextParams(
+@@ -738,7 +739,13 @@ void SystemNetworkContextManager::ConfigureDefaultNetworkContextParams(
    // or if it does work, now.
    // Should be possible now that a private isolate is used.
    // http://crbug.com/474654
@@ -98,10 +98,10 @@ index f24b937366c7d..9843060747ef0 100644
        LOG(ERROR) << "Cannot use V8 Proxy resolver in single process mode.";
      } else {
 diff --git a/chrome/browser/ui/webui/about_ui.cc b/chrome/browser/ui/webui/about_ui.cc
-index 0adc377b22e04..b08e5a3ce28a5 100644
+index 75d89a1171582..0ea7df66e2e2c 100644
 --- a/chrome/browser/ui/webui/about_ui.cc
 +++ b/chrome/browser/ui/webui/about_ui.cc
-@@ -88,6 +88,10 @@
+@@ -87,6 +87,10 @@
  #include "chrome/common/webui_url_constants.h"
  #endif  // BUILDFLAG(IS_CHROMEOS)
  
@@ -112,7 +112,7 @@ index 0adc377b22e04..b08e5a3ce28a5 100644
  using content::BrowserThread;
  
  namespace {
-@@ -629,8 +633,16 @@ std::string AboutLinuxProxyConfig() {
+@@ -628,8 +632,16 @@ std::string AboutLinuxProxyConfig() {
    data.append("<style>body { max-width: 70ex; padding: 2ex 5ex; }</style>");
    AppendBody(&data);
    base::FilePath binary = base::CommandLine::ForCurrentProcess()->GetProgram();
@@ -131,10 +131,10 @@ index 0adc377b22e04..b08e5a3ce28a5 100644
                                  base::ASCIIToUTF16(binary.BaseName().value())));
    AppendFooter(&data);
 diff --git a/net/BUILD.gn b/net/BUILD.gn
-index e12e5b6936b8d..eb1c7d3de6388 100644
+index 40f143dd9ba73..981cc51127b97 100644
 --- a/net/BUILD.gn
 +++ b/net/BUILD.gn
-@@ -1207,6 +1207,13 @@ component("net") {
+@@ -1209,6 +1209,13 @@ component("net") {
      deps += [ "//third_party/xdg_shared_mime_info" ]
    }
  
@@ -188,7 +188,7 @@ index 45a5e755fe1d6..4316b7ab17e61 100644
  #else
      return false;
 diff --git a/net/proxy_resolution/proxy_config_service_linux.cc b/net/proxy_resolution/proxy_config_service_linux.cc
-index 38cc85fdb6d3c..95643240b0a27 100644
+index 1f3405b80357f..066097ae28973 100644
 --- a/net/proxy_resolution/proxy_config_service_linux.cc
 +++ b/net/proxy_resolution/proxy_config_service_linux.cc
 @@ -35,6 +35,7 @@
@@ -199,7 +199,7 @@ index 38cc85fdb6d3c..95643240b0a27 100644
  
  #if defined(USE_GIO)
  #include <gio/gio.h>
-@@ -1072,11 +1073,18 @@ ProxyConfigServiceLinux::Delegate::GetConfigFromSettings() {
+@@ -1074,11 +1075,18 @@ ProxyConfigServiceLinux::Delegate::GetConfigFromSettings() {
    config.set_from_system(true);
  
    std::string mode;
