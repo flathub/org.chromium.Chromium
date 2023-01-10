@@ -21,7 +21,6 @@
       "patches/chromium/Ignore-useless-warnings-from-the-Asahi-driver.patch",
       "patches/ffmpeg/Enable-support-for-libfdk-aac-and-OpenH264.patch",
       "patches/ffmpeg/ffmpeg-Handle-transient-decode-errors-arising-from-libfdk-.patch",
-      "patches/ffmpeg/Add-support-for-cross-compiling-Linux-arm64-x64.patch",
       "patches/ffmpeg/Update-build-configuration.patch"
     ]
   }
