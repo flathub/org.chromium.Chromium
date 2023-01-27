@@ -1,0 +1,63 @@
+From 5de8e16f834065ccc1cc4f0092ef23cc84943c06 Mon Sep 17 00:00:00 2001
+From: Ryan Gonzalez <rymg19@gmail.com>
+Date: Mon, 23 Jan 2023 22:32:09 +0000
+Subject: [PATCH] Always pre-load ARM GPU libraries on Linux
+
+There isn't any guarantee that this is ChromeOS-only: a Linux setup
+could enable the early GPU sandbox, or the driver file could be loaded
+after the initial GL setup runs. (The latter has been observed to
+happen with the Asahi driver.)
+
+In order for this to work, also update the libglapi dlopen filename:
+the libglapi.so symlink is not guaranteed to be available, and other
+parts of this file assume the .0 suffix anyway.
+
+Bug: None
+Change-Id: I5ccac2c5eecfa187fe0e8957a3d6d0db320f8ca7
+Reviewed-on: https://chromium-review.googlesource.com/c/chromium/src/+/4186737
+Reviewed-by: Matthew Denton <mpdenton@chromium.org>
+Commit-Queue: Matthew Denton <mpdenton@chromium.org>
+Cr-Commit-Position: refs/heads/main@{#1095863}
+---
+ content/gpu/gpu_sandbox_hook_linux.cc | 9 ++++-----
+ 1 file changed, 4 insertions(+), 5 deletions(-)
+
+diff --git a/content/gpu/gpu_sandbox_hook_linux.cc b/content/gpu/gpu_sandbox_hook_linux.cc
+index ce5339501804d..0ae80a2fb3dcd 100644
+--- a/content/gpu/gpu_sandbox_hook_linux.cc
++++ b/content/gpu/gpu_sandbox_hook_linux.cc
+@@ -464,7 +464,7 @@ void LoadArmGpuLibraries() {
+     // Preload mesa related libraries for devices which use mesa
+     // (ie. not mali or tegra):
+     if (!is_mali && !is_tegra &&
+-        (nullptr != dlopen("libglapi.so", dlopen_flag))) {
++        (nullptr != dlopen("libglapi.so.0", dlopen_flag))) {
+       const char* driver_paths[] = {
+ #if defined(DRI_DRIVER_DIR)
+         DRI_DRIVER_DIR "/msm_dri.so",
+@@ -566,19 +566,18 @@ void LoadChromecastV4L2Libraries() {
+ bool LoadLibrariesForGpu(
+     const sandbox::policy::SandboxSeccompBPF::Options& options) {
+   LoadVulkanLibraries();
++  if (IsArchitectureArm()) {
++    LoadArmGpuLibraries();
++  }
+   if (IsChromeOS()) {
+     if (UseV4L2Codec())
+       LoadV4L2Libraries(options);
+-    if (IsArchitectureArm()) {
+-      LoadArmGpuLibraries();
+-    }
+     if (options.use_amd_specific_policies) {
+       if (!LoadAmdGpuLibraries())
+         return false;
+     }
+   } else {
+     if (UseChromecastSandboxAllowlist() && IsArchitectureArm()) {
+-      LoadArmGpuLibraries();
+       if (UseV4L2Codec())
+         LoadChromecastV4L2Libraries();
+     }
+-- 
+2.39.0
+

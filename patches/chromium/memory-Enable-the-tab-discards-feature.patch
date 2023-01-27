@@ -110,5 +110,5 @@ index 098a2063400f0..bff4bb5e34a9b 100644
    // Called by OnTabStripModelChanged()
    void OnActiveTabChanged(content::WebContents* old_contents,
 -- 
-2.38.1
+2.39.0
 
