@@ -64,5 +64,5 @@ index 1f9d5894a6d84..78912423693b7 100644
    raw_ptr<views::Checkbox> quick_launch_check_box_ = nullptr;
  
 -- 
-2.38.1
+2.39.0
 
