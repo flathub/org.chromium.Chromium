@@ -1,4 +1,4 @@
-From 5de8e16f834065ccc1cc4f0092ef23cc84943c06 Mon Sep 17 00:00:00 2001
+From 79f90fef5076d5d243f9b2dbda0e94504daa0fb1 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Mon, 23 Jan 2023 22:32:09 +0000
 Subject: [PATCH] Always pre-load ARM GPU libraries on Linux

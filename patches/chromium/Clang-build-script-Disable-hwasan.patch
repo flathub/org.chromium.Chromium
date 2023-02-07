@@ -1,4 +1,4 @@
-From d1b44e068542488864beefb6f05efb263546bd81 Mon Sep 17 00:00:00 2001
+From f568a2a2e3483d29f05338018246683c4d649ee9 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Thu, 30 Sep 2021 11:27:43 -0500
 Subject: [PATCH] Clang build script: Disable hwasan
@@ -10,7 +10,7 @@ and we don't really need this for the Flatpak anyway.
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/tools/clang/scripts/build.py b/tools/clang/scripts/build.py
-index 32555c2f76acc..bb7763fd1707d 100755
+index 90955aee5de20..2979371f57beb 100755
 --- a/tools/clang/scripts/build.py
 +++ b/tools/clang/scripts/build.py
 @@ -474,7 +474,7 @@ def compiler_rt_cmake_flags(*, sanitizers, profile):
