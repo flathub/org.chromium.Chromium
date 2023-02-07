@@ -1,4 +1,4 @@
-From 5da81d1f1b30d3bf5adc950f63ab599999b15587 Mon Sep 17 00:00:00 2001
+From 338ef2cd22fcf5ceea84bf57b69ce4ad6dd88fcf Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Tue, 20 Jul 2021 14:18:31 -0500
 Subject: [PATCH] Enable support for libfdk-aac and OpenH264
@@ -26,7 +26,7 @@ index 5ea4e37336..5a03235b72 100755
        # Windows component build needs the .def file to export ffmpeg symbols.
        deps += [ ":ffmpeg_generate_def" ]
 diff --git a/third_party/ffmpeg/chromium/scripts/build_ffmpeg.py b/third_party/ffmpeg/chromium/scripts/build_ffmpeg.py
-index 638964ecfb..81797c1427 100755
+index 5ff3a1c418..5a3504b701 100755
 --- a/third_party/ffmpeg/chromium/scripts/build_ffmpeg.py
 +++ b/third_party/ffmpeg/chromium/scripts/build_ffmpeg.py
 @@ -1001,11 +1001,27 @@ def ConfigureAndBuild(target_arch, target_os, host_os, host_arch, parallel_jobs,
@@ -61,10 +61,10 @@ index 638964ecfb..81797c1427 100755
  
    # Google ChromeOS specific configuration.
 diff --git a/third_party/ffmpeg/chromium/scripts/generate_gn.py b/third_party/ffmpeg/chromium/scripts/generate_gn.py
-index e86c7e0b6f..06b9dee6ba 100755
+index a386794983..674408feff 100755
 --- a/third_party/ffmpeg/chromium/scripts/generate_gn.py
 +++ b/third_party/ffmpeg/chromium/scripts/generate_gn.py
-@@ -681,6 +681,7 @@ ALLOWED_LICENSES = [
+@@ -683,6 +683,7 @@ ALLOWED_LICENSES = [
      'LGPL (v2.1 or later) GENERATED FILE',
      'MIT/X11 (BSD like)',
      'Public domain LGPL (v2.1 or later)',
@@ -73,5 +73,5 @@ index e86c7e0b6f..06b9dee6ba 100755
  
  # Files permitted to report an UNKNOWN license. All files mentioned here should
 -- 
-2.38.1
+2.39.0
 

@@ -1,4 +1,4 @@
-From c1fddb44002ffca3b89379c99587805083ed6654 Mon Sep 17 00:00:00 2001
+From ceffa1cd6c2d065f59719417573d28a01df83c68 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Tue, 17 Nov 2020 13:00:39 -0600
 Subject: [PATCH] flatpak: Expose Widevine into the sandbox
@@ -10,7 +10,7 @@ Subject: [PATCH] flatpak: Expose Widevine into the sandbox
  3 files changed, 131 insertions(+), 24 deletions(-)
 
 diff --git a/content/browser/zygote_host/zygote_host_impl_linux.cc b/content/browser/zygote_host/zygote_host_impl_linux.cc
-index 804961c6088ab..09d1976b739d7 100644
+index 321461ef8583a..77cf483fd44e6 100644
 --- a/content/browser/zygote_host/zygote_host_impl_linux.cc
 +++ b/content/browser/zygote_host/zygote_host_impl_linux.cc
 @@ -10,7 +10,10 @@
@@ -43,7 +43,7 @@ index 804961c6088ab..09d1976b739d7 100644
  #include "sandbox/policy/switches.h"
 +#include "third_party/widevine/cdm/buildflags.h"  // nogncheck
  
- #if BUILDFLAG(IS_CHROMEOS_ASH)
+ #if BUILDFLAG(IS_CHROMEOS)
  #include "content/common/zygote/zygote_communication_linux.h"
 @@ -187,8 +194,51 @@ pid_t ZygoteHostImpl::LaunchZygote(
    if (is_sandboxed_zygote && use_namespace_sandbox_) {
