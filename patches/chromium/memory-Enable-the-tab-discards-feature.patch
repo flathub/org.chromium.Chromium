@@ -1,4 +1,4 @@
-From b7972a0804dfefbf0ed9d87e16d283f9746a549f Mon Sep 17 00:00:00 2001
+From c544f229b941faa4887f6b769138aa248ba72311 Mon Sep 17 00:00:00 2001
 From: Mario Sanchez Prada <mario@endlessm.com>
 Date: Thu, 28 Jan 2016 13:53:08 +0000
 Subject: [PATCH] memory: Enable the tab discards feature
@@ -12,7 +12,7 @@ is reached.
  2 files changed, 10 insertions(+), 8 deletions(-)
 
 diff --git a/chrome/browser/resource_coordinator/tab_manager.cc b/chrome/browser/resource_coordinator/tab_manager.cc
-index 480e058d4c1b8..011aed94474c5 100644
+index d538ff0c406ee..4c5d9209b1574 100644
 --- a/chrome/browser/resource_coordinator/tab_manager.cc
 +++ b/chrome/browser/resource_coordinator/tab_manager.cc
 @@ -121,7 +121,9 @@ void TabManager::Start() {
@@ -79,7 +79,7 @@ index 480e058d4c1b8..011aed94474c5 100644
  // TODO(jamescook): This should consider tabs with references to other tabs,
  // such as tabs created with JavaScript window.open(). Potentially consider
 diff --git a/chrome/browser/resource_coordinator/tab_manager.h b/chrome/browser/resource_coordinator/tab_manager.h
-index b546ae05222c2..19ddc36ec671d 100644
+index d2b05935333e6..2b273052c8537 100644
 --- a/chrome/browser/resource_coordinator/tab_manager.h
 +++ b/chrome/browser/resource_coordinator/tab_manager.h
 @@ -90,7 +90,7 @@ class TabManager : public LifecycleUnitObserver,
@@ -110,5 +110,5 @@ index b546ae05222c2..19ddc36ec671d 100644
    // Discards the less important LifecycleUnit that supports discarding under
    // |reason|.
 -- 
-2.39.0
+2.39.1
 

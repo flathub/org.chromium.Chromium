@@ -1,4 +1,4 @@
-From 04ff441973e787213dbc656d4f434c077d7c7b56 Mon Sep 17 00:00:00 2001
+From 6456704d509d8061183b9e1c76833ef8f598d711 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Tue, 17 Mar 2020 13:18:27 -0500
 Subject: [PATCH] flatpak: Add initial sandbox support
@@ -8,32 +8,32 @@ Subject: [PATCH] flatpak: Add initial sandbox support
  base/threading/thread_restrictions.h          |   6 +
  .../sandbox_internals/sandbox_internals.ts    |   4 +
  .../ui/webui/sandbox/sandbox_internals_ui.cc  |   6 +-
+ content/browser/child_process_host_impl.cc    |   8 +-
  .../zygote_host/zygote_host_impl_linux.cc     |  39 +-
  .../zygote_host/zygote_host_impl_linux.h      |   1 +
- content/common/child_process_host_impl.cc     |  10 +-
  content/zygote/zygote_linux.cc                |   6 +-
  content/zygote/zygote_linux.h                 |   2 +
  content/zygote/zygote_main_linux.cc           |  16 +-
  sandbox/linux/BUILD.gn                        |  10 +-
  sandbox/linux/services/flatpak_pid_map.cc     |  57 ++
  sandbox/linux/services/flatpak_pid_map.h      |  46 ++
- sandbox/linux/services/flatpak_sandbox.cc     | 577 ++++++++++++++++++
+ sandbox/linux/services/flatpak_sandbox.cc     | 576 ++++++++++++++++++
  sandbox/linux/services/flatpak_sandbox.h      | 118 ++++
  sandbox/policy/BUILD.gn                       |   3 +
  sandbox/policy/linux/sandbox_linux.cc         |   8 +
  sandbox/policy/linux/sandbox_linux.h          |   8 +
  .../service_process_launcher.cc               |  12 +-
- 19 files changed, 910 insertions(+), 20 deletions(-)
+ 19 files changed, 908 insertions(+), 19 deletions(-)
  create mode 100644 sandbox/linux/services/flatpak_pid_map.cc
  create mode 100644 sandbox/linux/services/flatpak_pid_map.h
  create mode 100644 sandbox/linux/services/flatpak_sandbox.cc
  create mode 100644 sandbox/linux/services/flatpak_sandbox.h
 
 diff --git a/.gitignore b/.gitignore
-index 3424f7d348a38..cf2d5c0c9227a 100644
+index 13ace36474a9d..d3a7b064a49b4 100644
 --- a/.gitignore
 +++ b/.gitignore
-@@ -75,6 +75,7 @@ vs-chromium-project.txt
+@@ -76,6 +76,7 @@ vs-chromium-project.txt
  /.clangd
  /.clangd/
  /.clangd-index/
@@ -42,10 +42,10 @@ index 3424f7d348a38..cf2d5c0c9227a 100644
  /.externalToolBuilders/
  /.settings/
 diff --git a/base/threading/thread_restrictions.h b/base/threading/thread_restrictions.h
-index e251578d1ec49..eadd703ae60a8 100644
+index f5436c117c266..e249cb964e69e 100644
 --- a/base/threading/thread_restrictions.h
 +++ b/base/threading/thread_restrictions.h
-@@ -392,6 +392,10 @@ class ScopedAllowThreadJoinForWebRtcTransport;
+@@ -395,6 +395,10 @@ class ScopedAllowThreadJoinForWebRtcTransport;
  }  // namespace protocol
  }  // namespace remoting
  
@@ -56,7 +56,7 @@ index e251578d1ec49..eadd703ae60a8 100644
  namespace service_manager {
  class ServiceProcessLauncher;
  }
-@@ -612,6 +616,7 @@ class BASE_EXPORT ScopedAllowBlocking {
+@@ -619,6 +623,7 @@ class BASE_EXPORT ScopedAllowBlocking {
    friend class ::WebEngineBrowserMainParts;
    friend class remote_cocoa::SelectFileDialogBridge;
    friend class remoting::ScopedBypassIOThreadRestrictions;  // crbug.com/1144161
@@ -64,7 +64,7 @@ index e251578d1ec49..eadd703ae60a8 100644
    friend class ui::DrmDisplayHostManager;
    friend class ui::ScopedAllowBlockingForGbmSurface;
    friend class ui::SelectFileDialogLinux;
-@@ -739,6 +744,7 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitives {
+@@ -745,6 +750,7 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitives {
    friend class rlz_lib::FinancialPing;
    friend class shell_integration_linux::
        LaunchXdgUtilityScopedAllowBaseSyncPrimitives;
@@ -95,7 +95,7 @@ index 85c0d35f98e6b..98bd35a1a5756 100644
  
    addStatusRow('Layer 1 Sandbox', layer1SandboxType, layer1SandboxCssClass);
 diff --git a/chrome/browser/ui/webui/sandbox/sandbox_internals_ui.cc b/chrome/browser/ui/webui/sandbox/sandbox_internals_ui.cc
-index becf2ad836126..220aa91c5be3d 100644
+index b8e4349854ccd..be91ec437ee09 100644
 --- a/chrome/browser/ui/webui/sandbox/sandbox_internals_ui.cc
 +++ b/chrome/browser/ui/webui/sandbox/sandbox_internals_ui.cc
 @@ -14,6 +14,7 @@
@@ -125,8 +125,34 @@ index becf2ad836126..220aa91c5be3d 100644
                       status & sandbox::policy::SandboxLinux::kPIDNS &&
                       status & sandbox::policy::SandboxLinux::kNetNS;
    // A second-layer sandbox is also required to be adequately sandboxed.
+diff --git a/content/browser/child_process_host_impl.cc b/content/browser/child_process_host_impl.cc
+index 7e7e626c8d195..b50f0b84b65cc 100644
+--- a/content/browser/child_process_host_impl.cc
++++ b/content/browser/child_process_host_impl.cc
+@@ -40,6 +40,7 @@
+ 
+ #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
+ #include "base/linux_util.h"
++#include "sandbox/linux/services/flatpak_sandbox.h"
+ #elif BUILDFLAG(IS_MAC)
+ #include "base/mac/foundation_util.h"
+ #include "content/browser/mac_helpers.h"
+@@ -73,7 +74,12 @@ base::FilePath ChildProcessHost::GetChildPath(int flags) {
+ #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
+   // Use /proc/self/exe rather than our known binary path so updates
+   // can't swap out the binary from underneath us.
+-  if (child_path.empty() && flags & CHILD_ALLOW_SELF) {
++  // This is not needed for Flatpaks, where updates are going to be in
++  // a new hardlink tree.
++  if ((child_path.empty() &&
++       sandbox::FlatpakSandbox::GetInstance()->GetSandboxLevel() ==
++           sandbox::FlatpakSandbox::SandboxLevel::kNone) &&
++      flags & CHILD_ALLOW_SELF) {
+     child_path = base::FilePath(base::kProcSelfExe);
+   }
+ #endif
 diff --git a/content/browser/zygote_host/zygote_host_impl_linux.cc b/content/browser/zygote_host/zygote_host_impl_linux.cc
-index 7bc5e4acf632d..321461ef8583a 100644
+index bc47448c020df..b60dc232c4322 100644
 --- a/content/browser/zygote_host/zygote_host_impl_linux.cc
 +++ b/content/browser/zygote_host/zygote_host_impl_linux.cc
 @@ -13,6 +13,7 @@
@@ -236,35 +262,6 @@ index 720d823d4a695..ad470963693c4 100644
    std::string sandbox_binary_;
  
    // This lock protects the |zygote_pids_| set.
-diff --git a/content/common/child_process_host_impl.cc b/content/common/child_process_host_impl.cc
-index b9875db0314bc..ac64406deb7d7 100644
---- a/content/common/child_process_host_impl.cc
-+++ b/content/common/child_process_host_impl.cc
-@@ -39,8 +39,9 @@
- 
- #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
- #include "base/linux_util.h"
-+#include "sandbox/linux/services/flatpak_sandbox.h"
- #elif BUILDFLAG(IS_MAC)
--#include "base/mac/foundation_util.h"
-+include "base/mac/foundation_util.h"
- #include "content/common/mac_helpers.h"
- #endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
- 
-@@ -72,7 +73,12 @@ base::FilePath ChildProcessHost::GetChildPath(int flags) {
- #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
-   // Use /proc/self/exe rather than our known binary path so updates
-   // can't swap out the binary from underneath us.
--  if (child_path.empty() && flags & CHILD_ALLOW_SELF)
-+  // This is not needed for Flatpaks, where updates are going to be in
-+  // a new hardlink tree.
-+  if ((child_path.empty() &&
-+       sandbox::FlatpakSandbox::GetInstance()->GetSandboxLevel() ==
-+           sandbox::FlatpakSandbox::SandboxLevel::kNone) &&
-+      flags & CHILD_ALLOW_SELF)
-     child_path = base::FilePath(base::kProcSelfExe);
- #endif
- 
 diff --git a/content/zygote/zygote_linux.cc b/content/zygote/zygote_linux.cc
 index b6acf691778fd..8c57ae06bcba8 100644
 --- a/content/zygote/zygote_linux.cc
@@ -303,7 +300,7 @@ index 165b758efc899..961afa73f66f5 100644
    // ---------------------------------------------------------------------------
    // Requests from the browser...
 diff --git a/content/zygote/zygote_main_linux.cc b/content/zygote/zygote_main_linux.cc
-index 4f2383df11e70..3f57994690cf5 100644
+index 2869146d526ea..7c853b071a2ae 100644
 --- a/content/zygote/zygote_main_linux.cc
 +++ b/content/zygote/zygote_main_linux.cc
 @@ -35,6 +35,7 @@
@@ -510,10 +507,10 @@ index 0000000000000..22799eb42f782
 +#endif
 diff --git a/sandbox/linux/services/flatpak_sandbox.cc b/sandbox/linux/services/flatpak_sandbox.cc
 new file mode 100644
-index 0000000000000..7b6d9c2425773
+index 0000000000000..cdc225a18b815
 --- /dev/null
 +++ b/sandbox/linux/services/flatpak_sandbox.cc
-@@ -0,0 +1,577 @@
+@@ -0,0 +1,576 @@
 +// Copyright 2019 The Chromium Authors. All rights reserved.
 +// Use of this source code is governed by a BSD-style license that can be
 +// found in the LICENSE file.
@@ -524,16 +521,15 @@ index 0000000000000..7b6d9c2425773
 +#include <sstream>
 +#include <string>
 +
-+#include "base/bind.h"
 +#include "base/files/file_path.h"
 +#include "base/files/file_util.h"
++#include "base/functional/bind.h"
 +#include "base/logging.h"
 +#include "base/process/process_handle.h"
 +#include "base/strings/string_number_conversions.h"
 +#include "base/strings/string_util.h"
 +#include "base/synchronization/lock.h"
 +#include "base/threading/scoped_blocking_call.h"
-+#include "base/threading/sequenced_task_runner_handle.h"
 +#include "base/threading/thread_restrictions.h"
 +#include "dbus/bus.h"
 +#include "dbus/message.h"
@@ -759,7 +755,7 @@ index 0000000000000..7b6d9c2425773
 +    dbus::Bus::Options options;
 +    options.bus_type = dbus::Bus::SESSION;
 +    options.connection_type = dbus::Bus::PRIVATE;
-+    options.dbus_task_runner = base::SequencedTaskRunnerHandle::Get();
++    options.dbus_task_runner = base::SequencedTaskRunner::GetCurrentDefault();
 +
 +    return base::MakeRefCounted<dbus::Bus>(options);
 +  }());
@@ -1216,7 +1212,7 @@ index 0000000000000..167bbc85945ad
 +
 +#endif  // SANDBOX_LINUX_SERVICES_FLATPAK_SANDBOX_H_
 diff --git a/sandbox/policy/BUILD.gn b/sandbox/policy/BUILD.gn
-index 3616270754417..702b6e9b6b8b4 100644
+index dcc2314d73cd4..6fab8b64a0d75 100644
 --- a/sandbox/policy/BUILD.gn
 +++ b/sandbox/policy/BUILD.gn
 @@ -103,6 +103,9 @@ component("policy") {
@@ -1230,7 +1226,7 @@ index 3616270754417..702b6e9b6b8b4 100644
      sources += [
        "linux/bpf_ime_policy_linux.cc",
 diff --git a/sandbox/policy/linux/sandbox_linux.cc b/sandbox/policy/linux/sandbox_linux.cc
-index 2f7289d565afa..20be690e593d6 100644
+index 224fd111b206d..321cb16fe0a52 100644
 --- a/sandbox/policy/linux/sandbox_linux.cc
 +++ b/sandbox/policy/linux/sandbox_linux.cc
 @@ -36,6 +36,7 @@
@@ -1296,7 +1292,7 @@ index b921ac9727e63..43b6a238583a3 100644
  #if BUILDFLAG(USING_SANITIZER)
    std::unique_ptr<__sanitizer_sandbox_arguments> sanitizer_args_;
 diff --git a/services/service_manager/service_process_launcher.cc b/services/service_manager/service_process_launcher.cc
-index d049814d45941..d5bad86dc894a 100644
+index a34c819f8d053..4cd40f01bdb36 100644
 --- a/services/service_manager/service_process_launcher.cc
 +++ b/services/service_manager/service_process_launcher.cc
 @@ -37,6 +37,7 @@
@@ -1326,5 +1322,5 @@ index d049814d45941..d5bad86dc894a 100644
  }
  
 -- 
-2.39.0
+2.39.1
 
