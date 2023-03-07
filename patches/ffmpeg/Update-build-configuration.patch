@@ -1,6 +1,6 @@
-From b8bf5fcd1098760b295f7cf34feebc4f102665da Mon Sep 17 00:00:00 2001
+From 50f954751577a343559f5540a6ea7c83c19ef992 Mon Sep 17 00:00:00 2001
 From: CroFT <croft@refi64.com>
-Date: Tue, 7 Feb 2023 15:58:35 -0600
+Date: Tue, 7 Mar 2023 16:57:43 -0600
 Subject: [PATCH] Update build configuration
 
 ---
@@ -1641,5 +1641,5 @@ index 0000000000..c1d387efc5
 +// File automatically generated. See crbug.com/495833.
 +#include "vp8dsp.c"
 -- 
-2.39.0
+2.39.1
 
