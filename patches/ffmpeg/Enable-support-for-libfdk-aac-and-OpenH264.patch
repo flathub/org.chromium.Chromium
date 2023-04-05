@@ -1,4 +1,4 @@
-From cc83a96a1a755da59265f9c7d2f823a374192dcd Mon Sep 17 00:00:00 2001
+From 2cd093b9e5d2a5004cc7ae8247e57cccde1f2231 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Tue, 20 Jul 2021 14:18:31 -0500
 Subject: [PATCH] Enable support for libfdk-aac and OpenH264
@@ -10,10 +10,10 @@ Subject: [PATCH] Enable support for libfdk-aac and OpenH264
  3 files changed, 25 insertions(+), 3 deletions(-)
 
 diff --git a/third_party/ffmpeg/BUILD.gn b/third_party/ffmpeg/BUILD.gn
-index 5ea4e37336..5a03235b72 100755
+index 439635ceb9..15710c9652 100644
 --- a/third_party/ffmpeg/BUILD.gn
 +++ b/third_party/ffmpeg/BUILD.gn
-@@ -438,6 +438,11 @@ if (is_component_ffmpeg) {
+@@ -443,6 +443,11 @@ if (is_component_ffmpeg) {
          "-L",
          rebase_path(target_gen_dir, root_build_dir),
        ]
@@ -26,7 +26,7 @@ index 5ea4e37336..5a03235b72 100755
        # Windows component build needs the .def file to export ffmpeg symbols.
        deps += [ ":ffmpeg_generate_def" ]
 diff --git a/third_party/ffmpeg/chromium/scripts/build_ffmpeg.py b/third_party/ffmpeg/chromium/scripts/build_ffmpeg.py
-index 5ff3a1c418..5a3504b701 100755
+index 19d0a0f7bc..13bec7605a 100755
 --- a/third_party/ffmpeg/chromium/scripts/build_ffmpeg.py
 +++ b/third_party/ffmpeg/chromium/scripts/build_ffmpeg.py
 @@ -1001,11 +1001,27 @@ def ConfigureAndBuild(target_arch, target_os, host_os, host_arch, parallel_jobs,
@@ -61,10 +61,10 @@ index 5ff3a1c418..5a3504b701 100755
  
    # Google ChromeOS specific configuration.
 diff --git a/third_party/ffmpeg/chromium/scripts/generate_gn.py b/third_party/ffmpeg/chromium/scripts/generate_gn.py
-index a386794983..674408feff 100755
+index d36b0a22c3..16c5dcee5f 100755
 --- a/third_party/ffmpeg/chromium/scripts/generate_gn.py
 +++ b/third_party/ffmpeg/chromium/scripts/generate_gn.py
-@@ -683,6 +683,7 @@ ALLOWED_LICENSES = [
+@@ -685,6 +685,7 @@ ALLOWED_LICENSES = [
      'LGPL (v2.1 or later) GENERATED FILE',
      'MIT/X11 (BSD like)',
      'Public domain LGPL (v2.1 or later)',
@@ -73,5 +73,5 @@ index a386794983..674408feff 100755
  
  # Files permitted to report an UNKNOWN license. All files mentioned here should
 -- 
-2.39.1
+2.39.2
 
