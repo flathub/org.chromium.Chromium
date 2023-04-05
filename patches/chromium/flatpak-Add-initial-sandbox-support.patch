@@ -1,4 +1,4 @@
-From 6456704d509d8061183b9e1c76833ef8f598d711 Mon Sep 17 00:00:00 2001
+From 05d848140742dad7254073d820ac3125434bbaca Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Tue, 17 Mar 2020 13:18:27 -0500
 Subject: [PATCH] flatpak: Add initial sandbox support
@@ -30,7 +30,7 @@ Subject: [PATCH] flatpak: Add initial sandbox support
  create mode 100644 sandbox/linux/services/flatpak_sandbox.h
 
 diff --git a/.gitignore b/.gitignore
-index 13ace36474a9d..d3a7b064a49b4 100644
+index f39533c8951d8..18cbbe9a0c838 100644
 --- a/.gitignore
 +++ b/.gitignore
 @@ -76,6 +76,7 @@ vs-chromium-project.txt
@@ -42,10 +42,10 @@ index 13ace36474a9d..d3a7b064a49b4 100644
  /.externalToolBuilders/
  /.settings/
 diff --git a/base/threading/thread_restrictions.h b/base/threading/thread_restrictions.h
-index f5436c117c266..e249cb964e69e 100644
+index 957f5fb7aa3a1..bf655cf3926c8 100644
 --- a/base/threading/thread_restrictions.h
 +++ b/base/threading/thread_restrictions.h
-@@ -395,6 +395,10 @@ class ScopedAllowThreadJoinForWebRtcTransport;
+@@ -392,6 +392,10 @@ class ScopedAllowThreadJoinForWebRtcTransport;
  }  // namespace protocol
  }  // namespace remoting
  
@@ -56,7 +56,7 @@ index f5436c117c266..e249cb964e69e 100644
  namespace service_manager {
  class ServiceProcessLauncher;
  }
-@@ -619,6 +623,7 @@ class BASE_EXPORT ScopedAllowBlocking {
+@@ -616,6 +620,7 @@ class BASE_EXPORT [[nodiscard]] ScopedAllowBlocking {
    friend class ::WebEngineBrowserMainParts;
    friend class remote_cocoa::SelectFileDialogBridge;
    friend class remoting::ScopedBypassIOThreadRestrictions;  // crbug.com/1144161
@@ -64,7 +64,7 @@ index f5436c117c266..e249cb964e69e 100644
    friend class ui::DrmDisplayHostManager;
    friend class ui::ScopedAllowBlockingForGbmSurface;
    friend class ui::SelectFileDialogLinux;
-@@ -745,6 +750,7 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitives {
+@@ -742,6 +747,7 @@ class BASE_EXPORT [[nodiscard]] ScopedAllowBaseSyncPrimitives {
    friend class rlz_lib::FinancialPing;
    friend class shell_integration_linux::
        LaunchXdgUtilityScopedAllowBaseSyncPrimitives;
@@ -126,7 +126,7 @@ index b8e4349854ccd..be91ec437ee09 100644
                       status & sandbox::policy::SandboxLinux::kNetNS;
    // A second-layer sandbox is also required to be adequately sandboxed.
 diff --git a/content/browser/child_process_host_impl.cc b/content/browser/child_process_host_impl.cc
-index 7e7e626c8d195..b50f0b84b65cc 100644
+index c18d4ad83bead..dc77b697d657a 100644
 --- a/content/browser/child_process_host_impl.cc
 +++ b/content/browser/child_process_host_impl.cc
 @@ -40,6 +40,7 @@
@@ -1212,10 +1212,10 @@ index 0000000000000..167bbc85945ad
 +
 +#endif  // SANDBOX_LINUX_SERVICES_FLATPAK_SANDBOX_H_
 diff --git a/sandbox/policy/BUILD.gn b/sandbox/policy/BUILD.gn
-index dcc2314d73cd4..6fab8b64a0d75 100644
+index 2701a2493dc2c..2130989446ccd 100644
 --- a/sandbox/policy/BUILD.gn
 +++ b/sandbox/policy/BUILD.gn
-@@ -103,6 +103,9 @@ component("policy") {
+@@ -105,6 +105,9 @@ component("policy") {
        "//sandbox/linux:suid_sandbox_client",
      ]
    }
@@ -1322,5 +1322,5 @@ index a34c819f8d053..4cd40f01bdb36 100644
  }
  
 -- 
-2.39.1
+2.39.2
 
