@@ -18,6 +18,8 @@
       "patches/chromium/clang-build-script-Support-disabling-the-bundled-libxml2.patch",
       "patches/chromium/Clang-build-script-Don-t-build-against-the-sysroot.patch",
       "patches/chromium/Ignore-useless-warnings-from-the-Asahi-driver.patch",
+      "patches/chromium/Preserve-EGL-errors.patch",
+      "patches/chromium/Treat-EGL_BAD_ATTRIBUTE-as-an-unsupported-version.patch",
       "patches/ffmpeg/Enable-support-for-libfdk-aac-and-OpenH264.patch",
       "patches/ffmpeg/ffmpeg-Handle-transient-decode-errors-arising-from-libfdk-.patch",
       "patches/ffmpeg/Update-build-configuration.patch"
