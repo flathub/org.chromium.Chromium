@@ -17,7 +17,9 @@
       "patches/chromium/Clang-build-script-Disable-hwasan.patch",
       "patches/chromium/clang-build-script-Support-disabling-the-bundled-libxml2.patch",
       "patches/chromium/Clang-build-script-Don-t-build-against-the-sysroot.patch",
-      "patches/chromium/Ignore-useless-warnings-from-the-Asahi-driver.patch"
+      "patches/chromium/Ignore-useless-warnings-from-the-Asahi-driver.patch",
+      "patches/chromium/gl-Ensure-EGL-errors-are-preserved.patch",
+      "patches/chromium/gl-Try-older-GLES-versions-on-EGL_BAD_ATTRIBUTE.patch"
     ]
   }
 ]
