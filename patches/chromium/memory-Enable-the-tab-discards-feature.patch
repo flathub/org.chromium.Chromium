@@ -1,4 +1,4 @@
-From c704d5be26ac6972a89d96d26d01ed7df378e632 Mon Sep 17 00:00:00 2001
+From a3142e0f26be6e64f2b33a489c7ce71e54ce8cdc Mon Sep 17 00:00:00 2001
 From: Mario Sanchez Prada <mario@endlessm.com>
 Date: Thu, 28 Jan 2016 13:53:08 +0000
 Subject: [PATCH] memory: Enable the tab discards feature
@@ -12,7 +12,7 @@ is reached.
  2 files changed, 10 insertions(+), 8 deletions(-)
 
 diff --git a/chrome/browser/resource_coordinator/tab_manager.cc b/chrome/browser/resource_coordinator/tab_manager.cc
-index 4e7dbd32c0b70..cd66ecb615553 100644
+index 7bf4213423c75..1fe76674209f2 100644
 --- a/chrome/browser/resource_coordinator/tab_manager.cc
 +++ b/chrome/browser/resource_coordinator/tab_manager.cc
 @@ -120,7 +120,9 @@ void TabManager::Start() {
@@ -60,7 +60,7 @@ index 4e7dbd32c0b70..cd66ecb615553 100644
  
  void TabManager::AddObserver(TabLifecycleObserver* observer) {
    TabLifecycleUnitExternal::AddTabLifecycleObserver(observer);
-@@ -249,7 +251,7 @@ bool TabManager::IsInternalPage(const GURL& url) {
+@@ -242,7 +244,7 @@ bool TabManager::IsInternalPage(const GURL& url) {
    return false;
  }
  
@@ -69,7 +69,7 @@ index 4e7dbd32c0b70..cd66ecb615553 100644
  void TabManager::OnMemoryPressure(
      base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level) {
    // If Chrome is shutting down, do not do anything.
-@@ -293,7 +295,7 @@ void TabManager::UnregisterMemoryPressureListener() {
+@@ -286,7 +288,7 @@ void TabManager::UnregisterMemoryPressureListener() {
    // Destroying the memory pressure listener to unregister from the observer.
    memory_pressure_listener_.reset();
  }
@@ -79,7 +79,7 @@ index 4e7dbd32c0b70..cd66ecb615553 100644
  // TODO(jamescook): This should consider tabs with references to other tabs,
  // such as tabs created with JavaScript window.open(). Potentially consider
 diff --git a/chrome/browser/resource_coordinator/tab_manager.h b/chrome/browser/resource_coordinator/tab_manager.h
-index d2b05935333e6..2b273052c8537 100644
+index 1465b0a6da1f1..72a54fa9ca4b2 100644
 --- a/chrome/browser/resource_coordinator/tab_manager.h
 +++ b/chrome/browser/resource_coordinator/tab_manager.h
 @@ -90,7 +90,7 @@ class TabManager : public LifecycleUnitObserver,
@@ -91,7 +91,7 @@ index d2b05935333e6..2b273052c8537 100644
    // Discards a tab in response to memory pressure.
    void DiscardTabFromMemoryPressure();
  #endif
-@@ -139,7 +139,7 @@ class TabManager : public LifecycleUnitObserver,
+@@ -136,7 +136,7 @@ class TabManager : public LifecycleUnitObserver,
    // can be easily reloaded and hence makes a good choice to discard.
    static bool IsInternalPage(const GURL& url);
  
@@ -100,7 +100,7 @@ index d2b05935333e6..2b273052c8537 100644
    // Called by the memory pressure listener when the memory pressure rises.
    void OnMemoryPressure(
        base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level);
-@@ -154,7 +154,7 @@ class TabManager : public LifecycleUnitObserver,
+@@ -151,7 +151,7 @@ class TabManager : public LifecycleUnitObserver,
    // Unregister to stop listening to memory pressure. Called on shutdown or
    // beginning of tab discards.
    void UnregisterMemoryPressureListener();

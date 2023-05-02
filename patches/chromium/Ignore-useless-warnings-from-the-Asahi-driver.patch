@@ -1,4 +1,4 @@
-From d52859b4bafc3408ab5b94a0cec820c4783e9384 Mon Sep 17 00:00:00 2001
+From c48b89768311906079c8bc4c1e9642cffa0ace08 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Mon, 19 Dec 2022 19:58:16 -0600
 Subject: [PATCH] Ignore useless warnings from the Asahi driver
@@ -8,7 +8,7 @@ Subject: [PATCH] Ignore useless warnings from the Asahi driver
  1 file changed, 6 insertions(+)
 
 diff --git a/ui/gl/gl_display.cc b/ui/gl/gl_display.cc
-index c7ee183dc3e59..52fbfe9c688b7 100644
+index 5e8bde62b333c..cb37ab68c5fb3 100644
 --- a/ui/gl/gl_display.cc
 +++ b/ui/gl/gl_display.cc
 @@ -485,6 +485,12 @@ void EGLAPIENTRY LogEGLDebugMessage(EGLenum error,

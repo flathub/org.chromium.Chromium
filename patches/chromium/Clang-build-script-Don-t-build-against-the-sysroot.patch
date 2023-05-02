@@ -1,4 +1,4 @@
-From b5d7c95c530744279c0bbd7b0b5f176860c26bb5 Mon Sep 17 00:00:00 2001
+From 028d3ad5c4c59f4436fbe7a52f7faa4257800aff Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Wed, 31 Aug 2022 10:09:01 -0500
 Subject: [PATCH] Clang build script: Don't build against the sysroot
@@ -8,10 +8,10 @@ Subject: [PATCH] Clang build script: Don't build against the sysroot
  1 file changed, 13 insertions(+), 35 deletions(-)
 
 diff --git a/tools/clang/scripts/build.py b/tools/clang/scripts/build.py
-index 13c81e00cfc28..863f2a8684f25 100755
+index 5b6b9dd350e58..7364a6e336cb2 100755
 --- a/tools/clang/scripts/build.py
 +++ b/tools/clang/scripts/build.py
-@@ -745,7 +745,7 @@ def main():
+@@ -762,7 +762,7 @@ def main():
        MaybeDownloadHostGcc(args)
        base_cmake_args += [ '-DLLVM_STATIC_LINK_CXX_STDLIB=ON' ]
  
@@ -20,7 +20,7 @@ index 13c81e00cfc28..863f2a8684f25 100755
      # Download sysroots. This uses basically Chromium's sysroots, but with
      # minor changes:
      # - glibc version bumped to 2.18 to make __cxa_thread_atexit_impl
-@@ -1044,40 +1044,18 @@ def main():
+@@ -1068,40 +1068,18 @@ def main():
    runtimes_triples_args = []
  
    if sys.platform.startswith('linux'):
