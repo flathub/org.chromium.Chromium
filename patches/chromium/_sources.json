@@ -19,7 +19,8 @@
       "patches/chromium/Clang-build-script-Don-t-build-against-the-sysroot.patch",
       "patches/chromium/Ignore-useless-warnings-from-the-Asahi-driver.patch",
       "patches/chromium/gl-Ensure-EGL-errors-are-preserved.patch",
-      "patches/chromium/gl-Try-older-GLES-versions-on-EGL_BAD_ATTRIBUTE.patch"
+      "patches/chromium/gl-Try-older-GLES-versions-on-EGL_BAD_ATTRIBUTE.patch",
+      "patches/chromium/M113-Revert-Linux-Ozone-Wayland-Support-fractional-scale-v.patch"
     ]
   }
 ]
