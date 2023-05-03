@@ -1,0 +1,342 @@
+From 788c96e271d57a0706309820c39acfb260c28317 Mon Sep 17 00:00:00 2001
+From: Thomas Anderson <thomasanderson@chromium.org>
+Date: Wed, 3 May 2023 19:11:24 +0000
+Subject: [PATCH] [M113] Revert "[Linux/Ozone/Wayland] Support
+ fractional-scale-v1"
+
+This reverts commit 5e6a7691b5f63df3e30173f073ae8e9f697d5228.
+
+Reason for revert: The CL that introduces fixes in the implementation [1] may take some effort to land, so reverting this to prevent ToT from being broken for too long.
+
+[1] https://chromium-review.googlesource.com/c/chromium/src/+/4370091
+
+Original change's description:
+> [Linux/Ozone/Wayland] Support fractional-scale-v1
+>
+> Change-Id: Ia26f1e5cd5dc2e5996212358c0ff76560bc62817
+> Bug: 1356014
+> Reviewed-on: https://chromium-review.googlesource.com/c/chromium/src/+/4322839
+> Auto-Submit: Thomas Anderson <thomasanderson@chromium.org>
+> Reviewed-by: Alexander Dunaev <adunaev@igalia.com>
+> Commit-Queue: Thomas Anderson <thomasanderson@chromium.org>
+> Cr-Commit-Position: refs/heads/main@{#1120252}
+
+Bug: 1356014
+Change-Id: Ida7c697cfd74bc3f63c9f9430daae265ce58b7de
+Reviewed-on: https://chromium-review.googlesource.com/c/chromium/src/+/4400980
+Reviewed-by: Nick Yamane <nickdiego@igalia.com>
+Commit-Queue: Thomas Anderson <thomasanderson@chromium.org>
+Cr-Commit-Position: refs/heads/main@{#1126885}
+(cherry picked from commit 446e2ae1963fe5d3ea0ffb548aad44e4182cef04)
+---
+ ui/ozone/platform/wayland/BUILD.gn            |  3 --
+ .../platform/wayland/common/wayland_object.cc |  3 --
+ .../platform/wayland/common/wayland_object.h  |  2 -
+ .../wayland/host/fractional_scale_manager.cc  | 48 -------------------
+ .../wayland/host/fractional_scale_manager.h   | 29 -----------
+ .../wayland/host/wayland_connection.cc        |  4 --
+ .../wayland/host/wayland_connection.h         |  6 ---
+ .../platform/wayland/host/wayland_surface.cc  | 33 -------------
+ .../platform/wayland/host/wayland_surface.h   |  8 ----
+ 9 files changed, 136 deletions(-)
+ delete mode 100644 ui/ozone/platform/wayland/host/fractional_scale_manager.cc
+ delete mode 100644 ui/ozone/platform/wayland/host/fractional_scale_manager.h
+
+diff --git a/ui/ozone/platform/wayland/BUILD.gn b/ui/ozone/platform/wayland/BUILD.gn
+index ebe4a339a343e..fc68bb7c80fa4 100644
+--- a/ui/ozone/platform/wayland/BUILD.gn
++++ b/ui/ozone/platform/wayland/BUILD.gn
+@@ -48,8 +48,6 @@ source_set("wayland") {
+     "gpu/wayland_surface_factory.cc",
+     "gpu/wayland_surface_factory.h",
+     "gpu/wayland_surface_gpu.h",
+-    "host/fractional_scale_manager.cc",
+-    "host/fractional_scale_manager.h",
+     "host/gtk_primary_selection_device.cc",
+     "host/gtk_primary_selection_device.h",
+     "host/gtk_primary_selection_device_manager.cc",
+@@ -250,7 +248,6 @@ source_set("wayland") {
+     "//third_party/wayland-protocols:content_type_protocol",
+     "//third_party/wayland-protocols:cursor_shapes_protocol",
+     "//third_party/wayland-protocols:extended_drag",
+-    "//third_party/wayland-protocols:fractional_scale_protocol",
+     "//third_party/wayland-protocols:gtk_primary_selection_protocol",
+     "//third_party/wayland-protocols:gtk_shell_protocol",
+     "//third_party/wayland-protocols:idle_inhibit_protocol",
+diff --git a/ui/ozone/platform/wayland/common/wayland_object.cc b/ui/ozone/platform/wayland/common/wayland_object.cc
+index a1089b0fec14c..9a790e189584b 100644
+--- a/ui/ozone/platform/wayland/common/wayland_object.cc
++++ b/ui/ozone/platform/wayland/common/wayland_object.cc
+@@ -10,7 +10,6 @@
+ #include <content-type-v1-client-protocol.h>
+ #include <cursor-shapes-unstable-v1-client-protocol.h>
+ #include <extended-drag-unstable-v1-client-protocol.h>
+-#include <fractional-scale-v1-client-protocol.h>
+ #include <gtk-primary-selection-client-protocol.h>
+ #include <gtk-shell-client-protocol.h>
+ #include <idle-client-protocol.h>
+@@ -226,8 +225,6 @@ IMPLEMENT_WAYLAND_OBJECT_TRAITS(wp_viewport)
+ IMPLEMENT_WAYLAND_OBJECT_TRAITS(wp_viewporter)
+ IMPLEMENT_WAYLAND_OBJECT_TRAITS(wp_content_type_v1)
+ IMPLEMENT_WAYLAND_OBJECT_TRAITS(wp_content_type_manager_v1)
+-IMPLEMENT_WAYLAND_OBJECT_TRAITS(wp_fractional_scale_manager_v1)
+-IMPLEMENT_WAYLAND_OBJECT_TRAITS(wp_fractional_scale_v1)
+ IMPLEMENT_WAYLAND_OBJECT_TRAITS(xdg_activation_v1)
+ IMPLEMENT_WAYLAND_OBJECT_TRAITS(xdg_activation_token_v1)
+ IMPLEMENT_WAYLAND_OBJECT_TRAITS(xdg_popup)
+diff --git a/ui/ozone/platform/wayland/common/wayland_object.h b/ui/ozone/platform/wayland/common/wayland_object.h
+index af491c78018ed..6f8971cbbc9d5 100644
+--- a/ui/ozone/platform/wayland/common/wayland_object.h
++++ b/ui/ozone/platform/wayland/common/wayland_object.h
+@@ -145,8 +145,6 @@ DECLARE_WAYLAND_OBJECT_TRAITS(wp_viewport)
+ DECLARE_WAYLAND_OBJECT_TRAITS(wp_viewporter)
+ DECLARE_WAYLAND_OBJECT_TRAITS(wp_content_type_manager_v1)
+ DECLARE_WAYLAND_OBJECT_TRAITS(wp_content_type_v1)
+-DECLARE_WAYLAND_OBJECT_TRAITS(wp_fractional_scale_manager_v1)
+-DECLARE_WAYLAND_OBJECT_TRAITS(wp_fractional_scale_v1)
+ DECLARE_WAYLAND_OBJECT_TRAITS(xdg_activation_v1)
+ DECLARE_WAYLAND_OBJECT_TRAITS(xdg_activation_token_v1)
+ DECLARE_WAYLAND_OBJECT_TRAITS(xdg_popup)
+diff --git a/ui/ozone/platform/wayland/host/fractional_scale_manager.cc b/ui/ozone/platform/wayland/host/fractional_scale_manager.cc
+deleted file mode 100644
+index 0a5ab25f19301..0000000000000
+--- a/ui/ozone/platform/wayland/host/fractional_scale_manager.cc
++++ /dev/null
+@@ -1,48 +0,0 @@
+-// Copyright 2023 The Chromium Authors
+-// Use of this source code is governed by a BSD-style license that can be
+-// found in the LICENSE file.
+-
+-#include "ui/ozone/platform/wayland/host/fractional_scale_manager.h"
+-
+-#include <fractional-scale-v1-client-protocol.h>
+-
+-#include "base/check_op.h"
+-#include "base/logging.h"
+-#include "ui/ozone/platform/wayland/common/wayland_object.h"
+-#include "ui/ozone/platform/wayland/host/wayland_connection.h"
+-
+-namespace ui {
+-
+-namespace {
+-
+-constexpr uint32_t kMaxVersion = 1;
+-
+-}  // namespace
+-
+-// static
+-void FractionalScaleManager::Instantiate(WaylandConnection* connection,
+-                                         wl_registry* registry,
+-                                         uint32_t name,
+-                                         const std::string& interface,
+-                                         uint32_t version) {
+-  CHECK_EQ(interface, kInterfaceName) << "Expected \"" << kInterfaceName
+-                                      << "\" but got \"" << interface << "\"";
+-
+-  if (connection->fractional_scale_manager_v1_) {
+-    return;
+-  }
+-
+-  auto instance = wl::Bind<::wp_fractional_scale_manager_v1>(
+-      registry, name, std::min(version, kMaxVersion));
+-  if (!instance) {
+-    LOG(ERROR) << "Failed to bind " << kInterfaceName;
+-    return;
+-  }
+-  connection->fractional_scale_manager_v1_ = std::move(instance);
+-
+-  // fractional-scale-v1 requires clients to report a scale of 1 for all
+-  // surfaces.
+-  connection->set_surface_submission_in_pixel_coordinates(true);
+-}
+-
+-}  // namespace ui
+diff --git a/ui/ozone/platform/wayland/host/fractional_scale_manager.h b/ui/ozone/platform/wayland/host/fractional_scale_manager.h
+deleted file mode 100644
+index eae19681e49a0..0000000000000
+--- a/ui/ozone/platform/wayland/host/fractional_scale_manager.h
++++ /dev/null
+@@ -1,29 +0,0 @@
+-// Copyright 2023 The Chromium Authors
+-// Use of this source code is governed by a BSD-style license that can be
+-// found in the LICENSE file.
+-
+-#ifndef UI_OZONE_PLATFORM_WAYLAND_HOST_FRACTIONAL_SCALE_MANAGER_H_
+-#define UI_OZONE_PLATFORM_WAYLAND_HOST_FRACTIONAL_SCALE_MANAGER_H_
+-
+-#include "ui/ozone/platform/wayland/common/wayland_object.h"
+-
+-namespace ui {
+-
+-// Sets up the global wp_fractional_scale_manager_v1 instance.
+-class FractionalScaleManager
+-    : public wl::GlobalObjectRegistrar<FractionalScaleManager> {
+- public:
+-  static constexpr char kInterfaceName[] = "wp_fractional_scale_manager_v1";
+-
+-  static void Instantiate(WaylandConnection* connection,
+-                          wl_registry* registry,
+-                          uint32_t name,
+-                          const std::string& interface,
+-                          uint32_t version);
+-
+-  FractionalScaleManager() = delete;
+-};
+-
+-}  // namespace ui
+-
+-#endif  // UI_OZONE_PLATFORM_WAYLAND_HOST_FRACTIONAL_SCALE_MANAGER_H_
+diff --git a/ui/ozone/platform/wayland/host/wayland_connection.cc b/ui/ozone/platform/wayland/host/wayland_connection.cc
+index e3641cad22952..f04dbf0164ba0 100644
+--- a/ui/ozone/platform/wayland/host/wayland_connection.cc
++++ b/ui/ozone/platform/wayland/host/wayland_connection.cc
+@@ -27,8 +27,6 @@
+ #include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"
+ #include "ui/gfx/geometry/point.h"
+ #include "ui/ozone/common/features.h"
+-#include "ui/ozone/platform/wayland/common/wayland_object.h"
+-#include "ui/ozone/platform/wayland/host/fractional_scale_manager.h"
+ #include "ui/ozone/platform/wayland/host/gtk_primary_selection_device_manager.h"
+ #include "ui/ozone/platform/wayland/host/gtk_shell1.h"
+ #include "ui/ozone/platform/wayland/host/org_kde_kwin_idle.h"
+@@ -131,8 +129,6 @@ WaylandConnection::~WaylandConnection() = default;
+ bool WaylandConnection::Initialize() {
+   // Register factories for classes that implement wl::GlobalObjectRegistrar<T>.
+   // Keep alphabetical order for convenience.
+-  RegisterGlobalObjectFactory(FractionalScaleManager::kInterfaceName,
+-                              &FractionalScaleManager::Instantiate);
+   RegisterGlobalObjectFactory(GtkPrimarySelectionDeviceManager::kInterfaceName,
+                               &GtkPrimarySelectionDeviceManager::Instantiate);
+   RegisterGlobalObjectFactory(GtkShell1::kInterfaceName,
+diff --git a/ui/ozone/platform/wayland/host/wayland_connection.h b/ui/ozone/platform/wayland/host/wayland_connection.h
+index 0b436d71a1c5f..c0197481bab7f 100644
+--- a/ui/ozone/platform/wayland/host/wayland_connection.h
++++ b/ui/ozone/platform/wayland/host/wayland_connection.h
+@@ -160,10 +160,6 @@ class WaylandConnection {
+     return xdg_output_manager_.get();
+   }
+ 
+-  wp_fractional_scale_manager_v1* fractional_scale_manager_v1() const {
+-    return fractional_scale_manager_v1_.get();
+-  }
+-
+   void SetPlatformCursor(wl_cursor* cursor_data, int buffer_scale);
+ 
+   void SetCursorBufferListener(WaylandCursorBufferListener* listener);
+@@ -324,7 +320,6 @@ class WaylandConnection {
+   // makes it possible to avoid exposing setters for all those global objects:
+   // these setters would only be needed by the globals but would be visible to
+   // everyone.
+-  friend class FractionalScaleManager;
+   friend class GtkPrimarySelectionDeviceManager;
+   friend class GtkShell1;
+   friend class OrgKdeKwinIdle;
+@@ -408,7 +403,6 @@ class WaylandConnection {
+   wl::Object<zxdg_decoration_manager_v1> xdg_decoration_manager_;
+   wl::Object<zcr_extended_drag_v1> extended_drag_v1_;
+   wl::Object<zxdg_output_manager_v1> xdg_output_manager_;
+-  wl::Object<wp_fractional_scale_manager_v1> fractional_scale_manager_v1_;
+ 
+   // Manages Wayland windows.
+   WaylandWindowManager window_manager_{this};
+diff --git a/ui/ozone/platform/wayland/host/wayland_surface.cc b/ui/ozone/platform/wayland/host/wayland_surface.cc
+index bfba1e2ba5cd4..63221806c7101 100644
+--- a/ui/ozone/platform/wayland/host/wayland_surface.cc
++++ b/ui/ozone/platform/wayland/host/wayland_surface.cc
+@@ -7,7 +7,6 @@
+ #include <alpha-compositing-unstable-v1-client-protocol.h>
+ #include <chrome-color-management-client-protocol.h>
+ #include <content-type-v1-client-protocol.h>
+-#include <fractional-scale-v1-client-protocol.h>
+ #include <linux-explicit-synchronization-unstable-v1-client-protocol.h>
+ #include <overlay-prioritizer-client-protocol.h>
+ #include <surface-augmenter-client-protocol.h>
+@@ -29,7 +28,6 @@
+ #include "ui/gfx/native_widget_types.h"
+ #include "ui/gfx/overlay_priority_hint.h"
+ #include "ui/ozone/platform/wayland/common/wayland_util.h"
+-#include "ui/ozone/platform/wayland/host/fractional_scale_manager.h"
+ #include "ui/ozone/platform/wayland/host/overlay_prioritizer.h"
+ #include "ui/ozone/platform/wayland/host/surface_augmenter.h"
+ #include "ui/ozone/platform/wayland/host/wayland_buffer_handle.h"
+@@ -122,18 +120,6 @@ bool WaylandSurface::Initialize() {
+   };
+   wl_surface_add_listener(surface_.get(), &surface_listener, this);
+ 
+-  if (auto* fractional_scale_manager =
+-          connection_->fractional_scale_manager_v1()) {
+-    static struct wp_fractional_scale_v1_listener fractional_scale_listener {
+-      &WaylandSurface::PreferredScale,
+-    };
+-    fractional_scale_ =
+-        wl::Object(wp_fractional_scale_manager_v1_get_fractional_scale(
+-            fractional_scale_manager, surface_.get()));
+-    wp_fractional_scale_v1_add_listener(fractional_scale_.get(),
+-                                        &fractional_scale_listener, this);
+-  }
+-
+   if (connection_->viewporter()) {
+     viewport_.reset(
+         wp_viewporter_get_viewport(connection_->viewporter(), surface()));
+@@ -826,25 +812,6 @@ void WaylandSurface::Leave(void* data,
+   surface->RemoveEnteredOutput(wayland_output->output_id());
+ }
+ 
+-// static
+-void WaylandSurface::PreferredScale(
+-    void* data,
+-    struct wp_fractional_scale_v1* wp_fractional_scale_v1,
+-    uint32_t scale) {
+-  // Specified in fractional-scale-v1
+-  constexpr float kFractionalScaleDenominator = 120.0f;
+-
+-  auto* surface = static_cast<WaylandSurface*>(data);
+-  DCHECK(surface);
+-
+-  // If the compositor sends a scale of 0, reset it to 1.
+-  if (scale == 0) {
+-    surface->set_surface_buffer_scale(1.0f);
+-  } else {
+-    surface->set_surface_buffer_scale(scale / kFractionalScaleDenominator);
+-  }
+-}
+-
+ void WaylandSurface::RemoveEnteredOutput(uint32_t output_id) {
+   auto it = base::ranges::find(entered_outputs_, output_id);
+   if (it == entered_outputs_.end())
+diff --git a/ui/ozone/platform/wayland/host/wayland_surface.h b/ui/ozone/platform/wayland/host/wayland_surface.h
+index f17b1b8fb7abd..b478f50decf70 100644
+--- a/ui/ozone/platform/wayland/host/wayland_surface.h
++++ b/ui/ozone/platform/wayland/host/wayland_surface.h
+@@ -27,7 +27,6 @@
+ #include "ui/ozone/platform/wayland/host/wayland_zcr_color_space.h"
+ 
+ struct wp_content_type_v1;
+-struct wp_fractional_scale_v1;
+ struct zwp_linux_buffer_release_v1;
+ struct zcr_blending_v1;
+ 
+@@ -353,7 +352,6 @@ class WaylandSurface {
+   wl::Object<overlay_prioritized_surface> overlay_priority_surface_;
+   wl::Object<augmented_surface> augmented_surface_;
+   wl::Object<wp_content_type_v1> content_type_;
+-  wl::Object<wp_fractional_scale_v1> fractional_scale_;
+   std::unique_ptr<WaylandZcrColorManagementSurface>
+       zcr_color_management_surface_;
+   base::flat_map<zwp_linux_buffer_release_v1*, ExplicitReleaseInfo>
+@@ -386,12 +384,6 @@ class WaylandSurface {
+                     struct wl_surface* wl_surface,
+                     struct wl_output* output);
+ 
+-  // wp_fractional_scale_v1_listener
+-  static void PreferredScale(
+-      void* data,
+-      struct wp_fractional_scale_v1* wp_fractional_scale_v1,
+-      uint32_t scale);
+-
+   // zwp_linux_buffer_release_v1_listener
+   static void FencedRelease(
+       void* data,
+-- 
+2.39.2
+
