@@ -1,4 +1,4 @@
-From 2dab5692873cb90913f2d00a3381e68b6ed7f566 Mon Sep 17 00:00:00 2001
+From 4c3e8472d56b6897f1e1c32e838a83dd42ae5a0d Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Tue, 17 Nov 2020 13:00:39 -0600
 Subject: [PATCH] flatpak: Expose Widevine into the sandbox
