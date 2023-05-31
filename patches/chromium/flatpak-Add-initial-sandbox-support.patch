@@ -1,4 +1,4 @@
-From 37991187ce5983ab4a5a35e7a17768f0164616e9 Mon Sep 17 00:00:00 2001
+From 8a3f23f3fa7781a4def7c4e60fc9bd1e725e3047 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Tue, 17 Mar 2020 13:18:27 -0500
 Subject: [PATCH] flatpak: Add initial sandbox support
@@ -30,7 +30,7 @@ Subject: [PATCH] flatpak: Add initial sandbox support
  create mode 100644 sandbox/linux/services/flatpak_sandbox.h
 
 diff --git a/.gitignore b/.gitignore
-index f39533c8951d8..18cbbe9a0c838 100644
+index 775a2ccf4c36d..9987f5fa6199a 100644
 --- a/.gitignore
 +++ b/.gitignore
 @@ -76,6 +76,7 @@ vs-chromium-project.txt
@@ -42,10 +42,10 @@ index f39533c8951d8..18cbbe9a0c838 100644
  /.externalToolBuilders/
  /.settings/
 diff --git a/base/threading/thread_restrictions.h b/base/threading/thread_restrictions.h
-index 861c5f9da0506..aadc77fbadba7 100644
+index 4c9ff4452fa14..adcbad22afbd9 100644
 --- a/base/threading/thread_restrictions.h
 +++ b/base/threading/thread_restrictions.h
-@@ -397,6 +397,10 @@ class ScopedAllowThreadJoinForWebRtcTransport;
+@@ -403,6 +403,10 @@ class ScopedAllowThreadJoinForWebRtcTransport;
  }  // namespace protocol
  }  // namespace remoting
  
@@ -56,7 +56,7 @@ index 861c5f9da0506..aadc77fbadba7 100644
  namespace service_manager {
  class ServiceProcessLauncher;
  }
-@@ -634,6 +638,7 @@ class BASE_EXPORT [[maybe_unused, nodiscard]] ScopedAllowBlocking {
+@@ -640,6 +644,7 @@ class BASE_EXPORT [[maybe_unused, nodiscard]] ScopedAllowBlocking {
    friend class remote_cocoa::SelectFileDialogBridge;
    friend class remoting::
        ScopedBypassIOThreadRestrictions;  // http://crbug.com/1144161
@@ -64,7 +64,7 @@ index 861c5f9da0506..aadc77fbadba7 100644
    friend class ui::DrmDisplayHostManager;
    friend class ui::ScopedAllowBlockingForGbmSurface;
    friend class ui::SelectFileDialogLinux;
-@@ -770,6 +775,7 @@ class BASE_EXPORT [[maybe_unused, nodiscard]] ScopedAllowBaseSyncPrimitives {
+@@ -775,6 +780,7 @@ class BASE_EXPORT [[maybe_unused, nodiscard]] ScopedAllowBaseSyncPrimitives {
    friend class rlz_lib::FinancialPing;
    friend class shell_integration_linux::
        LaunchXdgUtilityScopedAllowBaseSyncPrimitives;
@@ -126,7 +126,7 @@ index b8e4349854ccd..be91ec437ee09 100644
                       status & sandbox::policy::SandboxLinux::kNetNS;
    // A second-layer sandbox is also required to be adequately sandboxed.
 diff --git a/content/browser/child_process_host_impl.cc b/content/browser/child_process_host_impl.cc
-index c18d4ad83bead..dc77b697d657a 100644
+index cb673c27cbd99..aaaf552b17b66 100644
 --- a/content/browser/child_process_host_impl.cc
 +++ b/content/browser/child_process_host_impl.cc
 @@ -40,6 +40,7 @@
@@ -363,10 +363,10 @@ index c7ee91878e6dd..9c2c7a04bd968 100644
                  base::GlobalDescriptors::Descriptor(
                      static_cast<uint32_t>(kSandboxIPCChannel), GetSandboxFD()));
 diff --git a/sandbox/linux/BUILD.gn b/sandbox/linux/BUILD.gn
-index 9548093b5e994..9215068fbe42b 100644
+index ee57ed301c3df..8263b90065ab1 100644
 --- a/sandbox/linux/BUILD.gn
 +++ b/sandbox/linux/BUILD.gn
-@@ -310,6 +310,10 @@ if (is_linux || is_chromeos) {
+@@ -311,6 +311,10 @@ if (is_linux || is_chromeos) {
  
  component("sandbox_services") {
    sources = [
@@ -377,7 +377,7 @@ index 9548093b5e994..9215068fbe42b 100644
      "services/init_process_reaper.cc",
      "services/init_process_reaper.h",
      "services/proc_util.cc",
-@@ -328,8 +332,10 @@ component("sandbox_services") {
+@@ -329,8 +333,10 @@ component("sandbox_services") {
  
    defines = [ "SANDBOX_IMPLEMENTATION" ]
  
