@@ -2,6 +2,8 @@
   {
     "type": "patch",
     "paths": [
+      "patches/chromium/0001-ozone-wayland-add-VA-API-support.patch",
+      "patches/chromium/vaapi-add-av1-support.patch",
       "patches/chromium/flatpak-Add-initial-sandbox-support.patch",
       "patches/chromium/flatpak-Expose-Widevine-into-the-sandbox.patch",
       "patches/chromium/flatpak-Adjust-paths-for-the-sandbox.patch",
