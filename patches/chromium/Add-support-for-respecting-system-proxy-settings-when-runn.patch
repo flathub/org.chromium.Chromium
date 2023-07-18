@@ -1,4 +1,4 @@
-From c91ff0722be8317f940d11474bff671b01b4636a Mon Sep 17 00:00:00 2001
+From dbe8c2e4bd6488768663fdcd310367f03c1fafad Mon Sep 17 00:00:00 2001
 From: Andre Moreira Magalhaes <andre.magalhaes@endlessos.org>
 Date: Thu, 17 Dec 2020 19:05:10 -0300
 Subject: [PATCH] Add support for respecting system proxy settings when running
@@ -54,10 +54,10 @@ Closes https://github.com/flathub/org.chromium.Chromium/issues/36
  create mode 100644 net/proxy_resolution/proxy_resolver_linux.h
 
 diff --git a/chrome/app/generated_resources.grd b/chrome/app/generated_resources.grd
-index 1632fdfac5b94..e020244444348 100644
+index ede9b4ae7fc88..866b3bf7c9585 100644
 --- a/chrome/app/generated_resources.grd
 +++ b/chrome/app/generated_resources.grd
-@@ -12358,6 +12358,12 @@ Please help our engineers fix this problem. Tell us what happened right before y
+@@ -12424,6 +12424,12 @@ Please help our engineers fix this problem. Tell us what happened right before y
  
            &lt;p&gt;But you can still configure via the command line.  Please see &lt;code&gt;man <ph name="PRODUCT_BINARY_NAME">$2<ex>google-chrome</ex></ph>&lt;/code&gt; for more information on flags and environment variables.&lt;/p&gt;
          </message>
@@ -71,7 +71,7 @@ index 1632fdfac5b94..e020244444348 100644
  
        <message name="IDS_IMAGE_FILES" desc="The description of the image file extensions in the select file dialog.">
 diff --git a/chrome/browser/net/system_network_context_manager.cc b/chrome/browser/net/system_network_context_manager.cc
-index 35847a946ce57..52fb3b7721ee3 100644
+index 9af2c753eaf8b..5ffc08c95c6ad 100644
 --- a/chrome/browser/net/system_network_context_manager.cc
 +++ b/chrome/browser/net/system_network_context_manager.cc
 @@ -96,6 +96,7 @@
@@ -82,7 +82,7 @@ index 35847a946ce57..52fb3b7721ee3 100644
  #include "ui/base/l10n/l10n_util.h"
  #endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
  
-@@ -771,7 +772,13 @@ void SystemNetworkContextManager::ConfigureDefaultNetworkContextParams(
+@@ -759,7 +760,13 @@ void SystemNetworkContextManager::ConfigureDefaultNetworkContextParams(
    // or if it does work, now.
    // Should be possible now that a private isolate is used.
    // http://crbug.com/474654
@@ -98,7 +98,7 @@ index 35847a946ce57..52fb3b7721ee3 100644
        LOG(ERROR) << "Cannot use V8 Proxy resolver in single process mode.";
      } else {
 diff --git a/chrome/browser/ui/webui/about_ui.cc b/chrome/browser/ui/webui/about_ui.cc
-index 56d077d10879c..330f87ad252d7 100644
+index e127f73ab885a..15fdcd7b391eb 100644
 --- a/chrome/browser/ui/webui/about_ui.cc
 +++ b/chrome/browser/ui/webui/about_ui.cc
 @@ -87,6 +87,10 @@
@@ -112,7 +112,7 @@ index 56d077d10879c..330f87ad252d7 100644
  using content::BrowserThread;
  
  namespace {
-@@ -611,8 +615,16 @@ std::string AboutLinuxProxyConfig() {
+@@ -643,8 +647,16 @@ std::string AboutLinuxProxyConfig() {
    data.append("<style>body { max-width: 70ex; padding: 2ex 5ex; }</style>");
    AppendBody(&data);
    base::FilePath binary = base::CommandLine::ForCurrentProcess()->GetProgram();
@@ -131,7 +131,7 @@ index 56d077d10879c..330f87ad252d7 100644
                                  base::ASCIIToUTF16(binary.BaseName().value())));
    AppendFooter(&data);
 diff --git a/net/BUILD.gn b/net/BUILD.gn
-index 355767d5e548f..40eda4de3c758 100644
+index ece7d8752c3e0..ffb58245b7d47 100644
 --- a/net/BUILD.gn
 +++ b/net/BUILD.gn
 @@ -1231,6 +1231,13 @@ component("net") {
@@ -148,7 +148,7 @@ index 355767d5e548f..40eda4de3c758 100644
    if (is_mac) {
      sources += [
        "base/network_notification_thread_mac.cc",
-@@ -1672,6 +1679,7 @@ source_set("net_deps") {
+@@ -1673,6 +1680,7 @@ source_set("net_deps") {
  
    if (use_gio) {
      public_configs += [ "//build/linux:gio_config" ]
@@ -384,5 +384,5 @@ index 0000000000000..7ae45eeae1a43
 +
 +#endif  // NET_PROXY_RESOLUTION_PROXY_RESOLVER_LINUX_H_
 -- 
-2.39.2
+2.41.0
 

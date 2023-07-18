@@ -51,6 +51,7 @@ tools/gn/bootstrap/bootstrap.py -v --no-clean --gn-gen-args='
     use_system_libffi=true
     use_qt=false
     enable_remoting=false
+    enable_rust=false
 '
 mkdir -p out/ReleaseFree
 cp out/Release{,Free}/args.gn
