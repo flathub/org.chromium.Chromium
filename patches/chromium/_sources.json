@@ -17,8 +17,7 @@
       "patches/chromium/Clang-build-script-Disable-hwasan.patch",
       "patches/chromium/clang-build-script-Support-disabling-the-bundled-libxml2.patch",
       "patches/chromium/Clang-build-script-Don-t-build-against-the-sysroot.patch",
-      "patches/chromium/Ignore-useless-warnings-from-the-Asahi-driver.patch",
-      "patches/chromium/Revert-Reland-Linux-Ozone-Wayland-Support-fractional-scale.patch"
+      "patches/chromium/Ignore-useless-warnings-from-the-Asahi-driver.patch"
     ]
   }
 ]

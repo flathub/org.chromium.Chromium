@@ -1,4 +1,4 @@
-From 8a3f23f3fa7781a4def7c4e60fc9bd1e725e3047 Mon Sep 17 00:00:00 2001
+From 1cb0ba820232fffedefe49c2ecad45d0843a6400 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Tue, 17 Mar 2020 13:18:27 -0500
 Subject: [PATCH] flatpak: Add initial sandbox support
@@ -30,7 +30,7 @@ Subject: [PATCH] flatpak: Add initial sandbox support
  create mode 100644 sandbox/linux/services/flatpak_sandbox.h
 
 diff --git a/.gitignore b/.gitignore
-index 775a2ccf4c36d..9987f5fa6199a 100644
+index 36fd6c0ff5673..027fae5439a25 100644
 --- a/.gitignore
 +++ b/.gitignore
 @@ -76,6 +76,7 @@ vs-chromium-project.txt
@@ -42,10 +42,10 @@ index 775a2ccf4c36d..9987f5fa6199a 100644
  /.externalToolBuilders/
  /.settings/
 diff --git a/base/threading/thread_restrictions.h b/base/threading/thread_restrictions.h
-index 4c9ff4452fa14..adcbad22afbd9 100644
+index 536ee9714219f..0727f6112f3d9 100644
 --- a/base/threading/thread_restrictions.h
 +++ b/base/threading/thread_restrictions.h
-@@ -403,6 +403,10 @@ class ScopedAllowThreadJoinForWebRtcTransport;
+@@ -404,6 +404,10 @@ class ScopedAllowThreadJoinForWebRtcTransport;
  }  // namespace protocol
  }  // namespace remoting
  
@@ -56,15 +56,15 @@ index 4c9ff4452fa14..adcbad22afbd9 100644
  namespace service_manager {
  class ServiceProcessLauncher;
  }
-@@ -640,6 +644,7 @@ class BASE_EXPORT [[maybe_unused, nodiscard]] ScopedAllowBlocking {
-   friend class remote_cocoa::SelectFileDialogBridge;
+@@ -642,6 +646,7 @@ class BASE_EXPORT [[maybe_unused, nodiscard]] ScopedAllowBlocking {
    friend class remoting::
        ScopedBypassIOThreadRestrictions;  // http://crbug.com/1144161
+   friend class remoting::ScopedAllowBlockingForCrashReporting;
 +  friend class sandbox::FlatpakSandbox;
    friend class ui::DrmDisplayHostManager;
    friend class ui::ScopedAllowBlockingForGbmSurface;
    friend class ui::SelectFileDialogLinux;
-@@ -775,6 +780,7 @@ class BASE_EXPORT [[maybe_unused, nodiscard]] ScopedAllowBaseSyncPrimitives {
+@@ -777,6 +782,7 @@ class BASE_EXPORT [[maybe_unused, nodiscard]] ScopedAllowBaseSyncPrimitives {
    friend class rlz_lib::FinancialPing;
    friend class shell_integration_linux::
        LaunchXdgUtilityScopedAllowBaseSyncPrimitives;
@@ -152,7 +152,7 @@ index cb673c27cbd99..aaaf552b17b66 100644
    }
  #endif
 diff --git a/content/browser/zygote_host/zygote_host_impl_linux.cc b/content/browser/zygote_host/zygote_host_impl_linux.cc
-index bc47448c020df..b60dc232c4322 100644
+index 482e33baf0055..c93f1bf318df5 100644
 --- a/content/browser/zygote_host/zygote_host_impl_linux.cc
 +++ b/content/browser/zygote_host/zygote_host_impl_linux.cc
 @@ -13,6 +13,7 @@
@@ -263,7 +263,7 @@ index 720d823d4a695..ad470963693c4 100644
  
    // This lock protects the |zygote_pids_| set.
 diff --git a/content/zygote/zygote_linux.cc b/content/zygote/zygote_linux.cc
-index b6acf691778fd..8c57ae06bcba8 100644
+index 3449261912a86..eaf9ef8f00cdc 100644
 --- a/content/zygote/zygote_linux.cc
 +++ b/content/zygote/zygote_linux.cc
 @@ -118,7 +118,7 @@ bool Zygote::ProcessRequests() {
@@ -1212,7 +1212,7 @@ index 0000000000000..167bbc85945ad
 +
 +#endif  // SANDBOX_LINUX_SERVICES_FLATPAK_SANDBOX_H_
 diff --git a/sandbox/policy/BUILD.gn b/sandbox/policy/BUILD.gn
-index 2701a2493dc2c..2130989446ccd 100644
+index 6e0cc1ff89490..764e11ccfdd4c 100644
 --- a/sandbox/policy/BUILD.gn
 +++ b/sandbox/policy/BUILD.gn
 @@ -105,6 +105,9 @@ component("policy") {
@@ -1322,5 +1322,5 @@ index 7f4f7e76bb37a..df0e75fd5212d 100644
  }
  
 -- 
-2.39.2
+2.41.0
 

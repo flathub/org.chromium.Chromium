@@ -1,4 +1,4 @@
-From 65b71b0ee6ae746a75e9ecc76fbc36d43d9fe761 Mon Sep 17 00:00:00 2001
+From 08c81cf9cc5b620b153a76c194325f06b0fd83cb Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Wed, 11 Nov 2020 17:13:38 -0600
 Subject: [PATCH] Use CHROME_WRAPPER as the executable on restart
@@ -36,5 +36,5 @@ index 229da211ae987..22fbcd9d890f2 100644
  
  bool IsUpdatePendingRestart() {
 -- 
-2.39.2
+2.41.0
 

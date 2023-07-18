@@ -1,4 +1,4 @@
-From 4bf3c18d7fceaf24e23a93b636789aed0ccc48b2 Mon Sep 17 00:00:00 2001
+From 5ec9aa4fad832ca50a418411dbbd6c9293688403 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Wed, 31 Aug 2022 10:09:01 -0500
 Subject: [PATCH] Clang build script: Don't build against the sysroot
@@ -8,10 +8,10 @@ Subject: [PATCH] Clang build script: Don't build against the sysroot
  1 file changed, 13 insertions(+), 35 deletions(-)
 
 diff --git a/tools/clang/scripts/build.py b/tools/clang/scripts/build.py
-index 155ac4b52724b..5257433584144 100755
+index 3a46cdff67d15..f428b37f19f0b 100755
 --- a/tools/clang/scripts/build.py
 +++ b/tools/clang/scripts/build.py
-@@ -762,7 +762,7 @@ def main():
+@@ -769,7 +769,7 @@ def main():
        MaybeDownloadHostGcc(args)
        base_cmake_args += [ '-DLLVM_STATIC_LINK_CXX_STDLIB=ON' ]
  
@@ -20,7 +20,7 @@ index 155ac4b52724b..5257433584144 100755
      # Download sysroots. This uses basically Chromium's sysroots, but with
      # minor changes:
      # - glibc version bumped to 2.18 to make __cxa_thread_atexit_impl
-@@ -1071,40 +1071,18 @@ def main():
+@@ -1083,40 +1083,18 @@ def main():
    runtimes_triples_args = []
  
    if sys.platform.startswith('linux'):
@@ -71,8 +71,8 @@ index 155ac4b52724b..5257433584144 100755
 +              'LLVM_INCLUDE_TESTS=OFF',
 +          ]))
    elif sys.platform == 'win32':
+     sysroot = os.path.dirname(os.path.dirname(GetWinSDKDir()))
      runtimes_triples_args.append(
-         ('i386-pc-windows-msvc',
 -- 
-2.39.2
+2.41.0
 

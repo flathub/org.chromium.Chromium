@@ -1,4 +1,4 @@
-From 165d50d603fce1340986ce4a9330881a41043a1e Mon Sep 17 00:00:00 2001
+From 5a3cf554001861ceede1d3f1215e2b90ff26cb05 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Mon, 19 Dec 2022 19:58:16 -0600
 Subject: [PATCH] Ignore useless warnings from the Asahi driver
@@ -25,5 +25,5 @@ index ce97bb0b98f79..4a2db3615b2f5 100644
                                    GetDebugMessageTypeString(message_type) +
                                    ") " + command + ": " + message;
 -- 
-2.39.2
+2.41.0
 
