@@ -1,0 +1,67 @@
+From 8d6fbb198419a785887d06afcd2de22e643b6c57 Mon Sep 17 00:00:00 2001
+From: Dor Askayo <dor.askayo@gmail.com>
+Date: Mon, 7 Aug 2023 02:15:30 +0300
+Subject: [PATCH] ui: gbm_wrapper: Use gbm_bo_get_fd_for_plane() for Mesa GBM
+
+Avoid making assumptions about the internal implementation of GBM and
+its backends.
+
+In particular, nouveau's reference counting for GEM handles relies on
+knowledge of when a GEM handle has been exported as fd. Calling
+drmPrimeHandleToFD() directly to get a fd for a GEM handle and passing
+it to gbm_bo_import() results in nouveau arriving at the wrong
+conclusion that the fd represents a GEM handle which is not shared
+with any other gbm_bo instance in the running process.
+
+The GEM handle is then freed prematurely in the first call to
+gbm_bo_destroy() leaving other gbm_bo instances that share the handle
+with a stale handle.
+
+The gbm_bo_get_fd_for_plane() API was added in mesa-21.1.0, released
+in May 2021.
+
+This issue was exposed by I6e6c6f36e32e7de46cc39c6c2b9cc81f3b95d432.
+---
+ ui/gfx/linux/gbm_wrapper.cc | 26 +-------------------------
+ 1 file changed, 1 insertion(+), 25 deletions(-)
+
+diff --git a/ui/gfx/linux/gbm_wrapper.cc b/ui/gfx/linux/gbm_wrapper.cc
+index c1bf39f..ed458eb 100644
+--- a/ui/gfx/linux/gbm_wrapper.cc
++++ b/ui/gfx/linux/gbm_wrapper.cc
+@@ -51,31 +51,7 @@ base::ScopedFD GetPlaneFdForBo(gbm_bo* bo, size_t plane) {
+ #if defined(MINIGBM)
+   return base::ScopedFD(gbm_bo_get_plane_fd(bo, plane));
+ #else
+-  const int plane_count = GetPlaneCount(bo);
+-  DCHECK(plane_count > 0 && plane < static_cast<size_t>(plane_count));
+-
+-  // System linux gbm (or Mesa gbm) does not provide fds per plane basis. Thus,
+-  // get plane handle and use drm ioctl to get a prime fd out of it avoid having
+-  // two different branches for minigbm and Mesa gbm here.
+-  gbm_device* gbm_dev = gbm_bo_get_device(bo);
+-  int dev_fd = gbm_device_get_fd(gbm_dev);
+-  DCHECK_GE(dev_fd, 0);
+-
+-  uint32_t plane_handle = GetHandleForPlane(bo, plane);
+-
+-  int fd = -1;
+-  int ret;
+-  // Use DRM_RDWR to allow the fd to be mappable in another process.
+-  ret = drmPrimeHandleToFD(dev_fd, plane_handle, DRM_CLOEXEC | DRM_RDWR, &fd);
+-
+-  // Older DRM implementations blocked DRM_RDWR, but gave a read/write mapping
+-  // anyways
+-  if (ret) {
+-    ret = drmPrimeHandleToFD(dev_fd, plane_handle, DRM_CLOEXEC, &fd);
+-    return base::ScopedFD();
+-  }
+-
+-  return base::ScopedFD(fd);
++  return base::ScopedFD(gbm_bo_get_fd_for_plane(bo, plane));
+ #endif
+ }
+ 
+-- 
+2.41.0
+
