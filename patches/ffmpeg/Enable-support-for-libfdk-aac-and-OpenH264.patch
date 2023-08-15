@@ -1,4 +1,4 @@
-From 6b62c2e6c779f61f11bd48f5afb3d213f095728c Mon Sep 17 00:00:00 2001
+From 67018cf197fb3fa5f88810241000cd880c738b35 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Tue, 20 Jul 2021 14:18:31 -0500
 Subject: [PATCH] Enable support for libfdk-aac and OpenH264
@@ -61,7 +61,7 @@ index 19d0a0f7bc..13bec7605a 100755
  
    # Google ChromeOS specific configuration.
 diff --git a/third_party/ffmpeg/chromium/scripts/generate_gn.py b/third_party/ffmpeg/chromium/scripts/generate_gn.py
-index d36b0a22c3..16c5dcee5f 100755
+index c7869a7d01..e5ba56f340 100755
 --- a/third_party/ffmpeg/chromium/scripts/generate_gn.py
 +++ b/third_party/ffmpeg/chromium/scripts/generate_gn.py
 @@ -685,6 +685,7 @@ ALLOWED_LICENSES = [

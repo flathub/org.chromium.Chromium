@@ -1,4 +1,4 @@
-From 1cb0ba820232fffedefe49c2ecad45d0843a6400 Mon Sep 17 00:00:00 2001
+From 4ba9b643883616a816c8cb7723615cbf7d6946ca Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Tue, 17 Mar 2020 13:18:27 -0500
 Subject: [PATCH] flatpak: Add initial sandbox support
@@ -30,7 +30,7 @@ Subject: [PATCH] flatpak: Add initial sandbox support
  create mode 100644 sandbox/linux/services/flatpak_sandbox.h
 
 diff --git a/.gitignore b/.gitignore
-index 36fd6c0ff5673..027fae5439a25 100644
+index 7141c8b3de3bc..36862d9b0c4b6 100644
 --- a/.gitignore
 +++ b/.gitignore
 @@ -76,6 +76,7 @@ vs-chromium-project.txt
@@ -42,7 +42,7 @@ index 36fd6c0ff5673..027fae5439a25 100644
  /.externalToolBuilders/
  /.settings/
 diff --git a/base/threading/thread_restrictions.h b/base/threading/thread_restrictions.h
-index 536ee9714219f..0727f6112f3d9 100644
+index 385b540b5a429..cb7f6d3487c9b 100644
 --- a/base/threading/thread_restrictions.h
 +++ b/base/threading/thread_restrictions.h
 @@ -404,6 +404,10 @@ class ScopedAllowThreadJoinForWebRtcTransport;
@@ -56,7 +56,7 @@ index 536ee9714219f..0727f6112f3d9 100644
  namespace service_manager {
  class ServiceProcessLauncher;
  }
-@@ -642,6 +646,7 @@ class BASE_EXPORT [[maybe_unused, nodiscard]] ScopedAllowBlocking {
+@@ -644,6 +648,7 @@ class BASE_EXPORT [[maybe_unused, nodiscard]] ScopedAllowBlocking {
    friend class remoting::
        ScopedBypassIOThreadRestrictions;  // http://crbug.com/1144161
    friend class remoting::ScopedAllowBlockingForCrashReporting;
@@ -64,7 +64,7 @@ index 536ee9714219f..0727f6112f3d9 100644
    friend class ui::DrmDisplayHostManager;
    friend class ui::ScopedAllowBlockingForGbmSurface;
    friend class ui::SelectFileDialogLinux;
-@@ -777,6 +782,7 @@ class BASE_EXPORT [[maybe_unused, nodiscard]] ScopedAllowBaseSyncPrimitives {
+@@ -779,6 +784,7 @@ class BASE_EXPORT [[maybe_unused, nodiscard]] ScopedAllowBaseSyncPrimitives {
    friend class rlz_lib::FinancialPing;
    friend class shell_integration_linux::
        LaunchXdgUtilityScopedAllowBaseSyncPrimitives;
@@ -95,10 +95,10 @@ index 85c0d35f98e6b..98bd35a1a5756 100644
  
    addStatusRow('Layer 1 Sandbox', layer1SandboxType, layer1SandboxCssClass);
 diff --git a/chrome/browser/ui/webui/sandbox/sandbox_internals_ui.cc b/chrome/browser/ui/webui/sandbox/sandbox_internals_ui.cc
-index b8e4349854ccd..be91ec437ee09 100644
+index 4993a173e7281..c7c0f6f43ad37 100644
 --- a/chrome/browser/ui/webui/sandbox/sandbox_internals_ui.cc
 +++ b/chrome/browser/ui/webui/sandbox/sandbox_internals_ui.cc
-@@ -14,6 +14,7 @@
+@@ -15,6 +15,7 @@
  #include "content/public/browser/web_contents.h"
  #include "content/public/browser/web_ui.h"
  #include "content/public/browser/web_ui_data_source.h"
@@ -106,7 +106,7 @@ index b8e4349854ccd..be91ec437ee09 100644
  
  #if BUILDFLAG(IS_WIN)
  #include "chrome/browser/ui/webui/sandbox/sandbox_handler.h"
-@@ -39,6 +40,8 @@ static void SetSandboxStatusData(content::WebUIDataSource* source) {
+@@ -40,6 +41,8 @@ static void SetSandboxStatusData(content::WebUIDataSource* source) {
  
    source->AddBoolean("suid", status & sandbox::policy::SandboxLinux::kSUID);
    source->AddBoolean("userNs", status & sandbox::policy::SandboxLinux::kUserNS);
@@ -115,7 +115,7 @@ index b8e4349854ccd..be91ec437ee09 100644
    source->AddBoolean("pidNs", status & sandbox::policy::SandboxLinux::kPIDNS);
    source->AddBoolean("netNs", status & sandbox::policy::SandboxLinux::kNetNS);
    source->AddBoolean("seccompBpf",
-@@ -56,7 +59,8 @@ static void SetSandboxStatusData(content::WebUIDataSource* source) {
+@@ -57,7 +60,8 @@ static void SetSandboxStatusData(content::WebUIDataSource* source) {
  
    // Require either the setuid or namespace sandbox for our first-layer sandbox.
    bool good_layer1 = (status & sandbox::policy::SandboxLinux::kSUID ||
@@ -363,10 +363,10 @@ index c7ee91878e6dd..9c2c7a04bd968 100644
                  base::GlobalDescriptors::Descriptor(
                      static_cast<uint32_t>(kSandboxIPCChannel), GetSandboxFD()));
 diff --git a/sandbox/linux/BUILD.gn b/sandbox/linux/BUILD.gn
-index ee57ed301c3df..8263b90065ab1 100644
+index 483488a3f789f..f7b9e2b583e38 100644
 --- a/sandbox/linux/BUILD.gn
 +++ b/sandbox/linux/BUILD.gn
-@@ -311,6 +311,10 @@ if (is_linux || is_chromeos) {
+@@ -310,6 +310,10 @@ if (is_linux || is_chromeos) {
  
  component("sandbox_services") {
    sources = [
@@ -377,7 +377,7 @@ index ee57ed301c3df..8263b90065ab1 100644
      "services/init_process_reaper.cc",
      "services/init_process_reaper.h",
      "services/proc_util.cc",
-@@ -329,8 +333,10 @@ component("sandbox_services") {
+@@ -328,8 +332,10 @@ component("sandbox_services") {
  
    defines = [ "SANDBOX_IMPLEMENTATION" ]
  
@@ -1212,10 +1212,10 @@ index 0000000000000..167bbc85945ad
 +
 +#endif  // SANDBOX_LINUX_SERVICES_FLATPAK_SANDBOX_H_
 diff --git a/sandbox/policy/BUILD.gn b/sandbox/policy/BUILD.gn
-index 6e0cc1ff89490..764e11ccfdd4c 100644
+index f409b3bfd0ed7..a0d0eb8491ddd 100644
 --- a/sandbox/policy/BUILD.gn
 +++ b/sandbox/policy/BUILD.gn
-@@ -105,6 +105,9 @@ component("policy") {
+@@ -108,6 +108,9 @@ component("policy") {
        "//sandbox/linux:suid_sandbox_client",
      ]
    }
