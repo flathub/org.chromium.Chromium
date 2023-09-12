@@ -137,7 +137,8 @@ modules:
         x-checker-data:
           type: chromium
           component: llvm-git
-      - patches/all.json
+      - patches/chromium/_sources.json
+      - patches/ffmpeg/_sources.json
       - type: file
         path: org.chromium.Chromium.desktop
       - type: file
