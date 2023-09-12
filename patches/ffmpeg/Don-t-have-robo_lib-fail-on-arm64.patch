@@ -1,0 +1,25 @@
+From 7f01dd992fae1ef5588d1c1e64a561c83e14d8ed Mon Sep 17 00:00:00 2001
+From: Ryan Gonzalez <git@refi64.dev>
+Date: Tue, 12 Sep 2023 17:34:22 -0500
+Subject: [PATCH] Don't have robo_lib fail on arm64
+
+---
+ chromium/scripts/robo_lib/config.py | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/third_party/ffmpeg/chromium/scripts/robo_lib/config.py b/third_party/ffmpeg/chromium/scripts/robo_lib/config.py
+index e2b895ef1d..8140732534 100644
+--- a/third_party/ffmpeg/chromium/scripts/robo_lib/config.py
++++ b/third_party/ffmpeg/chromium/scripts/robo_lib/config.py
+@@ -149,7 +149,7 @@ class RoboConfiguration:
+     """Ensure that the host architecture and platform are set."""
+     kernel, host, os, *rest = shell.output_or_error(["uname", "-a"]).split()
+     assert kernel in ("Linux", "linux")
+-    assert "x86_64" in rest
++    # assert "x86_64" in rest
+     self._host_operating_system = "linux"
+     self._host_architecture = "x64"
+ 
+-- 
+2.41.0
+

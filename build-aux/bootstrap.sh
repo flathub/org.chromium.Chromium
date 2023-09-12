@@ -17,9 +17,9 @@ if [[ -d third_party/llvm-build/Release+Asserts/bin ]]; then
 else
   python3 tools/clang/scripts/build.py --disable-asserts \
       --skip-checkout --use-system-cmake --use-system-libxml \
-      --gcc-toolchain=/usr \
       --host-cc=/usr/lib/sdk/llvm14/bin/clang \
       --host-cxx=/usr/lib/sdk/llvm14/bin/clang++ \
+      --target-triple=$(clang -dumpmachine) \
       --without-android --without-fuchsia \
       --with-ml-inliner-model=
 fi
