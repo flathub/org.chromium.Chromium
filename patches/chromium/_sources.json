@@ -17,6 +17,7 @@
       "patches/chromium/Clang-build-script-Disable-hwasan.patch",
       "patches/chromium/clang-build-script-Support-disabling-the-bundled-libxml2.patch",
       "patches/chromium/Clang-build-script-Don-t-build-against-the-sysroot.patch",
+      "patches/chromium/Clang-build-script-add-support-for-building-a-subset-of-ta.patch",
       "patches/chromium/Ignore-useless-warnings-from-the-Asahi-driver.patch"
     ]
   }

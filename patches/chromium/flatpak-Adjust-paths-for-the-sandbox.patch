@@ -1,18 +1,18 @@
-From 968947c0500174fe995804045b0c84e0a7814d4c Mon Sep 17 00:00:00 2001
+From 4dada579348646c3a84139da47caf971786a50ac Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Tue, 25 Aug 2020 19:26:07 -0500
 Subject: [PATCH] flatpak: Adjust paths for the sandbox
 
 ---
  chrome/common/BUILD.gn        |  4 ++++
- chrome/common/chrome_paths.cc | 43 +++++++++++++++++++++++++++--------
- 2 files changed, 38 insertions(+), 9 deletions(-)
+ chrome/common/chrome_paths.cc | 26 +++++++++++++++++++++++++-
+ 2 files changed, 29 insertions(+), 1 deletion(-)
 
 diff --git a/chrome/common/BUILD.gn b/chrome/common/BUILD.gn
-index 02843c8fd37a2..b076cc612c7f0 100644
+index c3ec18003787c..80799d4210b29 100644
 --- a/chrome/common/BUILD.gn
 +++ b/chrome/common/BUILD.gn
-@@ -670,6 +670,10 @@ static_library("constants") {
+@@ -683,6 +683,10 @@ static_library("constants") {
        "//third_party/widevine/cdm:headers",
      ]
    }
@@ -24,18 +24,10 @@ index 02843c8fd37a2..b076cc612c7f0 100644
  
  # Use a static library here because many test binaries depend on this but don't
 diff --git a/chrome/common/chrome_paths.cc b/chrome/common/chrome_paths.cc
-index 32a3cf387c68c..4bf19ad2f84b0 100644
+index 6440a881d60e4..b62ee35c32190 100644
 --- a/chrome/common/chrome_paths.cc
 +++ b/chrome/common/chrome_paths.cc
-@@ -4,6 +4,7 @@
- 
- #include "chrome/common/chrome_paths.h"
- 
-+#include "base/files/file_path.h"
- #include "base/files/file_util.h"
- #include "base/logging.h"
- #include "base/native_library.h"
-@@ -37,6 +38,10 @@
+@@ -34,6 +34,10 @@
  #include "base/win/registry.h"
  #endif
  
@@ -46,18 +38,7 @@ index 32a3cf387c68c..4bf19ad2f84b0 100644
  #if BUILDFLAG(ENABLE_WIDEVINE)
  #include "third_party/widevine/cdm/widevine_cdm_common.h"  // nogncheck
  #endif
-@@ -190,8 +195,8 @@ bool PathProvider(int key, base::FilePath* result) {
- #else
-       if (!GetUserDownloadsDirectory(&cur))
-         return false;
--      // Do not create the download directory here, we have done it twice now
--      // and annoyed a lot of users.
-+        // Do not create the download directory here, we have done it twice now
-+        // and annoyed a lot of users.
- #endif
-       break;
-     case chrome::DIR_CRASH_DUMPS:
-@@ -421,6 +426,14 @@ bool PathProvider(int key, base::FilePath* result) {
+@@ -502,6 +506,14 @@ bool PathProvider(int key, base::FilePath* result) {
        break;
  #if BUILDFLAG(IS_POSIX) && !BUILDFLAG(IS_MAC) && !BUILDFLAG(IS_OPENBSD)
      case chrome::DIR_POLICY_FILES: {
@@ -72,7 +53,7 @@ index 32a3cf387c68c..4bf19ad2f84b0 100644
  #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
        cur = base::FilePath(FILE_PATH_LITERAL("/etc/opt/chrome/policies"));
  #else
-@@ -444,7 +457,13 @@ bool PathProvider(int key, base::FilePath* result) {
+@@ -526,7 +538,13 @@ bool PathProvider(int key, base::FilePath* result) {
  #endif
  #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
      case chrome::DIR_STANDALONE_EXTERNAL_EXTENSIONS: {
@@ -87,16 +68,7 @@ index 32a3cf387c68c..4bf19ad2f84b0 100644
        break;
      }
  #endif
-@@ -490,19 +509,25 @@ bool PathProvider(int key, base::FilePath* result) {
-     case chrome::DIR_NATIVE_MESSAGING:
- #if BUILDFLAG(IS_MAC)
- #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
--      cur = base::FilePath(FILE_PATH_LITERAL(
--           "/Library/Google/Chrome/NativeMessagingHosts"));
-+      cur = base::FilePath(
-+          FILE_PATH_LITERAL("/Library/Google/Chrome/NativeMessagingHosts"));
- #else
-       cur = base::FilePath(FILE_PATH_LITERAL(
+@@ -582,6 +600,12 @@ bool PathProvider(int key, base::FilePath* result) {
            "/Library/Application Support/Chromium/NativeMessagingHosts"));
  #endif
  #else  // BUILDFLAG(IS_MAC)
@@ -107,18 +79,8 @@ index 32a3cf387c68c..4bf19ad2f84b0 100644
 +        break;
 +      }
  #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
--      cur = base::FilePath(FILE_PATH_LITERAL(
--          "/etc/opt/chrome/native-messaging-hosts"));
-+      cur = base::FilePath(
-+          FILE_PATH_LITERAL("/etc/opt/chrome/native-messaging-hosts"));
- #else
--      cur = base::FilePath(FILE_PATH_LITERAL(
--          "/etc/chromium/native-messaging-hosts"));
-+      cur = base::FilePath(
-+          FILE_PATH_LITERAL("/etc/chromium/native-messaging-hosts"));
- #endif
- #endif  // !BUILDFLAG(IS_MAC)
-       break;
+       cur = base::FilePath(
+           FILE_PATH_LITERAL("/etc/opt/chrome/native-messaging-hosts"));
 -- 
 2.41.0
 
