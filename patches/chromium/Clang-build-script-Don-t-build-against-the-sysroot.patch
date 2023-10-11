@@ -1,4 +1,4 @@
-From 717f11114c1f71822a0a9e079037dba066682606 Mon Sep 17 00:00:00 2001
+From 6779c182f2507127cc3c2bb6c116ef7656c64fde Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Wed, 31 Aug 2022 10:09:01 -0500
 Subject: [PATCH] Clang build script: Don't build against the sysroot
@@ -8,10 +8,10 @@ Subject: [PATCH] Clang build script: Don't build against the sysroot
  1 file changed, 5 insertions(+), 5 deletions(-)
 
 diff --git a/tools/clang/scripts/build.py b/tools/clang/scripts/build.py
-index fe6de40d8bc96..338650c6c02eb 100755
+index 452c084bc1177..22fa506a6fd36 100755
 --- a/tools/clang/scripts/build.py
 +++ b/tools/clang/scripts/build.py
-@@ -785,7 +785,7 @@ def main():
+@@ -902,7 +902,7 @@ def main():
      if sys.platform.startswith('linux'):
        base_cmake_args += [ '-DLLVM_STATIC_LINK_CXX_STDLIB=ON' ]
  
@@ -20,7 +20,7 @@ index fe6de40d8bc96..338650c6c02eb 100755
      sysroot_amd64 = DownloadDebianSysroot('amd64')
      sysroot_i386 = DownloadDebianSysroot('i386')
      sysroot_arm = DownloadDebianSysroot('arm')
-@@ -1069,7 +1069,7 @@ def main():
+@@ -1193,7 +1193,7 @@ def main():
    if sys.platform.startswith('linux'):
      runtimes_triples_args['i386-unknown-linux-gnu'] = {
          "args": [
@@ -29,7 +29,7 @@ index fe6de40d8bc96..338650c6c02eb 100755
              # TODO(https://crbug.com/1374690): pass proper flags to i386 tests so they compile correctly
              'LLVM_INCLUDE_TESTS=OFF',
          ],
-@@ -1080,7 +1080,7 @@ def main():
+@@ -1204,7 +1204,7 @@ def main():
      }
      runtimes_triples_args['x86_64-unknown-linux-gnu'] = {
          "args": [
@@ -38,7 +38,7 @@ index fe6de40d8bc96..338650c6c02eb 100755
          ],
          "profile": True,
          "sanitizers": True,
-@@ -1094,7 +1094,7 @@ def main():
+@@ -1218,7 +1218,7 @@ def main():
      # Maybe it should work for builtins too?
      runtimes_triples_args['armv7-unknown-linux-gnueabihf'] = {
          "args": [
@@ -47,7 +47,7 @@ index fe6de40d8bc96..338650c6c02eb 100755
              # Can't run tests on x86 host.
              'LLVM_INCLUDE_TESTS=OFF',
          ],
-@@ -1105,7 +1105,7 @@ def main():
+@@ -1229,7 +1229,7 @@ def main():
      }
      runtimes_triples_args['aarch64-unknown-linux-gnu'] = {
          "args": [
