@@ -1,4 +1,4 @@
-From 4dada579348646c3a84139da47caf971786a50ac Mon Sep 17 00:00:00 2001
+From 1bb105cfb529c7a11a1486de7f9097b65e3707ef Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Tue, 25 Aug 2020 19:26:07 -0500
 Subject: [PATCH] flatpak: Adjust paths for the sandbox
@@ -9,7 +9,7 @@ Subject: [PATCH] flatpak: Adjust paths for the sandbox
  2 files changed, 29 insertions(+), 1 deletion(-)
 
 diff --git a/chrome/common/BUILD.gn b/chrome/common/BUILD.gn
-index c3ec18003787c..80799d4210b29 100644
+index e75d7bc0b0187..534e05671feba 100644
 --- a/chrome/common/BUILD.gn
 +++ b/chrome/common/BUILD.gn
 @@ -683,6 +683,10 @@ static_library("constants") {
@@ -24,10 +24,10 @@ index c3ec18003787c..80799d4210b29 100644
  
  # Use a static library here because many test binaries depend on this but don't
 diff --git a/chrome/common/chrome_paths.cc b/chrome/common/chrome_paths.cc
-index 6440a881d60e4..b62ee35c32190 100644
+index 1d75edad24781..81f06365808f3 100644
 --- a/chrome/common/chrome_paths.cc
 +++ b/chrome/common/chrome_paths.cc
-@@ -34,6 +34,10 @@
+@@ -38,6 +38,10 @@
  #include "base/win/registry.h"
  #endif
  
@@ -38,7 +38,7 @@ index 6440a881d60e4..b62ee35c32190 100644
  #if BUILDFLAG(ENABLE_WIDEVINE)
  #include "third_party/widevine/cdm/widevine_cdm_common.h"  // nogncheck
  #endif
-@@ -502,6 +506,14 @@ bool PathProvider(int key, base::FilePath* result) {
+@@ -506,6 +510,14 @@ bool PathProvider(int key, base::FilePath* result) {
        break;
  #if BUILDFLAG(IS_POSIX) && !BUILDFLAG(IS_MAC) && !BUILDFLAG(IS_OPENBSD)
      case chrome::DIR_POLICY_FILES: {
@@ -50,9 +50,9 @@ index 6440a881d60e4..b62ee35c32190 100644
 +        break;
 +      }
 +#endif
- #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-       cur = base::FilePath(FILE_PATH_LITERAL("/etc/opt/chrome/policies"));
- #else
+       cur = base::FilePath(policy::kPolicyPath);
+       break;
+     }
 @@ -526,7 +538,13 @@ bool PathProvider(int key, base::FilePath* result) {
  #endif
  #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)

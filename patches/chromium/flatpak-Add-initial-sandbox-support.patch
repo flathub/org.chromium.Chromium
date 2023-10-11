@@ -1,11 +1,11 @@
-From 04f452f96bc19a526284af6bd2ae3432ff791a6c Mon Sep 17 00:00:00 2001
+From 2163f3a85f16450c7e969318f7854e0565372393 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Tue, 17 Mar 2020 13:18:27 -0500
 Subject: [PATCH] flatpak: Add initial sandbox support
 
 ---
  .gitignore                                    |   1 +
- base/threading/thread_restrictions.h          |   6 +
+ base/threading/thread_restrictions.h          |   5 +
  .../sandbox_internals/sandbox_internals.ts    |   4 +
  .../ui/webui/sandbox/sandbox_internals_ui.cc  |   6 +-
  content/browser/child_process_host_impl.cc    |   8 +-
@@ -23,14 +23,14 @@ Subject: [PATCH] flatpak: Add initial sandbox support
  sandbox/policy/linux/sandbox_linux.cc         |   8 +
  sandbox/policy/linux/sandbox_linux.h          |   8 +
  .../service_process_launcher.cc               |  12 +-
- 19 files changed, 908 insertions(+), 19 deletions(-)
+ 19 files changed, 907 insertions(+), 19 deletions(-)
  create mode 100644 sandbox/linux/services/flatpak_pid_map.cc
  create mode 100644 sandbox/linux/services/flatpak_pid_map.h
  create mode 100644 sandbox/linux/services/flatpak_sandbox.cc
  create mode 100644 sandbox/linux/services/flatpak_sandbox.h
 
 diff --git a/.gitignore b/.gitignore
-index 6241dd501bd42..cde15e39d595f 100644
+index c71ddf7b2c500..01d5e537cf99a 100644
 --- a/.gitignore
 +++ b/.gitignore
 @@ -76,6 +76,7 @@ vs-chromium-project.txt
@@ -42,21 +42,20 @@ index 6241dd501bd42..cde15e39d595f 100644
  /.externalToolBuilders/
  /.settings/
 diff --git a/base/threading/thread_restrictions.h b/base/threading/thread_restrictions.h
-index b88010ec63528..5b3789852ec6e 100644
+index 61ef504585b13..9460c1ce20eb3 100644
 --- a/base/threading/thread_restrictions.h
 +++ b/base/threading/thread_restrictions.h
-@@ -404,6 +404,10 @@ class ScopedAllowThreadJoinForWebRtcTransport;
- }  // namespace protocol
- }  // namespace remoting
- 
+@@ -380,6 +380,9 @@ class ScopedAllowThreadJoinForWebRtcTransport;
+ namespace rlz_lib {
+ class FinancialPing;
+ }
 +namespace sandbox {
 +class FlatpakSandbox;
 +}
-+
  namespace service_manager {
  class ServiceProcessLauncher;
  }
-@@ -644,6 +648,7 @@ class BASE_EXPORT [[maybe_unused, nodiscard]] ScopedAllowBlocking {
+@@ -623,6 +626,7 @@ class BASE_EXPORT [[maybe_unused, nodiscard]] ScopedAllowBlocking {
    friend class remoting::
        ScopedBypassIOThreadRestrictions;  // http://crbug.com/1144161
    friend class remoting::ScopedAllowBlockingForCrashReporting;
@@ -64,7 +63,7 @@ index b88010ec63528..5b3789852ec6e 100644
    friend class ui::DrmDisplayHostManager;
    friend class ui::ScopedAllowBlockingForGbmSurface;
    friend class ui::SelectFileDialogLinux;
-@@ -779,6 +784,7 @@ class BASE_EXPORT [[maybe_unused, nodiscard]] ScopedAllowBaseSyncPrimitives {
+@@ -758,6 +762,7 @@ class BASE_EXPORT [[maybe_unused, nodiscard]] ScopedAllowBaseSyncPrimitives {
    friend class rlz_lib::FinancialPing;
    friend class shell_integration_linux::
        LaunchXdgUtilityScopedAllowBaseSyncPrimitives;
@@ -95,7 +94,7 @@ index 85c0d35f98e6b..98bd35a1a5756 100644
  
    addStatusRow('Layer 1 Sandbox', layer1SandboxType, layer1SandboxCssClass);
 diff --git a/chrome/browser/ui/webui/sandbox/sandbox_internals_ui.cc b/chrome/browser/ui/webui/sandbox/sandbox_internals_ui.cc
-index 4993a173e7281..c7c0f6f43ad37 100644
+index 0be9a6e657473..827ef587802b7 100644
 --- a/chrome/browser/ui/webui/sandbox/sandbox_internals_ui.cc
 +++ b/chrome/browser/ui/webui/sandbox/sandbox_internals_ui.cc
 @@ -15,6 +15,7 @@
@@ -103,10 +102,10 @@ index 4993a173e7281..c7c0f6f43ad37 100644
  #include "content/public/browser/web_ui.h"
  #include "content/public/browser/web_ui_data_source.h"
 +#include "sandbox/policy/linux/sandbox_linux.h"
+ #include "services/network/public/mojom/content_security_policy.mojom.h"
  
  #if BUILDFLAG(IS_WIN)
- #include "chrome/browser/ui/webui/sandbox/sandbox_handler.h"
-@@ -40,6 +41,8 @@ static void SetSandboxStatusData(content::WebUIDataSource* source) {
+@@ -41,6 +42,8 @@ static void SetSandboxStatusData(content::WebUIDataSource* source) {
  
    source->AddBoolean("suid", status & sandbox::policy::SandboxLinux::kSUID);
    source->AddBoolean("userNs", status & sandbox::policy::SandboxLinux::kUserNS);
@@ -115,7 +114,7 @@ index 4993a173e7281..c7c0f6f43ad37 100644
    source->AddBoolean("pidNs", status & sandbox::policy::SandboxLinux::kPIDNS);
    source->AddBoolean("netNs", status & sandbox::policy::SandboxLinux::kNetNS);
    source->AddBoolean("seccompBpf",
-@@ -57,7 +60,8 @@ static void SetSandboxStatusData(content::WebUIDataSource* source) {
+@@ -58,7 +61,8 @@ static void SetSandboxStatusData(content::WebUIDataSource* source) {
  
    // Require either the setuid or namespace sandbox for our first-layer sandbox.
    bool good_layer1 = (status & sandbox::policy::SandboxLinux::kSUID ||
@@ -126,7 +125,7 @@ index 4993a173e7281..c7c0f6f43ad37 100644
                       status & sandbox::policy::SandboxLinux::kNetNS;
    // A second-layer sandbox is also required to be adequately sandboxed.
 diff --git a/content/browser/child_process_host_impl.cc b/content/browser/child_process_host_impl.cc
-index cb673c27cbd99..aaaf552b17b66 100644
+index d476c135ad567..cb7c6058363d1 100644
 --- a/content/browser/child_process_host_impl.cc
 +++ b/content/browser/child_process_host_impl.cc
 @@ -40,6 +40,7 @@
@@ -135,7 +134,7 @@ index cb673c27cbd99..aaaf552b17b66 100644
  #include "base/linux_util.h"
 +#include "sandbox/linux/services/flatpak_sandbox.h"
  #elif BUILDFLAG(IS_MAC)
- #include "base/mac/foundation_util.h"
+ #include "base/apple/foundation_util.h"
  #include "content/browser/mac_helpers.h"
 @@ -73,7 +74,12 @@ base::FilePath ChildProcessHost::GetChildPath(int flags) {
  #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
