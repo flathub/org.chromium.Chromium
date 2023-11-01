@@ -1,0 +1,70 @@
+Index: dev/media/gpu/vaapi/vaapi_video_decode_accelerator.cc
+===================================================================
+--- dev.orig/media/gpu/vaapi/vaapi_video_decode_accelerator.cc
++++ dev/media/gpu/vaapi/vaapi_video_decode_accelerator.cc
+@@ -709,7 +709,8 @@ void VaapiVideoDecodeAccelerator::Assign
+   // processing pipeline for downloading the decoded frame from the internal
+   // surface, we need to create a |vpp_vaapi_wrapper_|.
+   if (requires_vpp && buffer_allocation_mode_ != BufferAllocationMode::kNone &&
+-      buffer_allocation_mode_ != BufferAllocationMode::kWrapVdpau) {
++      buffer_allocation_mode_ != BufferAllocationMode::kWrapVdpau &&
++      IsVppProfileSupported()) {
+     if (!vpp_vaapi_wrapper_) {
+       vpp_vaapi_wrapper_ = VaapiWrapper::Create(
+           VaapiWrapper::kVideoProcess, VAProfileNone,
+@@ -1208,6 +1209,11 @@ VaapiVideoDecodeAccelerator::GetSupporte
+   return profiles;
+ }
+ 
++// static
++bool VaapiVideoDecodeAccelerator::IsVppProfileSupported() {
++  return VaapiWrapper::IsVppProfileSupported();
++}
++
+ VaapiVideoDecodeAccelerator::BufferAllocationMode
+ VaapiVideoDecodeAccelerator::DecideBufferAllocationMode() {
+ #if BUILDFLAG(USE_VAAPI_X11)
+Index: dev/media/gpu/vaapi/vaapi_video_decode_accelerator.h
+===================================================================
+--- dev.orig/media/gpu/vaapi/vaapi_video_decode_accelerator.h
++++ dev/media/gpu/vaapi/vaapi_video_decode_accelerator.h
+@@ -95,6 +95,8 @@ class MEDIA_GPU_EXPORT VaapiVideoDecodeA
+ 
+   static VideoDecodeAccelerator::SupportedProfiles GetSupportedProfiles();
+ 
++  static bool IsVppProfileSupported();
++
+   // DecodeSurfaceHandler implementation.
+   scoped_refptr<VASurface> CreateSurface() override;
+   void SurfaceReady(scoped_refptr<VASurface> va_surface,
+Index: dev/media/gpu/vaapi/vaapi_wrapper.cc
+===================================================================
+--- dev.orig/media/gpu/vaapi/vaapi_wrapper.cc
++++ dev/media/gpu/vaapi/vaapi_wrapper.cc
+@@ -2026,6 +2026,12 @@ bool VaapiWrapper::GetJpegDecodeSuitable
+ }
+ 
+ // static
++bool VaapiWrapper::IsVppProfileSupported() {
++  return VASupportedProfiles::Get().IsProfileSupported(kVideoProcess,
++                                                    VAProfileNone);
++}
++
++// static
+ bool VaapiWrapper::IsVppResolutionAllowed(const gfx::Size& size) {
+   const VASupportedProfiles::ProfileInfo* profile_info =
+       VASupportedProfiles::Get().IsProfileSupported(kVideoProcess,
+Index: dev/media/gpu/vaapi/vaapi_wrapper.h
+===================================================================
+--- dev.orig/media/gpu/vaapi/vaapi_wrapper.h
++++ dev/media/gpu/vaapi/vaapi_wrapper.h
+@@ -276,6 +276,9 @@ class MEDIA_GPU_EXPORT VaapiWrapper
+                                                uint32_t preferred_fourcc,
+                                                uint32_t* suitable_fourcc);
+ 
++  // Checks to see if VAProfileNone is supported on this decoder
++  static bool IsVppProfileSupported();
++
+   // Checks the surface size is allowed for VPP. Returns true if the size is
+   // supported, false otherwise.
+   static bool IsVppResolutionAllowed(const gfx::Size& size);
