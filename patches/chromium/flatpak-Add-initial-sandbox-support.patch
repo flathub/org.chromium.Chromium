@@ -1,4 +1,4 @@
-From 2163f3a85f16450c7e969318f7854e0565372393 Mon Sep 17 00:00:00 2001
+From 3383b03f9d0867bb5200ebdf3e536c92ceea9339 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Tue, 17 Mar 2020 13:18:27 -0500
 Subject: [PATCH] flatpak: Add initial sandbox support
@@ -30,7 +30,7 @@ Subject: [PATCH] flatpak: Add initial sandbox support
  create mode 100644 sandbox/linux/services/flatpak_sandbox.h
 
 diff --git a/.gitignore b/.gitignore
-index c71ddf7b2c500..01d5e537cf99a 100644
+index 22417f27125a4..2e1a74e107bdd 100644
 --- a/.gitignore
 +++ b/.gitignore
 @@ -76,6 +76,7 @@ vs-chromium-project.txt
@@ -42,10 +42,10 @@ index c71ddf7b2c500..01d5e537cf99a 100644
  /.externalToolBuilders/
  /.settings/
 diff --git a/base/threading/thread_restrictions.h b/base/threading/thread_restrictions.h
-index 61ef504585b13..9460c1ce20eb3 100644
+index b0bd783057a77..1591371dd35a9 100644
 --- a/base/threading/thread_restrictions.h
 +++ b/base/threading/thread_restrictions.h
-@@ -380,6 +380,9 @@ class ScopedAllowThreadJoinForWebRtcTransport;
+@@ -381,6 +381,9 @@ class ScopedAllowThreadJoinForWebRtcTransport;
  namespace rlz_lib {
  class FinancialPing;
  }
@@ -55,7 +55,7 @@ index 61ef504585b13..9460c1ce20eb3 100644
  namespace service_manager {
  class ServiceProcessLauncher;
  }
-@@ -623,6 +626,7 @@ class BASE_EXPORT [[maybe_unused, nodiscard]] ScopedAllowBlocking {
+@@ -624,6 +627,7 @@ class BASE_EXPORT [[maybe_unused, nodiscard]] ScopedAllowBlocking {
    friend class remoting::
        ScopedBypassIOThreadRestrictions;  // http://crbug.com/1144161
    friend class remoting::ScopedAllowBlockingForCrashReporting;
@@ -63,7 +63,7 @@ index 61ef504585b13..9460c1ce20eb3 100644
    friend class ui::DrmDisplayHostManager;
    friend class ui::ScopedAllowBlockingForGbmSurface;
    friend class ui::SelectFileDialogLinux;
-@@ -758,6 +762,7 @@ class BASE_EXPORT [[maybe_unused, nodiscard]] ScopedAllowBaseSyncPrimitives {
+@@ -759,6 +763,7 @@ class BASE_EXPORT [[maybe_unused, nodiscard]] ScopedAllowBaseSyncPrimitives {
    friend class rlz_lib::FinancialPing;
    friend class shell_integration_linux::
        LaunchXdgUtilityScopedAllowBaseSyncPrimitives;
@@ -94,7 +94,7 @@ index 85c0d35f98e6b..98bd35a1a5756 100644
  
    addStatusRow('Layer 1 Sandbox', layer1SandboxType, layer1SandboxCssClass);
 diff --git a/chrome/browser/ui/webui/sandbox/sandbox_internals_ui.cc b/chrome/browser/ui/webui/sandbox/sandbox_internals_ui.cc
-index 0be9a6e657473..827ef587802b7 100644
+index ad19f25fb6c27..092ee7fd864e3 100644
 --- a/chrome/browser/ui/webui/sandbox/sandbox_internals_ui.cc
 +++ b/chrome/browser/ui/webui/sandbox/sandbox_internals_ui.cc
 @@ -15,6 +15,7 @@
@@ -1211,7 +1211,7 @@ index 0000000000000..167bbc85945ad
 +
 +#endif  // SANDBOX_LINUX_SERVICES_FLATPAK_SANDBOX_H_
 diff --git a/sandbox/policy/BUILD.gn b/sandbox/policy/BUILD.gn
-index 896ce8ab9b229..3177afe9ba7e8 100644
+index 8bb3ae6c443e0..e4beab441e635 100644
 --- a/sandbox/policy/BUILD.gn
 +++ b/sandbox/policy/BUILD.gn
 @@ -108,6 +108,9 @@ component("policy") {
