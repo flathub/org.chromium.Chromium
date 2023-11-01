@@ -20,7 +20,7 @@ else
       --host-cc=/usr/lib/sdk/llvm14/bin/clang \
       --host-cxx=/usr/lib/sdk/llvm14/bin/clang++ \
       --target-triple=$(clang -dumpmachine) \
-      --without-android --without-fuchsia \
+      --without-android --without-fuchsia --without-zstd \
       --with-ml-inliner-model=
 fi
 

@@ -1,4 +1,4 @@
-From 7f01dd992fae1ef5588d1c1e64a561c83e14d8ed Mon Sep 17 00:00:00 2001
+From 61f4988650627b4faa75fcc09153acfe2f94eda5 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <git@refi64.dev>
 Date: Tue, 12 Sep 2023 17:34:22 -0500
 Subject: [PATCH] Don't have robo_lib fail on arm64

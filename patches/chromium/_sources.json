@@ -5,7 +5,7 @@
       "patches/chromium/flatpak-Add-initial-sandbox-support.patch",
       "patches/chromium/flatpak-Expose-Widevine-into-the-sandbox.patch",
       "patches/chromium/flatpak-Adjust-paths-for-the-sandbox.patch",
-      "patches/chromium/Import-chromium-71.0.3578.98-widevine-r3.patch.patch",
+      "patches/chromium/Import-chromium-71.0.3578.98-widevine-r3.patch-arm64-suppo.patch",
       "patches/chromium/x11-Set-_NET_WM_BYPASS_COMPOSITOR-for-fullscreen.patch",
       "patches/chromium/memory-Enable-the-tab-discards-feature.patch",
       "patches/chromium/Enable-accelerated-mjpeg-decode-on-Linux.patch",
