@@ -1,4 +1,4 @@
-From 3383b03f9d0867bb5200ebdf3e536c92ceea9339 Mon Sep 17 00:00:00 2001
+From e1cee51134f45c6b52934067672aa4d5c5512d6a Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Tue, 17 Mar 2020 13:18:27 -0500
 Subject: [PATCH] flatpak: Add initial sandbox support
@@ -42,10 +42,10 @@ index 22417f27125a4..2e1a74e107bdd 100644
  /.externalToolBuilders/
  /.settings/
 diff --git a/base/threading/thread_restrictions.h b/base/threading/thread_restrictions.h
-index b0bd783057a77..1591371dd35a9 100644
+index 2c6f5bf5fc203..68bd86d8fa8d7 100644
 --- a/base/threading/thread_restrictions.h
 +++ b/base/threading/thread_restrictions.h
-@@ -381,6 +381,9 @@ class ScopedAllowThreadJoinForWebRtcTransport;
+@@ -382,6 +382,9 @@ class ScopedAllowThreadJoinForWebRtcTransport;
  namespace rlz_lib {
  class FinancialPing;
  }
@@ -55,7 +55,7 @@ index b0bd783057a77..1591371dd35a9 100644
  namespace service_manager {
  class ServiceProcessLauncher;
  }
-@@ -624,6 +627,7 @@ class BASE_EXPORT [[maybe_unused, nodiscard]] ScopedAllowBlocking {
+@@ -625,6 +628,7 @@ class BASE_EXPORT [[maybe_unused, nodiscard]] ScopedAllowBlocking {
    friend class remoting::
        ScopedBypassIOThreadRestrictions;  // http://crbug.com/1144161
    friend class remoting::ScopedAllowBlockingForCrashReporting;
@@ -63,7 +63,7 @@ index b0bd783057a77..1591371dd35a9 100644
    friend class ui::DrmDisplayHostManager;
    friend class ui::ScopedAllowBlockingForGbmSurface;
    friend class ui::SelectFileDialogLinux;
-@@ -759,6 +763,7 @@ class BASE_EXPORT [[maybe_unused, nodiscard]] ScopedAllowBaseSyncPrimitives {
+@@ -760,6 +764,7 @@ class BASE_EXPORT [[maybe_unused, nodiscard]] ScopedAllowBaseSyncPrimitives {
    friend class rlz_lib::FinancialPing;
    friend class shell_integration_linux::
        LaunchXdgUtilityScopedAllowBaseSyncPrimitives;
@@ -72,7 +72,7 @@ index b0bd783057a77..1591371dd35a9 100644
    friend class syncer::HttpBridge;
    friend class syncer::GetLocalChangesRequest;
 diff --git a/chrome/browser/resources/sandbox_internals/sandbox_internals.ts b/chrome/browser/resources/sandbox_internals/sandbox_internals.ts
-index 85c0d35f98e6b..98bd35a1a5756 100644
+index f6d2f3f0bc41c..fcc58c6735eaa 100644
 --- a/chrome/browser/resources/sandbox_internals/sandbox_internals.ts
 +++ b/chrome/browser/resources/sandbox_internals/sandbox_internals.ts
 @@ -140,6 +140,7 @@ function addGoodBadRow(name: string, result: boolean): HTMLElement {
@@ -1211,10 +1211,10 @@ index 0000000000000..167bbc85945ad
 +
 +#endif  // SANDBOX_LINUX_SERVICES_FLATPAK_SANDBOX_H_
 diff --git a/sandbox/policy/BUILD.gn b/sandbox/policy/BUILD.gn
-index 8bb3ae6c443e0..e4beab441e635 100644
+index 256e4c4033bf7..71a6ef69fb4e8 100644
 --- a/sandbox/policy/BUILD.gn
 +++ b/sandbox/policy/BUILD.gn
-@@ -108,6 +108,9 @@ component("policy") {
+@@ -121,6 +121,9 @@ component("policy") {
        "//sandbox/linux:suid_sandbox_client",
      ]
    }
@@ -1225,7 +1225,7 @@ index 8bb3ae6c443e0..e4beab441e635 100644
      sources += [
        "linux/bpf_ime_policy_linux.cc",
 diff --git a/sandbox/policy/linux/sandbox_linux.cc b/sandbox/policy/linux/sandbox_linux.cc
-index 5dbb628a744a9..d4a94e3034da6 100644
+index e574b7b97ea7f..7f7e8d93c73fe 100644
 --- a/sandbox/policy/linux/sandbox_linux.cc
 +++ b/sandbox/policy/linux/sandbox_linux.cc
 @@ -36,6 +36,7 @@
@@ -1236,7 +1236,7 @@ index 5dbb628a744a9..d4a94e3034da6 100644
  #include "sandbox/linux/services/libc_interceptor.h"
  #include "sandbox/linux/services/namespace_sandbox.h"
  #include "sandbox/linux/services/proc_util.h"
-@@ -204,6 +205,9 @@ void SandboxLinux::PreinitializeSandbox() {
+@@ -205,6 +206,9 @@ void SandboxLinux::PreinitializeSandbox() {
    const int yama_status = Yama::GetStatus();
    yama_is_enforcing_ = (yama_status & Yama::STATUS_PRESENT) &&
                         (yama_status & Yama::STATUS_ENFORCING);
@@ -1246,7 +1246,7 @@ index 5dbb628a744a9..d4a94e3034da6 100644
    pre_initialized_ = true;
  }
  
-@@ -242,6 +246,10 @@ int SandboxLinux::GetStatus() {
+@@ -243,6 +247,10 @@ int SandboxLinux::GetStatus() {
          sandbox_status_flags_ |= kPIDNS;
        if (NamespaceSandbox::InNewNetNamespace())
          sandbox_status_flags_ |= kNetNS;
