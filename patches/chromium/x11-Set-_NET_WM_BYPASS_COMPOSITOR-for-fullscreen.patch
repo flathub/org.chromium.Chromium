@@ -1,4 +1,4 @@
-From 7a8f5531b05ca506324ce4a34075d6dc2d095994 Mon Sep 17 00:00:00 2001
+From 47fc23d3c267462b0a23e2b48c598e097adf2fec Mon Sep 17 00:00:00 2001
 From: Daniel Drake <drake@endlessm.com>
 Date: Fri, 3 Jul 2015 14:59:24 -0600
 Subject: [PATCH] x11: Set _NET_WM_BYPASS_COMPOSITOR for fullscreen
@@ -10,7 +10,7 @@ This improves performance at full screen.
  2 files changed, 9 insertions(+)
 
 diff --git a/ui/ozone/platform/x11/x11_window.cc b/ui/ozone/platform/x11/x11_window.cc
-index 91d5863a7e241..a272a36d2b21b 100644
+index 6f275a01d69ec..6435e7883fe79 100644
 --- a/ui/ozone/platform/x11/x11_window.cc
 +++ b/ui/ozone/platform/x11/x11_window.cc
 @@ -639,6 +639,8 @@ void X11Window::SetFullscreen(bool fullscreen, int64_t target_display_id) {
@@ -22,7 +22,7 @@ index 91d5863a7e241..a272a36d2b21b 100644
    if (unmaximize_and_remaximize)
      Maximize();
  
-@@ -1882,6 +1884,12 @@ void X11Window::SetFullscreen(bool fullscreen) {
+@@ -1887,6 +1889,12 @@ void X11Window::SetFullscreen(bool fullscreen) {
                   x11::Atom::None);
  }
  
@@ -36,10 +36,10 @@ index 91d5863a7e241..a272a36d2b21b 100644
    // Focus and stacking order are independent in X11.  Since we cannot guarantee
    // a window is topmost iff it has focus, just use the focus state to determine
 diff --git a/ui/ozone/platform/x11/x11_window.h b/ui/ozone/platform/x11/x11_window.h
-index 10fc00032abe1..aa9402a23f508 100644
+index bc354363d369e..e55df6556e0b9 100644
 --- a/ui/ozone/platform/x11/x11_window.h
 +++ b/ui/ozone/platform/x11/x11_window.h
-@@ -233,6 +233,7 @@ class X11Window : public PlatformWindow,
+@@ -235,6 +235,7 @@ class X11Window : public PlatformWindow,
    void CloseXWindow();
    void Map(bool inactive = false);
    void SetFullscreen(bool fullscreen);
