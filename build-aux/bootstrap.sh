@@ -29,6 +29,7 @@ fi
 # http://lists.debian.org/debian-legal/2013/11/msg00006.html
 tools/gn/bootstrap/bootstrap.py -v --no-clean --gn-gen-args='
     use_sysroot=false
+    use_system_ffmpeg=1
     use_lld=true
     enable_nacl=false
     blink_symbol_level=0
