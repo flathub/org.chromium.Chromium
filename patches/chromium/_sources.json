@@ -21,8 +21,9 @@
       "patches/chromium/media-Add-libfdk_aac-to-the-audio-codec-allow-list.patch",
       "patches/chromium/0001-adjust-buffer-format-order.patch",
       "patches/chromium/0001-enable-linux-unstable-deb-target.patch",
-      "patches/chromium/0001-vaapi-flag-ozone-wayland.patch"
-      
+      "patches/chromium/0001-vaapi-flag-ozone-wayland.patch",
+      "patches/chromium/0001-ozone-wayland-implement-text_input_manager_v3.patch",
+      "patches/chromium/0001-ozone-wayland-implement-text_input_manager-fixes.patch"      
     ]
   }
 ]
