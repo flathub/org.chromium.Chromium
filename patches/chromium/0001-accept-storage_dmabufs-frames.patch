@@ -1,0 +1,30 @@
+From cd0e0217adbda71c7541e36be8a9236a0123a088 Mon Sep 17 00:00:00 2001
+From: Robert Mader <robert.mader@collabora.com>
+Date: Fri, 17 Nov 2023 13:05:13 +0100
+Subject: [PATCH] media/gpu/MailboxVideoFrameConverter: Accept STORAGE_DMABUFS frames
+
+Such frames are produced by V4L2 decoders on (non-ChromeOS) Linux and the storage type is apperently supported just fine by e.g. ozone Wayland.
+
+This is one step needed to enable V4L2 video decoding on Linux.
+
+Bug:b:311459822
+Change-Id: I877a776561f99346cb673a8b723c0c364efb03e1
+---
+
+diff --git a/media/gpu/chromeos/mailbox_video_frame_converter.cc b/media/gpu/chromeos/mailbox_video_frame_converter.cc
+index 961b88de..b7c2230 100644
+--- a/media/gpu/chromeos/mailbox_video_frame_converter.cc
++++ b/media/gpu/chromeos/mailbox_video_frame_converter.cc
+@@ -337,8 +337,11 @@
+   DCHECK(parent_task_runner_->RunsTasksInCurrentSequence());
+   DVLOGF(4);
+ 
+-  if (!frame || frame->storage_type() != VideoFrame::STORAGE_GPU_MEMORY_BUFFER)
++  if (!frame ||
++      (frame->storage_type() != VideoFrame::STORAGE_GPU_MEMORY_BUFFER &&
++       frame->storage_type() != VideoFrame::STORAGE_DMABUFS)) {
+     return OnError(FROM_HERE, "Invalid frame.");
++  }
+ 
+   VideoFrame* origin_frame =
+       !unwrap_frame_cb_.is_null() ? unwrap_frame_cb_.Run(*frame) : frame.get();

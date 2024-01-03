@@ -1,0 +1,52 @@
+From ad9ef4f11c42af9cfbae6fda0311a9c3b503348e Mon Sep 17 00:00:00 2001
+From: Robert Mader <robert.mader@collabora.com>
+Date: Fri, 17 Nov 2023 14:22:44 +0100
+Subject: [PATCH] media: Allow preferred formats on Linux
+
+And move the function to exactly match ChromeOS. With improvements in
+other parts of the stack this works now for VA-API and V4L2 decoding,
+allowing the import of NV12 buffers directly.
+
+Bug:b:311459822
+Change-Id: I8ee396de5f6d4958278b0f0bd53bfa9a7007c8c7
+---
+
+diff --git a/media/mojo/services/gpu_mojo_media_client_linux.cc b/media/mojo/services/gpu_mojo_media_client_linux.cc
+index e383fbe..6a9d4e9 100644
+--- a/media/mojo/services/gpu_mojo_media_client_linux.cc
++++ b/media/mojo/services/gpu_mojo_media_client_linux.cc
+@@ -18,6 +18,11 @@
+ 
+ namespace {
+ 
++std::vector<Fourcc> GetPreferredRenderableFourccs(
++    const gpu::GpuPreferences& gpu_preferences) {
++  return VideoDecoderPipeline::DefaultPreferredRenderableFourccs();
++}
++
+ VideoDecoderType GetPreferredLinuxDecoderImplementation() {
+   // VaapiVideoDecoder flag is required for VaapiVideoDecoder.
+   if (!base::FeatureList::IsEnabled(kVaapiVideoDecodeLinux)) {
+@@ -35,22 +40,6 @@
+ #endif
+ }
+ 
+-std::vector<Fourcc> GetPreferredRenderableFourccs(
+-    const gpu::GpuPreferences& gpu_preferences) {
+-  std::vector<Fourcc> renderable_fourccs;
+-#if BUILDFLAG(ENABLE_VULKAN)
+-  // Support for zero-copy NV12 textures preferentially.
+-  if (gpu_preferences.gr_context_type == gpu::GrContextType::kVulkan) {
+-    renderable_fourccs.emplace_back(Fourcc::NV12);
+-  }
+-#endif  // BUILDFLAG(ENABLE_VULKAN)
+-
+-  // Support 1-copy argb textures.
+-  renderable_fourccs.emplace_back(Fourcc::AR24);
+-
+-  return renderable_fourccs;
+-}
+-
+ VideoDecoderType GetActualPlatformDecoderImplementation(
+     const gpu::GpuPreferences& gpu_preferences,
+     const gpu::GPUInfo& gpu_info) {

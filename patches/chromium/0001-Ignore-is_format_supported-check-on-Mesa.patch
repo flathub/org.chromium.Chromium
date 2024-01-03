@@ -1,0 +1,35 @@
+From 9985f3e06c9f9ebb3fa95901e875a3845b6aee37 Mon Sep 17 00:00:00 2001
+From: Robert Mader <robert.mader@collabora.com>
+Date: Fri, 17 Nov 2023 13:17:24 +0100
+Subject: [PATCH] ui/gfx/lixux/gbm_wrapper: Ignore is_format_supported() check on Mesa
+
+Mesa does not support allocating buffers with multi-planar formats
+like NV12 and P010 and the function always returns `FALSE`, even as
+most drivers support importing such buffer, allocated by VA-API or
+V4L2 decoders, just fine.
+
+Thus don't bail out on Mesa. I'm not aware of any regressions this could
+realistically cause, but can't fully rule it out neither.
+
+This is needed for VA-API and V4L2 hardware decoding on Linux + Ozone
+Wayland.
+
+Bug:b:311459822
+Change-Id: I6a5c3c468ba33f1f44e48b1dc752bdb017d7957f
+---
+
+diff --git a/ui/gfx/linux/gbm_wrapper.cc b/ui/gfx/linux/gbm_wrapper.cc
+index 14918c1..95356978 100644
+--- a/ui/gfx/linux/gbm_wrapper.cc
++++ b/ui/gfx/linux/gbm_wrapper.cc
+@@ -398,8 +398,10 @@
+ 
+     int gbm_flags = 0;
+     if ((gbm_flags = GetSupportedGbmFlags(format)) == 0) {
++#if defined(MINIGBM)
+       LOG(ERROR) << "gbm format not supported: " << format;
+       return nullptr;
++#endif
+     }
+ 
+     struct gbm_import_fd_modifier_data fd_data;
