@@ -23,7 +23,11 @@
       "patches/chromium/0001-enable-linux-unstable-deb-target.patch",
       "patches/chromium/0001-vaapi-flag-ozone-wayland.patch",
       "patches/chromium/0001-ozone-wayland-implement-text_input_manager_v3.patch",
-      "patches/chromium/0001-ozone-wayland-implement-text_input_manager-fixes.patch"      
+      "patches/chromium/0001-ozone-wayland-implement-text_input_manager-fixes.patch",
+      "patches/chromium/0001-Allow-preferred-formats-on-Linux.patch",
+      "patches/chromium/0001-Ignore-is_format_supported-check-on-Mesa.patch",
+      "patches/chromium/0001-accept-storage_dmabufs-frames.patch",
+      "patches/chromium/0001-Allowing-VA-API-on-Linux-Ozone-Wayland.patch"
     ]
   }
 ]
