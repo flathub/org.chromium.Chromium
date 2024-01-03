@@ -28,6 +28,9 @@ fi
 # DO NOT REUSE THE BELOW API KEY; it is for Flathub only.
 # http://lists.debian.org/debian-legal/2013/11/msg00006.html
 tools/gn/bootstrap/bootstrap.py -v --no-clean --gn-gen-args='
+    use_system_minigbm=true
+    use_intel_minigbm=true
+    use_amdgpu_minigbm=true
     use_sysroot=false
     use_system_ffmpeg=1
     use_lld=true
