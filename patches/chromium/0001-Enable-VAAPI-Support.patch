@@ -1,0 +1,25 @@
+From 0a4e4c77b6b611022129f601fff35f7a9f147d35 Mon Sep 17 00:00:00 2001
+From: Robert Mader <robert.mader@collabora.com>
+Date: Fri, 17 Nov 2023 14:24:21 +0100
+Subject: [PATCH] ozone/wayland: Enable VAAPI support
+
+With improvements in other parts of the stack this now supported.
+
+TODO: simply drop the flag instead? There's no V4L2 equivalent either.
+
+Bug:b:311459822
+Change-Id: I0094e07ea02653d02c81c5ca3411afe6e55569b6
+---
+
+diff --git a/ui/ozone/platform/wayland/ozone_platform_wayland.cc b/ui/ozone/platform/wayland/ozone_platform_wayland.cc
+index 71850fc..ff23e774 100644
+--- a/ui/ozone/platform/wayland/ozone_platform_wayland.cc
++++ b/ui/ozone/platform/wayland/ozone_platform_wayland.cc
+@@ -337,6 +337,7 @@
+       // arbitrary position.
+       properties->supports_global_screen_coordinates =
+           kDefaultScreenCoordinateEnabled;
++      properties->supports_vaapi = true;
+       initialised = true;
+     }
+ 
