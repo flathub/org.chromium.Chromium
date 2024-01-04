@@ -1,0 +1,158 @@
+From f34675b8667c5b94ae8ea91488a932790db7a73f Mon Sep 17 00:00:00 2001
+From: Jianhui Dai <jianhui.j.dai@intel.com>
+Date: Thu, 20 Jul 2023 19:01:32 +0800
+Subject: [PATCH] Allowing VA-API on Linux Ozone/Wayland
+
+VaapiWrapper has been updated to remove the usage of libva-x11 and the
+legacy VaapiVideoDecodeAccelerator, in favor of libva-drm only. This
+means now Linux Ozone/Wayland can share the same code path as Linux
+Ozone/X11. See CL:4697513.
+
+This CL removes the remaining libva-x11 codes from Ozone and
+VaapiWrapper, and allows VA-API by default on Linux Ozone/Wayland.
+
+Test On Linux X11:
+-enable-features=VaapiVideoDecodeLinuxGL \
+--use-gl=angle --use-angle=gl \
+--ozone-platform=x11
+
+Test On Linux Wayland:
+-enable-features=VaapiVideoDecodeLinuxGL \
+--use-gl=angle --use-angle=gl \
+--ozone-platform=wayland
+
+Bug: 1326754,1116701
+Change-Id: I6d6bf781833a7752d23dafb2b63112c2fc81b17a
+---
+
+diff --git a/media/gpu/BUILD.gn b/media/gpu/BUILD.gn
+index 92262d5d8..ff05821 100644
+--- a/media/gpu/BUILD.gn
++++ b/media/gpu/BUILD.gn
+@@ -22,7 +22,6 @@
+     "USE_VAAPI_IMAGE_CODECS=$use_vaapi_image_codecs",
+     "USE_V4L2_CODEC=$use_v4l2_codec",
+     "USE_LIBV4L2=$use_v4lplugin",
+-    "USE_VAAPI_X11=$use_vaapi_x11",
+   ]
+ }
+ 
+diff --git a/media/gpu/args.gni b/media/gpu/args.gni
+index c16f135..75fcf90 100644
+--- a/media/gpu/args.gni
++++ b/media/gpu/args.gni
+@@ -6,13 +6,6 @@
+ import("//build/config/ozone.gni")
+ 
+ declare_args() {
+-  # Indicates if X11 VA-API-based hardware acceleration is to be used.
+-  # See also the comment near the |use_vaapi| arg.
+-  use_vaapi_x11 = is_linux && ozone_platform_x11 &&
+-                  (target_cpu == "x86" || target_cpu == "x64") && !is_castos
+-}
+-
+-declare_args() {
+   # Indicates if V4L plugin is used.
+   use_v4lplugin = false
+ 
+@@ -23,10 +16,11 @@
+ 
+   # Indicates if VA-API-based hardware acceleration is to be used. This
+   # is typically the case on x86-based ChromeOS devices.
+-  # VA-API should also be compiled by default on x11-using linux devices
++  # VA-API should also be compiled by default on x11/wayland linux devices
+   # using x86/x64.
+-  use_vaapi = use_vaapi_x11 || (is_chromeos_lacros &&
+-                                (target_cpu == "x86" || target_cpu == "x64"))
++  use_vaapi = (is_chromeos_lacros ||
++               (is_linux && (ozone_platform_x11 || ozone_platform_wayland) &&
++                !is_castos)) && (target_cpu == "x86" || target_cpu == "x64")
+ 
+   # Indicates if ChromeOS protected media support exists. This is used
+   # to enable the CDM daemon in Chrome OS as well as support for
+diff --git a/media/gpu/vaapi/BUILD.gn b/media/gpu/vaapi/BUILD.gn
+index 453a0d18..b2c8996 100644
+--- a/media/gpu/vaapi/BUILD.gn
++++ b/media/gpu/vaapi/BUILD.gn
+@@ -170,10 +170,6 @@
+     deps += [ "//ui/ozone" ]
+   }
+ 
+-  if (use_vaapi_x11) {
+-    deps += [ "//ui/gfx/x" ]
+-  }
+-
+   configs += [ "//build/config/linux/libva" ]
+ }
+ 
+diff --git a/media/gpu/vaapi/va_stub_header.fragment b/media/gpu/vaapi/va_stub_header.fragment
+index e8c46c5e..a60c2d2 100644
+--- a/media/gpu/vaapi/va_stub_header.fragment
++++ b/media/gpu/vaapi/va_stub_header.fragment
+@@ -7,8 +7,5 @@
+ 
+ #include <va/va_drm.h>
+ #include <va/va.h>
+-#if BUILDFLAG(USE_VAAPI_X11)
+-#include <va/va_x11.h>
+-#endif  // BUILDFLAG(USE_VAAPI_X11)
+ 
+ }
+diff --git a/media/gpu/vaapi/vaapi_wrapper.cc b/media/gpu/vaapi/vaapi_wrapper.cc
+index 1e61271..d016734 100644
+--- a/media/gpu/vaapi/vaapi_wrapper.cc
++++ b/media/gpu/vaapi/vaapi_wrapper.cc
+@@ -1527,19 +1527,6 @@
+     return {};
+   }
+ 
+-#if BUILDFLAG(IS_OZONE) && BUILDFLAG(IS_LINUX)
+-  // TODO(crbug.com/1116701): add vaapi support for other Ozone platforms on
+-  // Linux. See comment in OzonePlatform::PlatformProperties::supports_vaapi
+-  // for more details. This will also require revisiting everything that's
+-  // guarded by USE_VAAPI_X11. For example, if USE_VAAPI_X11 is true, but the
+-  // user chooses the Wayland backend for Ozone at runtime, then many things (if
+-  // not all) that we do for X11 won't apply.
+-  auto* ozone = ui::OzonePlatform::GetInstance();
+-  if (!ozone || !ozone->GetPlatformProperties().supports_vaapi) {
+-    return {};
+-  }
+-#endif
+-
+   const bool libraries_initialized = IsVaInitialized() && IsVa_drmInitialized();
+   if (!libraries_initialized) {
+     return {};
+diff --git a/ui/ozone/platform/x11/ozone_platform_x11.cc b/ui/ozone/platform/x11/ozone_platform_x11.cc
+index 62382a2..3409429 100644
+--- a/ui/ozone/platform/x11/ozone_platform_x11.cc
++++ b/ui/ozone/platform/x11/ozone_platform_x11.cc
+@@ -197,9 +197,6 @@
+       properties->supports_global_application_menus = true;
+       properties->app_modal_dialogs_use_event_blocker = true;
+       properties->fetch_buffer_formats_for_gmb_on_gpu = true;
+-#if BUILDFLAG(IS_LINUX)
+-      properties->supports_vaapi = true;
+-#endif
+ 
+       initialised = true;
+     }
+diff --git a/ui/ozone/public/ozone_platform.h b/ui/ozone/public/ozone_platform.h
+index 29ff7bf..21b4bce 100644
+--- a/ui/ozone/public/ozone_platform.h
++++ b/ui/ozone/public/ozone_platform.h
+@@ -143,15 +143,6 @@
+     // back via gpu extra info.
+     bool fetch_buffer_formats_for_gmb_on_gpu = false;
+ 
+-#if BUILDFLAG(IS_LINUX)
+-    // TODO(crbug.com/1116701): add vaapi support for other Ozone platforms on
+-    // Linux. At the moment, VA-API Linux implementation supports only X11
+-    // backend. This implementation must be refactored to support Ozone
+-    // properly. As a temporary solution, VA-API on Linux checks if vaapi is
+-    // supported (which implicitly means that it is Ozone/X11).
+-    bool supports_vaapi = false;
+-#endif
+-
+     // Indicates that the platform allows client applications to manipulate
+     // global screen coordinates. Wayland, for example, disallow it by design.
+     bool supports_global_screen_coordinates = true;
