@@ -45,7 +45,6 @@ tools/gn/bootstrap/bootstrap.py -v --no-clean --gn-gen-args='
     proprietary_codecs=true
     ffmpeg_branding="Chrome"
     is_component_ffmpeg=true
-    use_v4l2_codec=true
     use_vaapi=true
     enable_widevine=true
     rtc_use_pipewire=true
