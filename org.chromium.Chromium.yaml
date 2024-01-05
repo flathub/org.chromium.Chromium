@@ -10,7 +10,6 @@ finish-args:
   - --filesystem=home
   - --filesystem=/run/.heim_org.h5l.kcm-socket
   - --device=all
-  - --env=GTK_PATH=/app/lib/gtkmodules
   - --env=LD_LIBRARY_PATH=/app/chromium/nonfree-codecs/lib
   - --share=ipc
   - --share=network
