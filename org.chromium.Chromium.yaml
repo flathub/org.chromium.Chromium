@@ -1,9 +1,9 @@
 app-id: org.chromium.Chromium
 runtime: org.freedesktop.Platform
-runtime-version: '22.08'
+runtime-version: '23.08'
 sdk: org.freedesktop.Sdk
 base: org.chromium.Chromium.BaseApp
-base-version: '22.08'
+base-version: '23.08'
 command: chromium
 finish-args:
   - --require-version=1.8.2
@@ -62,9 +62,9 @@ add-extensions:
     autodelete: true
 
 sdk-extensions:
-  - org.freedesktop.Sdk.Extension.llvm14
-  - org.freedesktop.Sdk.Extension.node16
-  - org.freedesktop.Sdk.Extension.openjdk11
+  - org.freedesktop.Sdk.Extension.llvm17
+  - org.freedesktop.Sdk.Extension.node18
+  - org.freedesktop.Sdk.Extension.openjdk21
 
 modules:
   # Based on https://github.com/flathub/shared-modules/blob/master/python2.7/python-2.7.json
