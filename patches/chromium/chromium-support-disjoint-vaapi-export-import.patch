@@ -1,0 +1,479 @@
+--- a/gpu/command_buffer/service/shared_image/external_vk_image_backing_factory.cc
++++ b/gpu/command_buffer/service/shared_image/external_vk_image_backing_factory.cc
+@@ -257,7 +257,7 @@
+     return false;
+   }
+ 
+-#if BUILDFLAG(IS_LINUX)
++#if 0
+   if (format.IsLegacyMultiplanar()) {
+     // ExternalVkImageBacking doesn't work properly with external sampler
+     // multi-planar formats on Linux, see https://crbug.com/1394888.
+diff -ur a/gpu/vulkan/vulkan_image.h b/gpu/vulkan/vulkan_image.h
+--- a/gpu/vulkan/vulkan_image.h
++++ b/gpu/vulkan/vulkan_image.h
+@@ -206,6 +206,22 @@
+                                                 std::vector<uint64_t> modifiers,
+                                                 VkImageUsageFlags usage,
+                                                 VkImageCreateFlags flags);
++  bool InitializeFromNonDisjointGpuMemoryBufferHandle(VulkanDeviceQueue* device_queue,
++                                                      gfx::NativePixmapHandle& native_pixmap_handle,
++                                                      const gfx::Size& size,
++                                                      VkFormat format,
++                                                      VkImageUsageFlags usage,
++                                                      VkImageCreateFlags flags,
++                                                      VkImageTiling image_tiling,
++                                                      uint32_t queue_family_index);
++  bool InitializeFromDisjointGpuMemoryBufferHandle(VulkanDeviceQueue* device_queue,
++                                                   gfx::NativePixmapHandle& native_pixmap_handle,
++                                                   const gfx::Size& size,
++                                                   VkFormat format,
++                                                   VkImageUsageFlags usage,
++                                                   VkImageCreateFlags flags,
++                                                   VkImageTiling image_tiling,
++                                                   uint32_t queue_family_index);
+ #endif
+ 
+   raw_ptr<VulkanDeviceQueue> device_queue_ = nullptr;
+diff -ur a/gpu/vulkan/vulkan_image_linux.cc b/gpu/vulkan/vulkan_image_linux.cc
+--- a/gpu/vulkan/vulkan_image_linux.cc
++++ b/gpu/vulkan/vulkan_image_linux.cc
+@@ -22,6 +22,32 @@
+ }  // namespace
+ 
+ namespace gpu {
++  
++namespace {
++
++// TODO - very hacky!! There is an identical function in vulkan_memory.cc but it isn't exported.
++// Not sure if it's better to make it global or duplicate it?
++absl::optional<uint32_t> FindMemoryTypeIndexLinux(
++    VkPhysicalDevice physical_device,
++    const VkMemoryRequirements* requirements,
++    VkMemoryPropertyFlags flags) {
++  VkPhysicalDeviceMemoryProperties properties;
++  vkGetPhysicalDeviceMemoryProperties(physical_device, &properties);
++  constexpr uint32_t kMaxIndex = 31;
++  for (uint32_t i = 0; i <= kMaxIndex; i++) {
++    if (((1u << i) & requirements->memoryTypeBits) == 0) {
++      continue;
++    }
++    if ((properties.memoryTypes[i].propertyFlags & flags) != flags) {
++      continue;
++    }
++    return i;
++  }
++  NOTREACHED();
++  return absl::nullopt;
++}
++
++}  // namespace
+ 
+ //  static
+ std::unique_ptr<VulkanImage> VulkanImage::CreateWithExternalMemoryAndModifiers(
+@@ -73,6 +99,32 @@
+             VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT);
+   }
+ 
++  // an image is disjoint if it has multiple planes and they don't all have the same fd.
++  disjoint_planes_ = false;
++  if (native_pixmap_handle.planes.size() > 1) {
++    auto fd0 = native_pixmap_handle.planes[0].fd.get();
++    for (const auto& plane : native_pixmap_handle.planes) {
++      if (plane.fd.get() != fd0) {
++        disjoint_planes_ = true;
++        break;
++      }
++    }
++  }
++
++  return disjoint_planes_
++    ? InitializeFromDisjointGpuMemoryBufferHandle(device_queue, native_pixmap_handle, size, format, usage, flags, image_tiling, queue_family_index)
++    : InitializeFromNonDisjointGpuMemoryBufferHandle(device_queue, native_pixmap_handle, size, format, usage, flags, image_tiling, queue_family_index);
++}
++
++bool VulkanImage::InitializeFromNonDisjointGpuMemoryBufferHandle(
++    VulkanDeviceQueue* device_queue,
++    gfx::NativePixmapHandle& native_pixmap_handle,
++    const gfx::Size& size,
++    VkFormat format,
++    VkImageUsageFlags usage,
++    VkImageCreateFlags flags,
++    VkImageTiling image_tiling,
++    uint32_t queue_family_index) {
+   auto& scoped_fd = native_pixmap_handle.planes[0].fd;
+   if (!scoped_fd.is_valid()) {
+     DLOG(ERROR) << "GpuMemoryBufferHandle doesn't have a valid fd.";
+@@ -149,6 +201,252 @@
+   return result;
+ }
+ 
++bool VulkanImage::InitializeFromDisjointGpuMemoryBufferHandle(
++    VulkanDeviceQueue* device_queue,
++    gfx::NativePixmapHandle& native_pixmap_handle,
++    const gfx::Size& size,
++    VkFormat format,
++    VkImageUsageFlags usage,
++    VkImageCreateFlags flags,
++    VkImageTiling image_tiling,
++    uint32_t queue_family_index) {
++  DCHECK(!device_queue_);
++  DCHECK(image_ == VK_NULL_HANDLE);
++  for (int i = 0; i < 3; ++i) {
++    DCHECK(!memories_[i]);
++  }
++
++  plane_count_ = native_pixmap_handle.planes.size();
++
++  // TODO - creating a disjoint image with VK_IMAGE_TILING_OPTIMAL fails on RADV, and sometimes causes a GPU reset.
++  if (image_tiling == VK_IMAGE_TILING_OPTIMAL)
++    image_tiling = VK_IMAGE_TILING_LINEAR;
++
++  // TODO - Verify format support for VK_IMAGE_TILING_DRM_FORMAT_MODIFIER_EXT. See DmaBufImageSiblingVkLinux::initWithFormat() in ANGLE
++  void *create_info_pnext = nullptr;
++  VkImageDrmFormatModifierExplicitCreateInfoEXT explicit_create_drm_info {};
++  uint32_t plane_index = 0;
++  if (image_tiling == VK_IMAGE_TILING_DRM_FORMAT_MODIFIER_EXT) {
++    explicit_create_drm_info.sType = VK_STRUCTURE_TYPE_IMAGE_DRM_FORMAT_MODIFIER_EXPLICIT_CREATE_INFO_EXT;
++    explicit_create_drm_info.pNext = nullptr;
++    explicit_create_drm_info.drmFormatModifier = native_pixmap_handle.modifier;
++
++    for (const auto& plane : native_pixmap_handle.planes) {
++      VkSubresourceLayout plane_layout = {
++          .offset = plane.offset,
++          .size = 0,
++          .rowPitch = plane.stride,
++          .arrayPitch = 0,
++          .depthPitch = 0,
++      };
++      layouts_[plane_index++] = plane_layout;
++    }
++
++    explicit_create_drm_info.drmFormatModifierPlaneCount = plane_count_;
++    explicit_create_drm_info.pPlaneLayouts = layouts_.data();
++
++    create_info_pnext = &explicit_create_drm_info;
++  }
++
++  device_queue_ = device_queue;
++  VkImageCreateFlags create_flags = flags | VK_IMAGE_CREATE_DISJOINT_BIT;
++
++  if (ycbcr_info_) {
++    ycbcr_info_->format_features |= (VK_FORMAT_FEATURE_DISJOINT_BIT | VK_FORMAT_FEATURE_SAMPLED_IMAGE_YCBCR_CONVERSION_LINEAR_FILTER_BIT);
++
++    // From ANGLE: ImageHelper::initExternal()
++    // The Vulkan spec states: If sampler is used and the VkFormat of the image is a
++    // multi-planar format, the image must have been created with
++    // VK_IMAGE_CREATE_MUTABLE_FORMAT_BIT
++    create_flags |= VK_IMAGE_CREATE_MUTABLE_FORMAT_BIT;
++  }
++
++  create_info_ = {
++      .sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
++      .pNext = create_info_pnext,
++      .flags = create_flags,
++      .imageType = VK_IMAGE_TYPE_2D,
++      .format = format,
++      .extent = {static_cast<uint32_t>(size.width()),
++                  static_cast<uint32_t>(size.height()), 1},
++      .mipLevels = 1,
++      .arrayLayers = 1,
++      .samples = VK_SAMPLE_COUNT_1_BIT,
++      .tiling = image_tiling,
++      .usage = usage,
++      .sharingMode = VK_SHARING_MODE_EXCLUSIVE,
++      .queueFamilyIndexCount = 0,
++      .pQueueFamilyIndices = nullptr,
++      .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
++  };
++
++  VkDevice vk_device = device_queue->GetVulkanDevice();
++
++  VkResult result = vkCreateImage(vk_device, &create_info_,
++                                  nullptr /* pAllocator */, &image_);
++  create_info_.pNext = nullptr;
++
++  if (result != VK_SUCCESS) {
++    DLOG(ERROR) << "vkCreateImage failed result:" << result;
++    device_queue_ = nullptr;
++    return false;
++  }
++
++  void *mem_fd_req_pnext = nullptr;
++  VkExportMemoryAllocateInfo export_memory_info = {
++      .sType = VK_STRUCTURE_TYPE_EXPORT_MEMORY_ALLOCATE_INFO_KHR,
++  };
++  VkExternalMemoryProperties external_memory_properties;
++  result = QueryVkExternalMemoryProperties(
++      device_queue->GetVulkanPhysicalDevice(), format, VK_IMAGE_TYPE_2D,
++      image_tiling, usage, create_flags,
++      VK_EXTERNAL_MEMORY_HANDLE_TYPE_DMA_BUF_BIT_EXT,
++      &external_memory_properties);
++  if (result == VK_SUCCESS) {
++    export_memory_info.handleTypes =
++        external_memory_properties.compatibleHandleTypes;
++
++    mem_fd_req_pnext = &export_memory_info;
++  }
++
++  // From ANGLE: ImageHelper::initExternalMemory(), but using aspect planes instead of aspect memory planes.
++  constexpr VkImageAspectFlagBits kImagePlaneAspects[3] = {
++    VK_IMAGE_ASPECT_PLANE_0_BIT,
++    VK_IMAGE_ASPECT_PLANE_1_BIT,
++    VK_IMAGE_ASPECT_PLANE_2_BIT,
++  };
++
++  VkBindImagePlaneMemoryInfo bind_plane_infos[3] {};
++  VkBindImageMemoryInfo bind_infos[3] {};
++  for (plane_index = 0; plane_index < plane_count_; ++plane_index) {
++    auto& plane = native_pixmap_handle.planes[plane_index];
++
++    auto& scoped_fd = plane.fd;
++    if (!scoped_fd.is_valid()) {
++      DLOG(ERROR) << "GpuMemoryBufferHandle doesn't have a valid fd.";
++      return false;
++    }
++
++    VkImagePlaneMemoryRequirementsInfo image_plane_info = {
++        .sType = VK_STRUCTURE_TYPE_IMAGE_PLANE_MEMORY_REQUIREMENTS_INFO,
++        .pNext = nullptr,
++        .planeAspect = kImagePlaneAspects[plane_index],
++    };
++    VkImageMemoryRequirementsInfo2 image_plane_req = {
++        .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_REQUIREMENTS_INFO_2,
++        .pNext = &image_plane_info,
++        .image = image_,
++    };
++
++    VkMemoryDedicatedRequirements ded_req = {
++        .sType = VK_STRUCTURE_TYPE_MEMORY_DEDICATED_REQUIREMENTS,
++    };
++    VkImagePlaneMemoryRequirementsInfo image_memory_plane_info = {
++        .sType = VK_STRUCTURE_TYPE_IMAGE_PLANE_MEMORY_REQUIREMENTS_INFO,
++        .pNext = &ded_req,
++        .planeAspect = kImagePlaneAspects[plane_index],
++    };
++    VkMemoryRequirements2 image_memory_plane_req = {
++        .sType = VK_STRUCTURE_TYPE_MEMORY_REQUIREMENTS_2,
++        .pNext = &image_memory_plane_info,
++    };
++
++    VkMemoryFdPropertiesKHR image_mem_fd_properties = {
++        .sType = VK_STRUCTURE_TYPE_MEMORY_FD_PROPERTIES_KHR,
++    };
++    // TODO - we re-take ownership of the fd from Vulkan if any subsequent calls in this loop fail,
++    // but do we need to keep track of all released fd's and reclaim them if any subsequent loop
++    // iteration (or the rest of the method) fails?
++    int memory_fd = scoped_fd.release();
++    VkImportMemoryFdInfoKHR mem_fd_req = {
++        .sType = VK_STRUCTURE_TYPE_IMPORT_MEMORY_FD_INFO_KHR,
++        .pNext = mem_fd_req_pnext,
++        .handleType = VK_EXTERNAL_MEMORY_HANDLE_TYPE_DMA_BUF_BIT_EXT,
++        .fd = memory_fd,
++    };
++    VkMemoryDedicatedAllocateInfo ded_alloc = {
++        .sType = VK_STRUCTURE_TYPE_MEMORY_DEDICATED_ALLOCATE_INFO,
++        .pNext = &mem_fd_req,
++        .image = image_plane_req.image,
++    };
++
++    result = vkGetMemoryFdPropertiesKHR(vk_device, VK_EXTERNAL_MEMORY_HANDLE_TYPE_DMA_BUF_BIT_EXT, mem_fd_req.fd, &image_mem_fd_properties);
++    if (result != VK_SUCCESS) {
++      DLOG(ERROR) << "vkGetMemoryFdPropertiesKHR failed result:" << result;
++      scoped_fd.reset(memory_fd);
++      Destroy();
++      return false;
++    }
++
++    vkGetImageMemoryRequirements2(vk_device, &image_plane_req, &image_memory_plane_req);
++
++    /* Only a single bit must be set, not a range, and it must match */
++    image_memory_plane_req.memoryRequirements.memoryTypeBits = image_mem_fd_properties.memoryTypeBits;
++
++    auto index =
++        FindMemoryTypeIndexLinux(device_queue->GetVulkanPhysicalDevice(), &image_memory_plane_req.memoryRequirements,
++                                 VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
++
++    if (!index) {
++      DLOG(ERROR) << "Cannot find validate memory type index.";
++      scoped_fd.reset(memory_fd);
++      Destroy();
++      return false;
++    }
++
++    auto memory_type_index = index.value();
++    VkDeviceSize device_size = image_memory_plane_req.memoryRequirements.size;
++
++    VkMemoryAllocateInfo alloc_info = {
++        .sType           = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
++        .pNext           = (ded_req.prefersDedicatedAllocation || ded_req.requiresDedicatedAllocation) ? &ded_alloc : ded_alloc.pNext,
++        .allocationSize  = device_size,
++        .memoryTypeIndex = memory_type_index,
++    };
++
++    VkDeviceMemory device_memory = VK_NULL_HANDLE;
++
++    result = vkAllocateMemory(vk_device, &alloc_info, NULL, &device_memory);
++    if (result != VK_SUCCESS) {
++      DLOG(ERROR) << "vkAllocateMemory failed result:" << result;
++      scoped_fd.reset(memory_fd);
++      Destroy();
++      return false;
++    }
++
++    memories_[plane_index] = VulkanMemory::Create(device_queue, device_memory, device_size, memory_type_index);
++
++    VkBindImagePlaneMemoryInfo plane_memory_info = {
++        .sType                    = VK_STRUCTURE_TYPE_BIND_IMAGE_PLANE_MEMORY_INFO,
++        .pNext                    = nullptr,
++        .planeAspect              = kImagePlaneAspects[plane_index],
++    };
++    bind_plane_infos[plane_index] = plane_memory_info;
++
++    VkBindImageMemoryInfo memory_info = {
++        .sType                    = VK_STRUCTURE_TYPE_BIND_IMAGE_MEMORY_INFO,
++        .pNext                    = &bind_plane_infos[plane_index],
++        .image                    = image_,
++        .memory                   = device_memory,
++        // For VK_IMAGE_TILING_DRM_FORMAT_MODIFIER_EXT, we specified the plane offsets when creating the image.
++        .memoryOffset             = image_tiling == VK_IMAGE_TILING_DRM_FORMAT_MODIFIER_EXT ? 0 : plane.offset,
++    };
++    bind_infos[plane_index] = memory_info;
++  }
++
++  result = vkBindImageMemory2(vk_device, plane_count_, bind_infos);
++  if (result != VK_SUCCESS) {
++    DLOG(ERROR) << "Failed to bind memory to external VkImage: " << result;
++    Destroy();
++    return false;
++  }
++
++  // TODO - do we need to get the subresource layouts for VK_IMAGE_TILING_LINEAR,
++  // like at the end of VulkanImage::Initialize()?
++
++  return true;
++}
++
+ bool VulkanImage::InitializeWithExternalMemoryAndModifiers(
+     VulkanDeviceQueue* device_queue,
+     const gfx::Size& size,
+diff -ur a/media/gpu/vaapi/vaapi_wrapper.cc b/media/gpu/vaapi/vaapi_wrapper.cc
+--- a/media/gpu/vaapi/vaapi_wrapper.cc
++++ b/media/gpu/vaapi/vaapi_wrapper.cc
+@@ -2615,14 +2615,19 @@
+                          nullptr);
+   }
+ 
+-  // We only support one bo containing all the planes. The fd should be owned by
+-  // us: per va/va.h, "the exported handles are owned by the caller."
+-  //
+-  // TODO(crbug.com/974438): support multiple buffer objects so that this can
+-  // work in AMD.
+-  CHECK_EQ(descriptor.num_objects, 1u)
+-      << "Only surface descriptors with one bo are supported";
++  // an image is disjoint if it has multiple buffer objects and they don't all have the same fd.
++  auto fd0 = descriptor.objects[0].fd;
++  bool isDisjoint = false;
++  if (descriptor.num_objects > 1u) {
++    for (auto i = 1u; i < descriptor.num_objects; ++i) {
++      if (descriptor.objects[i].fd != fd0) {
++        isDisjoint = true;
++        break;
++      }
++    }
++  }
+-  base::ScopedFD bo_fd(descriptor.objects[0].fd);
++
++  base::ScopedFD bo_fd(fd0);
+   const uint64_t bo_modifier = descriptor.objects[0].drm_format_modifier;
+ 
+   // Translate the pixel format to a gfx::BufferFormat.
+@@ -2656,9 +2661,22 @@
+     // specified, each layer should contain one plane.
+     DCHECK_EQ(1u, descriptor.layers[layer].num_planes);
+ 
+-    auto plane_fd = base::ScopedFD(
++    auto plane_raw_fd = fd0;
++    if (isDisjoint) {
++      // HACK - for disjoint (multi-object) descriptors, the first layer might not use the first buffer object.
++      // So we free it in the first loop iteration regardless.
++      // Could we maybe avoid taking the fd before the loop in the first place?
++      if (layer == 0)
++        bo_fd.release();
++      auto obj_index = descriptor.layers[layer].object_index[0];
++      plane_raw_fd = descriptor.objects[obj_index].fd;
++    }
++    else {
++      plane_raw_fd =
+         layer == 0 ? bo_fd.release()
+-                   : HANDLE_EINTR(dup(handle.planes[0].fd.get())));
++                   : HANDLE_EINTR(dup(handle.planes[0].fd.get()));
++    }
++    auto plane_fd = base::ScopedFD(plane_raw_fd);
+     PCHECK(plane_fd.is_valid());
+     constexpr uint64_t kZeroSizeToPreventMapping = 0u;
+     handle.planes.emplace_back(
+@@ -2679,6 +2697,7 @@
+   exported_pixmap->va_surface_resolution =
+       gfx::Size(base::checked_cast<int>(descriptor.width),
+                 base::checked_cast<int>(descriptor.height));
++  // TODO: This relies on there being only one bo, but it seems to be only used by image decode?
+   exported_pixmap->byte_size =
+       base::strict_cast<size_t>(descriptor.objects[0].size);
+   if (!gfx::Rect(exported_pixmap->va_surface_resolution)
+diff --git a/third_party/skia/src/gpu/ganesh/vk/GrVkCaps.cpp b/third_party/skia/src/gpu/ganesh/vk/GrVkCaps.cpp
+--- a/third_party/skia/src/gpu/ganesh/vk/GrVkCaps.cpp
++++ b/third_party/skia/src/gpu/ganesh/vk/GrVkCaps.cpp
+@@ -1428,11 +1428,11 @@ static bool backend_format_is_external(const GrBackendFormat& format) {
+     SkASSERT(ycbcrInfo);
+ 
+     // All external formats have a valid ycbcrInfo used for sampling and a non zero external format.
+-    if (ycbcrInfo->isValid() && ycbcrInfo->fExternalFormat != 0) {
++    if (ycbcrInfo->isValid() /*&& ycbcrInfo->fExternalFormat != 0*/) {
+ #ifdef SK_DEBUG
+         VkFormat vkFormat;
+         SkAssertResult(format.asVkFormat(&vkFormat));
+-        SkASSERT(vkFormat == VK_FORMAT_UNDEFINED);
++        //SkASSERT(vkFormat == VK_FORMAT_UNDEFINED);
+ #endif
+         return true;
+     }
+@@ -1654,12 +1654,16 @@ bool GrVkCaps::onAreColorTypeAndFormatCompatible(GrColorType ct,
+ 
+     if (ycbcrInfo->isValid() && !skgpu::VkFormatNeedsYcbcrSampler(vkFormat)) {
+         // Format may be undefined for external images, which are required to have YCbCr conversion.
+-        if (VK_FORMAT_UNDEFINED == vkFormat && ycbcrInfo->fExternalFormat != 0) {
++        if (VK_FORMAT_UNDEFINED == vkFormat /*&& ycbcrInfo->fExternalFormat != 0*/) {
+             return true;
+         }
+         return false;
+     }
+ 
++    // HACK!!! Skia supports kRGB_888x as long as YCbCr conversion is specified.
++    if (ycbcrInfo->isValid() && ct == GrColorType::kRGB_888x)
++        return true;
++
+     const auto& info = this->getFormatInfo(vkFormat);
+     for (int i = 0; i < info.fColorTypeInfoCount; ++i) {
+         if (info.fColorTypeInfos[i].fColorType == ct) {
+@@ -1731,7 +1735,7 @@ skgpu::Swizzle GrVkCaps::onGetReadSwizzle(const GrBackendFormat& format,
+     SkAssertResult(format.asVkFormat(&vkFormat));
+     const auto* ycbcrInfo = format.getVkYcbcrConversionInfo();
+     SkASSERT(ycbcrInfo);
+-    if (ycbcrInfo->isValid() && ycbcrInfo->fExternalFormat != 0) {
++    if (ycbcrInfo->isValid() /*&& ycbcrInfo->fExternalFormat != 0*/) {
+         // We allow these to work with any color type and never swizzle. See
+         // onAreColorTypeAndFormatCompatible.
+         return skgpu::Swizzle{"rgba"};
+diff --git a/third_party/skia/src/gpu/ganesh/vk/GrVkGpu.cpp b/third_party/skia/src/gpu/ganesh/vk/GrVkGpu.cpp
+--- a/third_party/skia/src/gpu/ganesh/vk/GrVkGpu.cpp
++++ b/third_party/skia/src/gpu/ganesh/vk/GrVkGpu.cpp
+@@ -1329,7 +1329,7 @@ static bool check_tex_image_info(const GrVkCaps& caps, const GrVkImageInfo& info
+         return false;
+     }
+ 
+-    if (info.fYcbcrConversionInfo.isValid() && info.fYcbcrConversionInfo.fExternalFormat != 0) {
++    if (info.fYcbcrConversionInfo.isValid() /*&& info.fYcbcrConversionInfo.fExternalFormat != 0*/) {
+         return true;
+     }
+     if (info.fImageTiling == VK_IMAGE_TILING_OPTIMAL) {
