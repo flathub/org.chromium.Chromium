@@ -1,4 +1,4 @@
-From 79f748a58337106ff677985f3c8c93820b719168 Mon Sep 17 00:00:00 2001
+From 44bfa0cfe69b53c1a2ec8264b6a3fab2996f7503 Mon Sep 17 00:00:00 2001
 From: Andre Moreira Magalhaes <andre.magalhaes@endlessos.org>
 Date: Thu, 17 Dec 2020 19:05:10 -0300
 Subject: [PATCH] Add support for respecting system proxy settings when running
@@ -43,7 +43,7 @@ Closes https://github.com/flathub/org.chromium.Chromium/issues/36
 ---
  chrome/app/generated_resources.grd            |   6 +
  .../net/system_network_context_manager.cc     |   9 +-
- chrome/browser/ui/webui/about_ui.cc           |  14 +-
+ chrome/browser/ui/webui/about/about_ui.cc     |  14 +-
  net/BUILD.gn                                  |   3 +
  .../configured_proxy_resolution_service.cc    |   6 +-
  .../proxy_config_service_linux.cc             |  10 +-
@@ -54,10 +54,10 @@ Closes https://github.com/flathub/org.chromium.Chromium/issues/36
  create mode 100644 net/proxy_resolution/proxy_resolver_linux.h
 
 diff --git a/chrome/app/generated_resources.grd b/chrome/app/generated_resources.grd
-index c880e097690f8..978b4b0c4e627 100644
+index ef461fb3cef5e..fa96597bf9923 100644
 --- a/chrome/app/generated_resources.grd
 +++ b/chrome/app/generated_resources.grd
-@@ -13526,6 +13526,12 @@ Please help our engineers fix this problem. Tell us what happened right before y
+@@ -13895,6 +13895,12 @@ Please help our engineers fix this problem. Tell us what happened right before y
  
            &lt;p&gt;But you can still configure via the command line.  Please see &lt;code&gt;man <ph name="PRODUCT_BINARY_NAME">$2<ex>google-chrome</ex></ph>&lt;/code&gt; for more information on flags and environment variables.&lt;/p&gt;
          </message>
@@ -71,7 +71,7 @@ index c880e097690f8..978b4b0c4e627 100644
  
        <message name="IDS_IMAGE_FILES" desc="The description of the image file extensions in the select file dialog.">
 diff --git a/chrome/browser/net/system_network_context_manager.cc b/chrome/browser/net/system_network_context_manager.cc
-index 5a28cf890ca3c..731aa245596df 100644
+index 48ce5a47f2b6e..1306fe03fdcc8 100644
 --- a/chrome/browser/net/system_network_context_manager.cc
 +++ b/chrome/browser/net/system_network_context_manager.cc
 @@ -95,6 +95,7 @@
@@ -82,7 +82,7 @@ index 5a28cf890ca3c..731aa245596df 100644
  #include "ui/base/l10n/l10n_util.h"
  #endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
  
-@@ -849,7 +850,13 @@ void SystemNetworkContextManager::ConfigureDefaultNetworkContextParams(
+@@ -837,7 +838,13 @@ void SystemNetworkContextManager::ConfigureDefaultNetworkContextParams(
    // or if it does work, now.
    // Should be possible now that a private isolate is used.
    // http://crbug.com/474654
@@ -97,11 +97,11 @@ index 5a28cf890ca3c..731aa245596df 100644
      if (command_line.HasSwitch(switches::kSingleProcess)) {
        LOG(ERROR) << "Cannot use V8 Proxy resolver in single process mode.";
      } else {
-diff --git a/chrome/browser/ui/webui/about_ui.cc b/chrome/browser/ui/webui/about_ui.cc
-index 9bdaecf446ce2..41c693d5d8f7f 100644
---- a/chrome/browser/ui/webui/about_ui.cc
-+++ b/chrome/browser/ui/webui/about_ui.cc
-@@ -87,6 +87,10 @@
+diff --git a/chrome/browser/ui/webui/about/about_ui.cc b/chrome/browser/ui/webui/about/about_ui.cc
+index f5e6fa4ccebc7..28f73dea55ce9 100644
+--- a/chrome/browser/ui/webui/about/about_ui.cc
++++ b/chrome/browser/ui/webui/about/about_ui.cc
+@@ -90,6 +90,10 @@
  #include "chrome/common/webui_url_constants.h"
  #endif  // BUILDFLAG(IS_CHROMEOS)
  
@@ -112,7 +112,7 @@ index 9bdaecf446ce2..41c693d5d8f7f 100644
  using content::BrowserThread;
  
  namespace {
-@@ -643,8 +647,16 @@ std::string AboutLinuxProxyConfig() {
+@@ -600,8 +604,16 @@ std::string AboutLinuxProxyConfig() {
    data.append("<style>body { max-width: 70ex; padding: 2ex 5ex; }</style>");
    AppendBody(&data);
    base::FilePath binary = base::CommandLine::ForCurrentProcess()->GetProgram();
@@ -131,10 +131,10 @@ index 9bdaecf446ce2..41c693d5d8f7f 100644
                                  base::ASCIIToUTF16(binary.BaseName().value())));
    AppendFooter(&data);
 diff --git a/net/BUILD.gn b/net/BUILD.gn
-index e745a74d0446e..f0eacae6651b1 100644
+index 48a34af6b2e26..b5c5e4d9df6cb 100644
 --- a/net/BUILD.gn
 +++ b/net/BUILD.gn
-@@ -1237,6 +1237,8 @@ component("net") {
+@@ -1174,6 +1174,8 @@ component("net") {
      sources += [
        "base/address_map_cache_linux.cc",
        "base/address_map_cache_linux.h",
@@ -143,7 +143,7 @@ index e745a74d0446e..f0eacae6651b1 100644
      ]
    }
  
-@@ -1692,6 +1694,7 @@ source_set("net_deps") {
+@@ -1629,6 +1631,7 @@ source_set("net_deps") {
  
    if (use_gio) {
      public_configs += [ "//build/linux:gio_config" ]
@@ -152,7 +152,7 @@ index e745a74d0446e..f0eacae6651b1 100644
  
    if (is_android) {
 diff --git a/net/proxy_resolution/configured_proxy_resolution_service.cc b/net/proxy_resolution/configured_proxy_resolution_service.cc
-index 287c9de8f3f9c..5cd5244b35e68 100644
+index 7468d23f9e2e9..e5972634ffbdb 100644
 --- a/net/proxy_resolution/configured_proxy_resolution_service.cc
 +++ b/net/proxy_resolution/configured_proxy_resolution_service.cc
 @@ -49,6 +49,8 @@
@@ -379,5 +379,5 @@ index 0000000000000..7ae45eeae1a43
 +
 +#endif  // NET_PROXY_RESOLUTION_PROXY_RESOLVER_LINUX_H_
 -- 
-2.41.0
+2.42.0
 

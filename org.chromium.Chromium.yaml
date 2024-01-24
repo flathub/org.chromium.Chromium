@@ -64,6 +64,7 @@ sdk-extensions:
   - org.freedesktop.Sdk.Extension.llvm17
   - org.freedesktop.Sdk.Extension.node18
   - org.freedesktop.Sdk.Extension.openjdk21
+  - org.freedesktop.Sdk.Extension.rust-nightly
 
 modules:
   - name: readelf-symlink
