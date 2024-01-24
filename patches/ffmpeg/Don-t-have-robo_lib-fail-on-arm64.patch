@@ -1,4 +1,4 @@
-From 564fb3a4dfa5e635ab7455fca3b30dac0ea0c0b8 Mon Sep 17 00:00:00 2001
+From d9b8b31748d7ac1e08cd769db031afdfe3d0f709 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <git@refi64.dev>
 Date: Tue, 12 Sep 2023 17:34:22 -0500
 Subject: [PATCH] Don't have robo_lib fail on arm64
@@ -21,5 +21,5 @@ index e2b895ef1d..8140732534 100644
      self._host_architecture = "x64"
  
 -- 
-2.41.0
+2.42.0
 
