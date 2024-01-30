@@ -1,4 +1,4 @@
-From ba32db15f55c541a8b44deb7b6706eb88e39649c Mon Sep 17 00:00:00 2001
+From 5b393b700b1d21d08f3a1f0873de37262366624b Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Tue, 1 Mar 2022 19:29:12 -0600
 Subject: [PATCH] clang build script: Support disabling the bundled libxml2
@@ -11,7 +11,7 @@ attempting to build a toolchain without network access.
  1 file changed, 18 insertions(+), 7 deletions(-)
 
 diff --git a/tools/clang/scripts/build.py b/tools/clang/scripts/build.py
-index c7bc92d885d59..9491f8a3cdffb 100755
+index bc6f03244b391..9e44a63e364d7 100755
 --- a/tools/clang/scripts/build.py
 +++ b/tools/clang/scripts/build.py
 @@ -689,6 +689,8 @@ def main():
@@ -61,5 +61,5 @@ index c7bc92d885d59..9491f8a3cdffb 100755
    if args.with_zstd:
      # Statically link zstd to make lld support zstd compression for debug info.
 -- 
-2.41.0
+2.42.0
 

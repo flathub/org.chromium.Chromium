@@ -54,7 +54,8 @@ tools/gn/bootstrap/bootstrap.py -v --no-clean --gn-gen-args='
     use_system_libffi=true
     use_qt=false
     enable_remoting=false
-    enable_rust=false
+    rust_sysroot_absolute="/usr/lib/sdk/rust-nightly"
+    rustc_version="'"$(/usr/lib/sdk/rust-nightly/bin/rustc -V)"'"
 '
 mkdir -p out/ReleaseFree
 cp out/Release{,Free}/args.gn
