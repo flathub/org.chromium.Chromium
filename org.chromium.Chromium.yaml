@@ -27,6 +27,7 @@ finish-args:
   - --talk-name=org.freedesktop.secrets
   - --talk-name=org.kde.kwalletd5
   - --talk-name=org.gnome.SessionManager
+  - --talk-name=com.canonical.Unity
   - --own-name=org.mpris.MediaPlayer2.chromium.*
 
 add-extensions:
