@@ -1,4 +1,4 @@
-From 0f7c3f779bab62266dd2db5bb5b94830892078d8 Mon Sep 17 00:00:00 2001
+From 30bab00f4a7a35a9cf52bc7e6ded6181a8754aab Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Tue, 17 Nov 2020 22:57:29 -0600
 Subject: [PATCH] Import chromium-71.0.3578.98-widevine-r3.patch + arm64
