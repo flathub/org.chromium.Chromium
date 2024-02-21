@@ -1,4 +1,4 @@
-From 67c55722d0a40b3dd29c9eebb7d79b87fc42d13f Mon Sep 17 00:00:00 2001
+From 5c2e90e7cf9ee1ecdbd098c2494c8e13a65288b4 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Wed, 11 Nov 2020 16:51:49 -0600
 Subject: [PATCH] Remove the ability to create desktop shortcuts
@@ -9,7 +9,7 @@ Subject: [PATCH] Remove the ability to create desktop shortcuts
  2 files changed, 2 insertions(+), 10 deletions(-)
 
 diff --git a/chrome/browser/ui/views/create_application_shortcut_view.cc b/chrome/browser/ui/views/create_application_shortcut_view.cc
-index b33766b3c5337..e7acb07edead6 100644
+index 2a60e28a136f0..62662959376d7 100644
 --- a/chrome/browser/ui/views/create_application_shortcut_view.cc
 +++ b/chrome/browser/ui/views/create_application_shortcut_view.cc
 @@ -123,10 +123,6 @@ void CreateChromeApplicationShortcutView::InitControls() {
@@ -52,10 +52,10 @@ index b33766b3c5337..e7acb07edead6 100644
      creation_locations.applications_menu_location =
          web_app::APP_MENU_LOCATION_SUBDIR_CHROMEAPPS;
 diff --git a/chrome/browser/ui/views/create_application_shortcut_view.h b/chrome/browser/ui/views/create_application_shortcut_view.h
-index 69df7dd53dec4..281a025d9d790 100644
+index 2f05e7e8763e3..509aa2c43f231 100644
 --- a/chrome/browser/ui/views/create_application_shortcut_view.h
 +++ b/chrome/browser/ui/views/create_application_shortcut_view.h
-@@ -79,7 +79,6 @@ class CreateChromeApplicationShortcutView : public views::DialogDelegateView {
+@@ -81,7 +81,6 @@ class CreateChromeApplicationShortcutView : public views::DialogDelegateView {
    base::OnceCallback<void(bool)> close_callback_;
  
    // May be null if the platform doesn't support a particular location.

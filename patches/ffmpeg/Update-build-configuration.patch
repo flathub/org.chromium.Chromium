@@ -1,6 +1,6 @@
-From 7034e68c3de1a6b8704e11f95049816fe8262a23 Mon Sep 17 00:00:00 2001
+From ca3316ac7795291bb23b7c34a4516373f2ac66a1 Mon Sep 17 00:00:00 2001
 From: CroFT <croft@refi64.com>
-Date: Wed, 24 Jan 2024 11:54:43 -0600
+Date: Wed, 21 Feb 2024 08:25:28 -0600
 Subject: [PATCH] Update build configuration
 
 ---
@@ -264,7 +264,7 @@ index cbd7f3945a..d4e8a9b6b6 100644
      &ff_libopus_decoder,
      NULL };
 diff --git a/third_party/ffmpeg/chromium/config/Chrome/linux/arm64/libavutil/ffversion.h b/third_party/ffmpeg/chromium/config/Chrome/linux/arm64/libavutil/ffversion.h
-index b8b5ce37bc..f5b890c184 100644
+index b8b5ce37bc..02e3c94062 100644
 --- a/third_party/ffmpeg/chromium/config/Chrome/linux/arm64/libavutil/ffversion.h
 +++ b/third_party/ffmpeg/chromium/config/Chrome/linux/arm64/libavutil/ffversion.h
 @@ -1,5 +1,5 @@
@@ -272,7 +272,7 @@ index b8b5ce37bc..f5b890c184 100644
  #ifndef AVUTIL_FFVERSION_H
  #define AVUTIL_FFVERSION_H
 -#define FFMPEG_VERSION "N-114023-g6bf1b97faf"
-+#define FFMPEG_VERSION "git-2024-01-24-d9b8b31748"
++#define FFMPEG_VERSION "git-2024-02-21-5d0fa20817"
  #endif /* AVUTIL_FFVERSION_H */
 diff --git a/third_party/ffmpeg/chromium/config/Chrome/linux/x64/config.asm b/third_party/ffmpeg/chromium/config/Chrome/linux/x64/config.asm
 index d599cb5dde..8300cae7a6 100644
@@ -429,7 +429,7 @@ index cbd7f3945a..d4e8a9b6b6 100644
      &ff_libopus_decoder,
      NULL };
 diff --git a/third_party/ffmpeg/chromium/config/Chrome/linux/x64/libavutil/ffversion.h b/third_party/ffmpeg/chromium/config/Chrome/linux/x64/libavutil/ffversion.h
-index b8b5ce37bc..f5b890c184 100644
+index b8b5ce37bc..02e3c94062 100644
 --- a/third_party/ffmpeg/chromium/config/Chrome/linux/x64/libavutil/ffversion.h
 +++ b/third_party/ffmpeg/chromium/config/Chrome/linux/x64/libavutil/ffversion.h
 @@ -1,5 +1,5 @@
@@ -437,7 +437,7 @@ index b8b5ce37bc..f5b890c184 100644
  #ifndef AVUTIL_FFVERSION_H
  #define AVUTIL_FFVERSION_H
 -#define FFMPEG_VERSION "N-114023-g6bf1b97faf"
-+#define FFMPEG_VERSION "git-2024-01-24-d9b8b31748"
++#define FFMPEG_VERSION "git-2024-02-21-5d0fa20817"
  #endif /* AVUTIL_FFVERSION_H */
 diff --git a/third_party/ffmpeg/chromium/config/ChromeOS/linux/arm64/config.h b/third_party/ffmpeg/chromium/config/ChromeOS/linux/arm64/config.h
 index 308b59585b..b40cd16eee 100644
@@ -536,7 +536,7 @@ index 0cc2135452..a03f7ce3e4 100644
      &ff_libopus_decoder,
      NULL };
 diff --git a/third_party/ffmpeg/chromium/config/ChromeOS/linux/arm64/libavutil/ffversion.h b/third_party/ffmpeg/chromium/config/ChromeOS/linux/arm64/libavutil/ffversion.h
-index b8b5ce37bc..f5b890c184 100644
+index b8b5ce37bc..02e3c94062 100644
 --- a/third_party/ffmpeg/chromium/config/ChromeOS/linux/arm64/libavutil/ffversion.h
 +++ b/third_party/ffmpeg/chromium/config/ChromeOS/linux/arm64/libavutil/ffversion.h
 @@ -1,5 +1,5 @@
@@ -544,7 +544,7 @@ index b8b5ce37bc..f5b890c184 100644
  #ifndef AVUTIL_FFVERSION_H
  #define AVUTIL_FFVERSION_H
 -#define FFMPEG_VERSION "N-114023-g6bf1b97faf"
-+#define FFMPEG_VERSION "git-2024-01-24-d9b8b31748"
++#define FFMPEG_VERSION "git-2024-02-21-5d0fa20817"
  #endif /* AVUTIL_FFVERSION_H */
 diff --git a/third_party/ffmpeg/chromium/config/ChromeOS/linux/x64/config.asm b/third_party/ffmpeg/chromium/config/ChromeOS/linux/x64/config.asm
 index 51c8c7ca10..48742b7f9a 100644
@@ -701,7 +701,7 @@ index 0cc2135452..a03f7ce3e4 100644
      &ff_libopus_decoder,
      NULL };
 diff --git a/third_party/ffmpeg/chromium/config/ChromeOS/linux/x64/libavutil/ffversion.h b/third_party/ffmpeg/chromium/config/ChromeOS/linux/x64/libavutil/ffversion.h
-index b8b5ce37bc..f5b890c184 100644
+index b8b5ce37bc..02e3c94062 100644
 --- a/third_party/ffmpeg/chromium/config/ChromeOS/linux/x64/libavutil/ffversion.h
 +++ b/third_party/ffmpeg/chromium/config/ChromeOS/linux/x64/libavutil/ffversion.h
 @@ -1,5 +1,5 @@
@@ -709,7 +709,7 @@ index b8b5ce37bc..f5b890c184 100644
  #ifndef AVUTIL_FFVERSION_H
  #define AVUTIL_FFVERSION_H
 -#define FFMPEG_VERSION "N-114023-g6bf1b97faf"
-+#define FFMPEG_VERSION "git-2024-01-24-d9b8b31748"
++#define FFMPEG_VERSION "git-2024-02-21-5d0fa20817"
  #endif /* AVUTIL_FFVERSION_H */
 diff --git a/third_party/ffmpeg/chromium/config/Chromium/linux/arm64/config.h b/third_party/ffmpeg/chromium/config/Chromium/linux/arm64/config.h
 index a78b68845e..c46b0d6518 100644
@@ -865,7 +865,7 @@ index 1908ba19e7..920b22bfa7 100644
      &ff_matroska_demuxer,
      &ff_mov_demuxer,
 diff --git a/third_party/ffmpeg/chromium/config/Chromium/linux/arm64/libavutil/ffversion.h b/third_party/ffmpeg/chromium/config/Chromium/linux/arm64/libavutil/ffversion.h
-index b8b5ce37bc..f5b890c184 100644
+index b8b5ce37bc..02e3c94062 100644
 --- a/third_party/ffmpeg/chromium/config/Chromium/linux/arm64/libavutil/ffversion.h
 +++ b/third_party/ffmpeg/chromium/config/Chromium/linux/arm64/libavutil/ffversion.h
 @@ -1,5 +1,5 @@
@@ -873,7 +873,7 @@ index b8b5ce37bc..f5b890c184 100644
  #ifndef AVUTIL_FFVERSION_H
  #define AVUTIL_FFVERSION_H
 -#define FFMPEG_VERSION "N-114023-g6bf1b97faf"
-+#define FFMPEG_VERSION "git-2024-01-24-d9b8b31748"
++#define FFMPEG_VERSION "git-2024-02-21-5d0fa20817"
  #endif /* AVUTIL_FFVERSION_H */
 diff --git a/third_party/ffmpeg/chromium/config/Chromium/linux/x64/config.asm b/third_party/ffmpeg/chromium/config/Chromium/linux/x64/config.asm
 index fc069a0e0b..a0cf356536 100644
@@ -1096,7 +1096,7 @@ index 1908ba19e7..920b22bfa7 100644
      &ff_matroska_demuxer,
      &ff_mov_demuxer,
 diff --git a/third_party/ffmpeg/chromium/config/Chromium/linux/x64/libavutil/ffversion.h b/third_party/ffmpeg/chromium/config/Chromium/linux/x64/libavutil/ffversion.h
-index b8b5ce37bc..f5b890c184 100644
+index b8b5ce37bc..02e3c94062 100644
 --- a/third_party/ffmpeg/chromium/config/Chromium/linux/x64/libavutil/ffversion.h
 +++ b/third_party/ffmpeg/chromium/config/Chromium/linux/x64/libavutil/ffversion.h
 @@ -1,5 +1,5 @@
@@ -1104,7 +1104,7 @@ index b8b5ce37bc..f5b890c184 100644
  #ifndef AVUTIL_FFVERSION_H
  #define AVUTIL_FFVERSION_H
 -#define FFMPEG_VERSION "N-114023-g6bf1b97faf"
-+#define FFMPEG_VERSION "git-2024-01-24-d9b8b31748"
++#define FFMPEG_VERSION "git-2024-02-21-5d0fa20817"
  #endif /* AVUTIL_FFVERSION_H */
 diff --git a/third_party/ffmpeg/ffmpeg_generated.gni b/third_party/ffmpeg/ffmpeg_generated.gni
 index ce648b73f8..bdb54c6c16 100644

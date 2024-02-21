@@ -1,4 +1,4 @@
-From a9cf6e5e5317b4ca8cc5ee1e0385f890dd65ef1b Mon Sep 17 00:00:00 2001
+From 20db21ba696f7d8ccf3216cdde77537d3df6d912 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Tue, 17 Mar 2020 13:18:27 -0500
 Subject: [PATCH] flatpak: Add initial sandbox support
@@ -30,7 +30,7 @@ Subject: [PATCH] flatpak: Add initial sandbox support
  create mode 100644 sandbox/linux/services/flatpak_sandbox.h
 
 diff --git a/.gitignore b/.gitignore
-index be45bbead74af..91e41c71cc16d 100644
+index 2f9164594b1bb..0619375c1a96c 100644
 --- a/.gitignore
 +++ b/.gitignore
 @@ -75,6 +75,7 @@ vs-chromium-project.txt
@@ -42,10 +42,10 @@ index be45bbead74af..91e41c71cc16d 100644
  /.externalToolBuilders/
  /.settings/
 diff --git a/base/threading/thread_restrictions.h b/base/threading/thread_restrictions.h
-index 83339edeacdc7..2dbb381089702 100644
+index 310851d978cad..16348bb4ee078 100644
 --- a/base/threading/thread_restrictions.h
 +++ b/base/threading/thread_restrictions.h
-@@ -383,6 +383,9 @@ class ScopedAllowThreadJoinForWebRtcTransport;
+@@ -390,6 +390,9 @@ class ScopedAllowThreadJoinForWebRtcTransport;
  namespace rlz_lib {
  class FinancialPing;
  }
@@ -55,7 +55,7 @@ index 83339edeacdc7..2dbb381089702 100644
  namespace service_manager {
  class ServiceProcessLauncher;
  }
-@@ -627,6 +630,7 @@ class BASE_EXPORT [[maybe_unused, nodiscard]] ScopedAllowBlocking {
+@@ -637,6 +640,7 @@ class BASE_EXPORT [[maybe_unused, nodiscard]] ScopedAllowBlocking {
    friend class remoting::
        ScopedBypassIOThreadRestrictions;  // http://crbug.com/1144161
    friend class remoting::ScopedAllowBlockingForCrashReporting;
@@ -63,7 +63,7 @@ index 83339edeacdc7..2dbb381089702 100644
    friend class ui::DrmDisplayHostManager;
    friend class ui::ScopedAllowBlockingForGbmSurface;
    friend class ui::SelectFileDialogLinux;
-@@ -762,6 +766,7 @@ class BASE_EXPORT [[maybe_unused, nodiscard]] ScopedAllowBaseSyncPrimitives {
+@@ -777,6 +781,7 @@ class BASE_EXPORT [[maybe_unused, nodiscard]] ScopedAllowBaseSyncPrimitives {
    friend class rlz_lib::FinancialPing;
    friend class shell_integration_linux::
        LaunchXdgUtilityScopedAllowBaseSyncPrimitives;
@@ -125,7 +125,7 @@ index ad19f25fb6c27..092ee7fd864e3 100644
                       status & sandbox::policy::SandboxLinux::kNetNS;
    // A second-layer sandbox is also required to be adequately sandboxed.
 diff --git a/content/browser/child_process_host_impl.cc b/content/browser/child_process_host_impl.cc
-index b9dad494f9a55..b54ee6719246a 100644
+index d14b26fdf0be1..03721d83d4a45 100644
 --- a/content/browser/child_process_host_impl.cc
 +++ b/content/browser/child_process_host_impl.cc
 @@ -40,6 +40,7 @@
@@ -262,10 +262,10 @@ index 720d823d4a695..ad470963693c4 100644
  
    // This lock protects the |zygote_pids_| set.
 diff --git a/content/zygote/zygote_linux.cc b/content/zygote/zygote_linux.cc
-index bac30c699bfd2..26c0ac7e2fa8e 100644
+index 180e07984c5c7..cecd7edb4535f 100644
 --- a/content/zygote/zygote_linux.cc
 +++ b/content/zygote/zygote_linux.cc
-@@ -119,7 +119,7 @@ bool Zygote::ProcessRequests() {
+@@ -120,7 +120,7 @@ bool Zygote::ProcessRequests() {
    PCHECK(sigaddset(&sigset, SIGCHLD) == 0);
    PCHECK(sigprocmask(SIG_BLOCK, &sigset, &orig_sigmask) == 0);
  
@@ -274,7 +274,7 @@ index bac30c699bfd2..26c0ac7e2fa8e 100644
      // Let the ZygoteHost know we are ready to go.
      // The receiving code is in
      // content/browser/zygote_host/zygote_host_impl_linux.cc.
-@@ -225,6 +225,10 @@ bool Zygote::UsingNSSandbox() const {
+@@ -226,6 +226,10 @@ bool Zygote::UsingNSSandbox() const {
    return sandbox_flags_ & sandbox::policy::SandboxLinux::kUserNS;
  }
  
@@ -506,7 +506,7 @@ index 0000000000000..22799eb42f782
 +#endif
 diff --git a/sandbox/linux/services/flatpak_sandbox.cc b/sandbox/linux/services/flatpak_sandbox.cc
 new file mode 100644
-index 0000000000000..cdc225a18b815
+index 0000000000000..2a915a5b9fa11
 --- /dev/null
 +++ b/sandbox/linux/services/flatpak_sandbox.cc
 @@ -0,0 +1,576 @@
@@ -570,8 +570,8 @@ index 0000000000000..cdc225a18b815
 +
 +void WriteStringAsByteArray(dbus::MessageWriter* writer,
 +                            const std::string& str) {
-+  writer->AppendArrayOfBytes(reinterpret_cast<const uint8_t*>(str.c_str()),
-+                             str.size() + 1);
++  writer->AppendArrayOfBytes(base::make_span(
++      reinterpret_cast<const uint8_t*>(str.c_str()), str.size() + 1));
 +}
 +
 +void WriteFdPairMap(dbus::MessageWriter* writer, int source_fd, int dest_fd) {
@@ -1211,10 +1211,10 @@ index 0000000000000..167bbc85945ad
 +
 +#endif  // SANDBOX_LINUX_SERVICES_FLATPAK_SANDBOX_H_
 diff --git a/sandbox/policy/BUILD.gn b/sandbox/policy/BUILD.gn
-index 0797ed2be9ec2..af977f0d1e7cc 100644
+index fa0edf457b612..43cd64ee83150 100644
 --- a/sandbox/policy/BUILD.gn
 +++ b/sandbox/policy/BUILD.gn
-@@ -121,6 +121,9 @@ component("policy") {
+@@ -122,6 +122,9 @@ component("policy") {
        "//sandbox/linux:suid_sandbox_client",
      ]
    }
