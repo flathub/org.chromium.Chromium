@@ -11,6 +11,8 @@ finish-args:
   - --filesystem=/run/.heim_org.h5l.kcm-socket
   - --device=all
   - --env=LD_LIBRARY_PATH=/app/chromium/nonfree-codecs/lib
+  - --env=VK_ADD_LAYER_PATH=/usr/lib/x86_64-linux-gnu/GL/vulkan
+  - --env=VK_ADD_DRIVER_FILES=/usr/lib/x86_64-linux-gnu/GL/vulkan/icd.d
   - --share=ipc
   - --share=network
   - --socket=cups
