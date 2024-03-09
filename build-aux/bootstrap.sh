@@ -28,6 +28,8 @@ fi
 # DO NOT REUSE THE BELOW API KEY; it is for Flathub only.
 # http://lists.debian.org/debian-legal/2013/11/msg00006.html
 tools/gn/bootstrap/bootstrap.py -v --no-clean --gn-gen-args='
+    use_system_minigbm=true
+    use_system_libdrm=true
     use_sysroot=false
     use_lld=true
     enable_nacl=false
@@ -47,7 +49,6 @@ tools/gn/bootstrap/bootstrap.py -v --no-clean --gn-gen-args='
     rtc_link_pipewire=true
     enable_hangout_services_extension=true
     disable_fieldtrial_testing_config=true
-    use_system_libwayland=false
     use_system_libffi=true
     use_qt=false
     enable_remoting=false
