@@ -1,4 +1,4 @@
-From 3e86b699044260dc91e9cd5d008c00ef165c8aaf Mon Sep 17 00:00:00 2001
+From d573d09b9cc11d25ced1b366d10d6b03cfeed840 Mon Sep 17 00:00:00 2001
 From: Mario Sanchez Prada <mario@endlessm.com>
 Date: Tue, 25 Oct 2016 16:57:00 +0000
 Subject: [PATCH] ffmpeg: Don't lie about AAC and H264 decoders when not
@@ -31,10 +31,10 @@ https://phabricator.endlessm.com/T30300
  2 files changed, 83 insertions(+), 7 deletions(-)
 
 diff --git a/media/base/BUILD.gn b/media/base/BUILD.gn
-index ed52be8b0fc41..4e2adabc361b1 100644
+index e456823bb363f..92be84d5e00aa 100644
 --- a/media/base/BUILD.gn
 +++ b/media/base/BUILD.gn
-@@ -418,6 +418,10 @@ source_set("base") {
+@@ -416,6 +416,10 @@ source_set("base") {
        "//third_party/ffmpeg",
        "//third_party/ffmpeg:ffmpeg_features",
      ]
@@ -46,7 +46,7 @@ index ed52be8b0fc41..4e2adabc361b1 100644
  
    if (is_chromeos_ash) {
 diff --git a/media/base/mime_util_internal.cc b/media/base/mime_util_internal.cc
-index 22da62ad80cc7..d9af4cb261e29 100644
+index 8be5dc6cb34ba..d634416f23552 100644
 --- a/media/base/mime_util_internal.cc
 +++ b/media/base/mime_util_internal.cc
 @@ -4,6 +4,8 @@
@@ -186,5 +186,5 @@ index 22da62ad80cc7..d9af4cb261e29 100644
    CodecSet video_3gpp_codecs(aac);
    video_3gpp_codecs.emplace(H264);
 -- 
-2.42.0
+2.43.2
 

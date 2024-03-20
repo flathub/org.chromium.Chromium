@@ -1,4 +1,4 @@
-From 6c3e935048dfc9648ae3ed2449a7ceaf76bbe973 Mon Sep 17 00:00:00 2001
+From 0a7b7d437374450a137e8b1b481ec8986e1b3e7e Mon Sep 17 00:00:00 2001
 From: Jan Schmidt <jan@centricular.com>
 Date: Wed, 1 May 2019 17:49:42 +0200
 Subject: [PATCH] ffmpeg: Handle transient decode errors arising from
@@ -20,10 +20,10 @@ https://phabricator.endlessm.com/T23374
  1 file changed, 8 insertions(+), 4 deletions(-)
 
 diff --git a/third_party/ffmpeg/libavcodec/libfdk-aacdec.c b/third_party/ffmpeg/libavcodec/libfdk-aacdec.c
-index 8c1586e25e..d81289e97d 100644
+index 6b201b64ee..ca86ef37c7 100644
 --- a/third_party/ffmpeg/libavcodec/libfdk-aacdec.c
 +++ b/third_party/ffmpeg/libavcodec/libfdk-aacdec.c
-@@ -409,11 +409,15 @@ static int fdk_aac_decode_frame(AVCodecContext *avctx, AVFrame *frame,
+@@ -408,11 +408,15 @@ static int fdk_aac_decode_frame(AVCodecContext *avctx, AVFrame *frame,
      err = aacDecoder_DecodeFrame(s->handle, (INT_PCM *) s->decoder_buffer,
                                   s->decoder_buffer_size / sizeof(INT_PCM),
                                   flags);
@@ -44,5 +44,5 @@ index 8c1586e25e..d81289e97d 100644
                 "aacDecoder_DecodeFrame() failed: %x\n", err);
          ret = AVERROR_UNKNOWN;
 -- 
-2.42.0
+2.43.2
 

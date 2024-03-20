@@ -1,4 +1,4 @@
-From d708ef5012e238152641cacd9134be8e007a1d08 Mon Sep 17 00:00:00 2001
+From 505b5357ba2f6e473368b44967807db2eda47959 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Tue, 20 Jul 2021 14:18:31 -0500
 Subject: [PATCH] Enable support for libfdk-aac and OpenH264
@@ -26,10 +26,10 @@ index 91e2f508c3..6b67df2f6b 100644
        # Windows component build needs the .def file to export ffmpeg symbols.
        deps += [ ":ffmpeg_generate_def" ]
 diff --git a/third_party/ffmpeg/chromium/scripts/build_ffmpeg.py b/third_party/ffmpeg/chromium/scripts/build_ffmpeg.py
-index f1ed4ce144..6e3a62f5a5 100755
+index d14ae299c1..63a59a3cd4 100755
 --- a/third_party/ffmpeg/chromium/scripts/build_ffmpeg.py
 +++ b/third_party/ffmpeg/chromium/scripts/build_ffmpeg.py
-@@ -1011,11 +1011,27 @@ def ConfigureAndBuild(target_arch, target_os, host_os, host_arch, parallel_jobs,
+@@ -979,11 +979,27 @@ def ConfigureAndBuild(target_arch, target_os, host_os, host_arch, parallel_jobs,
            '--ar=cygwin-wrapper lib',
        ])
  
@@ -73,5 +73,5 @@ index 7fd44ec47c..8af37ebf80 100755
  
  # Files permitted to report an UNKNOWN license. All files mentioned here should
 -- 
-2.42.0
+2.43.2
 

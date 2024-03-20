@@ -1,4 +1,4 @@
-From a3a6179254cf242721dd278871ef44d76ab74905 Mon Sep 17 00:00:00 2001
+From 7031aefed8c48635ae42cfc8cfca7caa97a821a9 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Tue, 1 Mar 2022 19:29:12 -0600
 Subject: [PATCH] clang build script: Support disabling the bundled libxml2
@@ -11,10 +11,10 @@ attempting to build a toolchain without network access.
  1 file changed, 18 insertions(+), 7 deletions(-)
 
 diff --git a/tools/clang/scripts/build.py b/tools/clang/scripts/build.py
-index 65636b5914789..9d08a43cc67e5 100755
+index 3d2a504a58da7..44f2a2e6af5be 100755
 --- a/tools/clang/scripts/build.py
 +++ b/tools/clang/scripts/build.py
-@@ -689,6 +689,8 @@ def main():
+@@ -690,6 +690,8 @@ def main():
        '\'default\', will download an official model which was '
        'trained for Chrome on Android',
        default='default' if sys.platform.startswith('linux') else '')
@@ -23,7 +23,7 @@ index 65636b5914789..9d08a43cc67e5 100755
    parser.add_argument('--with-android', type=gn_arg, nargs='?', const=True,
                        help='build the Android ASan runtime (linux only)',
                        default=sys.platform.startswith('linux'))
-@@ -753,6 +755,10 @@ def main():
+@@ -754,6 +756,10 @@ def main():
      print('--with-ml-inliner-model only supports linux hosts')
      return 1
  
@@ -34,7 +34,7 @@ index 65636b5914789..9d08a43cc67e5 100755
    # Don't buffer stdout, so that print statements are immediately flushed.
    # LLVM tests print output without newlines, so with buffering they won't be
    # immediately printed.
-@@ -921,13 +927,18 @@ def main():
+@@ -929,13 +935,18 @@ def main():
      base_cmake_args.append('-DLLVM_WINSYSROOT="%s"' %
                             os.path.dirname(os.path.dirname(GetWinSDKDir())))
  
@@ -61,5 +61,5 @@ index 65636b5914789..9d08a43cc67e5 100755
    if args.with_zstd:
      # Statically link zstd to make lld support zstd compression for debug info.
 -- 
-2.42.0
+2.43.2
 
