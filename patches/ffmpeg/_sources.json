@@ -4,7 +4,7 @@
     "paths": [
       "patches/ffmpeg/Enable-support-for-libfdk-aac-and-OpenH264.patch",
       "patches/ffmpeg/ffmpeg-Handle-transient-decode-errors-arising-from-libfdk-.patch",
-      "patches/ffmpeg/Don-t-have-robo_lib-fail-on-arm64.patch",
+      "patches/ffmpeg/Don-t-fail-cross-compilatino-on-unsupported-architectures.patch",
       "patches/ffmpeg/Update-build-configuration.patch"
     ]
   }
