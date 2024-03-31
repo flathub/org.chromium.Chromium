@@ -67,6 +67,14 @@ sdk-extensions:
   - org.freedesktop.Sdk.Extension.rust-nightly
 
 modules:
+  - name: cobalt-override
+    buildsystem: meson
+    sources:
+      - type: git
+        url: https://github.com/refi64/cobalt
+        branch: vk
+        commit: aa6b97c0de924d6d2a374353bb2f909f3b78308d
+
   - name: readelf-symlink
     only-arches: [aarch64]
     buildsystem: simple
