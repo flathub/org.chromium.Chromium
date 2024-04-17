@@ -1,4 +1,4 @@
-From f4550ac0f435921910f56ae8f6e91d9654bae8e5 Mon Sep 17 00:00:00 2001
+From 72d07dbeaebb71be786739c37834300ed7df104e Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Tue, 17 Nov 2020 13:00:39 -0600
 Subject: [PATCH] flatpak: Expose Widevine into the sandbox
@@ -10,12 +10,12 @@ Subject: [PATCH] flatpak: Expose Widevine into the sandbox
  3 files changed, 131 insertions(+), 24 deletions(-)
 
 diff --git a/content/browser/zygote_host/zygote_host_impl_linux.cc b/content/browser/zygote_host/zygote_host_impl_linux.cc
-index 6d189f5e1c378..0a15755612c3c 100644
+index 10dafec5c4a26..05d7af6271a5f 100644
 --- a/content/browser/zygote_host/zygote_host_impl_linux.cc
 +++ b/content/browser/zygote_host/zygote_host_impl_linux.cc
-@@ -10,7 +10,10 @@
+@@ -9,7 +9,10 @@
+ #include <sys/types.h>
  
- #include "base/allocator/allocator_extension.h"
  #include "base/files/file_enumerator.h"
 +#include "base/files/file_util.h"
  #include "base/logging.h"
@@ -24,7 +24,7 @@ index 6d189f5e1c378..0a15755612c3c 100644
  #include "base/posix/unix_domain_socket.h"
  #include "base/process/kill.h"
  #include "base/process/launch.h"
-@@ -18,9 +21,12 @@
+@@ -17,9 +20,12 @@
  #include "base/strings/string_number_conversions.h"
  #include "build/build_config.h"
  #include "build/chromeos_buildflags.h"
@@ -37,7 +37,7 @@ index 6d189f5e1c378..0a15755612c3c 100644
  #include "content/public/common/zygote/zygote_handle.h"
  #include "sandbox/linux/services/credentials.h"
  #include "sandbox/linux/services/flatpak_sandbox.h"
-@@ -29,6 +35,7 @@
+@@ -28,6 +34,7 @@
  #include "sandbox/linux/suid/common/sandbox.h"
  #include "sandbox/policy/linux/sandbox_linux.h"
  #include "sandbox/policy/switches.h"
@@ -45,7 +45,7 @@ index 6d189f5e1c378..0a15755612c3c 100644
  
  #if BUILDFLAG(IS_CHROMEOS)
  #include "content/common/zygote/zygote_communication_linux.h"
-@@ -188,8 +195,51 @@ pid_t ZygoteHostImpl::LaunchZygote(
+@@ -187,8 +194,51 @@ pid_t ZygoteHostImpl::LaunchZygote(
    if (is_sandboxed_zygote && use_namespace_sandbox_) {
      process = sandbox::NamespaceSandbox::LaunchProcess(*cmd_line, options);
    } else if (is_sandboxed_zygote && use_flatpak_sandbox_) {
@@ -322,5 +322,5 @@ index 167bbc85945ad..de8e7165b4573 100644
                         base::WaitableEvent* event,
                         dbus::Response* response,
 -- 
-2.43.2
+2.44.0
 
