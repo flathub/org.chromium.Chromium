@@ -1,0 +1,25 @@
+From 4562994aac832f8ac8f4f832601c4e19245100ca Mon Sep 17 00:00:00 2001
+From: Ryan Gonzalez <git@refi64.dev>
+Date: Tue, 16 Apr 2024 19:52:03 -0500
+Subject: [PATCH] Skip formatting generated GN files
+
+---
+ chromium/scripts/generate_gn.py | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/third_party/ffmpeg/chromium/scripts/generate_gn.py b/third_party/ffmpeg/chromium/scripts/generate_gn.py
+index d15f6b30a8..6b3f292827 100755
+--- a/third_party/ffmpeg/chromium/scripts/generate_gn.py
++++ b/third_party/ffmpeg/chromium/scripts/generate_gn.py
+@@ -1041,7 +1041,7 @@ def main():
+     with open(gn_file_name, 'w') as fd:
+         WriteGn(fd, sets)
+ 
+-    subprocess.run(['gn', 'format', gn_file_name])
++    # subprocess.run(['gn', 'format', gn_file_name])
+ 
+ if __name__ == '__main__':
+     main()
+-- 
+2.44.0
+

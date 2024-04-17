@@ -1,4 +1,4 @@
-From 468a41ee4a45c8fab34d40b741e2896868435045 Mon Sep 17 00:00:00 2001
+From 7467e104fd23f1979b785e6cb38dd4aa36e2cf43 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <git@refi64.dev>
 Date: Wed, 13 Dec 2023 14:13:55 -0600
 Subject: [PATCH] media: Add libfdk_aac to the audio codec allow list
@@ -8,7 +8,7 @@ Subject: [PATCH] media: Add libfdk_aac to the audio codec allow list
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/media/filters/ffmpeg_glue.cc b/media/filters/ffmpeg_glue.cc
-index af52aeb5173af..58e4703684de1 100644
+index 140d90aba760e..4bf1a4258c4ab 100644
 --- a/media/filters/ffmpeg_glue.cc
 +++ b/media/filters/ffmpeg_glue.cc
 @@ -145,7 +145,7 @@ const char* FFmpegGlue::GetAllowedAudioDecoders() {
@@ -21,5 +21,5 @@ index af52aeb5173af..58e4703684de1 100644
      return allowed_decoders;
    }());
 -- 
-2.43.2
+2.44.0
 

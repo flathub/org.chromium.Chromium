@@ -1,4 +1,4 @@
-From 0c2e8ceaabd3467a38443b0f8fe72acab219ff8d Mon Sep 17 00:00:00 2001
+From c5e2fecd525f5770e3e9b4233af5e33063b7fe18 Mon Sep 17 00:00:00 2001
 From: Mario Sanchez Prada <mario@endlessm.com>
 Date: Thu, 28 Jan 2016 13:53:08 +0000
 Subject: [PATCH] memory: Enable the tab discards feature
@@ -113,5 +113,5 @@ index 1465b0a6da1f1..72a54fa9ca4b2 100644
    // Discards the less important LifecycleUnit that supports discarding under
    // |reason|.
 -- 
-2.43.2
+2.44.0
 

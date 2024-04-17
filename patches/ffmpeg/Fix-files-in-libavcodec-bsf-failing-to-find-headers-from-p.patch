@@ -1,0 +1,44 @@
+From bf6ab80889798ef55123b8ada5bd956bdc70bee7 Mon Sep 17 00:00:00 2001
+From: Ryan Gonzalez <git@refi64.dev>
+Date: Tue, 16 Apr 2024 19:33:17 -0500
+Subject: [PATCH] Fix files in libavcodec/bsf/ failing to find headers from
+ parent dir
+
+---
+ BUILD.gn                        | 2 ++
+ chromium/scripts/generate_gn.py | 6 ++++++
+ 2 files changed, 8 insertions(+)
+
+diff --git a/third_party/ffmpeg/BUILD.gn b/third_party/ffmpeg/BUILD.gn
+index bc722c1a25..09e25fb37b 100644
+--- a/third_party/ffmpeg/BUILD.gn
++++ b/third_party/ffmpeg/BUILD.gn
+@@ -203,6 +203,8 @@ target(link_target_type, "ffmpeg_internal") {
+   include_dirs = [
+     platform_config_root,
+     ".",
++    # HACK: needed for bsf/ includes to work
++    "libavcodec",
+   ]
+   defines = [
+     "HAVE_AV_CONFIG_H",
+diff --git a/third_party/ffmpeg/chromium/scripts/generate_gn.py b/third_party/ffmpeg/chromium/scripts/generate_gn.py
+index 36b3500fca..d15f6b30a8 100755
+--- a/third_party/ffmpeg/chromium/scripts/generate_gn.py
++++ b/third_party/ffmpeg/chromium/scripts/generate_gn.py
+@@ -774,6 +774,12 @@ def GetIncludedSources(file_path, source_dir, include_set, scan_only=False):
+                                                   include_file_path)
+         resolved_include_path = ''
+ 
++        # HACK: fix path to files included from the bsf/ subdirectory
++        if current_dir.endswith(
++                '/bsf') and not os.path.isfile(include_path_in_current_dir):
++            include_path_in_current_dir = os.path.join(
++                os.path.dirname(current_dir), include_file_path)
++
+         # Check if file is in current directory.
+         if os.path.isfile(include_path_in_current_dir):
+             resolved_include_path = include_path_in_current_dir
+-- 
+2.44.0
+
