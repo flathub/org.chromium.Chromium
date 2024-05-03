@@ -18,8 +18,7 @@
       "patches/chromium/clang-build-script-Support-disabling-the-bundled-libxml2.patch",
       "patches/chromium/Clang-build-script-Don-t-build-against-the-sysroot.patch",
       "patches/chromium/Clang-build-script-add-support-for-building-a-subset-of-ta.patch",
-      "patches/chromium/media-Add-libfdk_aac-to-the-audio-codec-allow-list.patch",
-      "patches/chromium/Fix-ozone-platform-hint.patch"
+      "patches/chromium/media-Add-libfdk_aac-to-the-audio-codec-allow-list.patch"
     ]
   }
 ]
