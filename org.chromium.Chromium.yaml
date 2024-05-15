@@ -97,8 +97,8 @@ modules:
           component: chromium
           is-main-source: true
       - type: archive
-        url: https://commondatastorage.googleapis.com/chromium-browser-clang/Linux_x64/clang-llvmorg-19-init-2941-ga0b3dbaf-22.tgz
-        sha256: 6741cc1083f935795330b6e04617ac891a7b5d2b5647b664c5b0fccc354adb43
+        url: https://commondatastorage.googleapis.com/chromium-browser-clang/Linux_x64/clang-llvmorg-19-init-8091-gab037c4f-1.tgz
+        sha256: 6b797d118cc593eca0f2e568169295a5a9b65ddabed2de34b9a201a4bb7990f5
         dest: third_party/llvm-build/Release+Asserts
         strip-components: 0
         only-arches: [x86_64]
@@ -111,7 +111,7 @@ modules:
         only-arches: [aarch64]
       - type: git
         url: https://chromium.googlesource.com/external/github.com/llvm/llvm-project
-        commit: llvmorg-19-init-2941-ga0b3dbaf
+        commit: llvmorg-19-init-8091-gab037c4f
         dest: third_party/llvm
         only-arches: [aarch64]
         x-checker-data:
