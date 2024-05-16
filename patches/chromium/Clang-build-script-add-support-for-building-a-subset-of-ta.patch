@@ -1,4 +1,4 @@
-From 2d562eadf57670085ebfa499572c3864edf87751 Mon Sep 17 00:00:00 2001
+From c81dd351b68bd1666d0f98c2ea3125bf2b07c2be Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <git@refi64.dev>
 Date: Wed, 13 Sep 2023 09:31:07 -0500
 Subject: [PATCH] Clang build script: add support for building a subset of
@@ -9,7 +9,7 @@ Subject: [PATCH] Clang build script: add support for building a subset of
  1 file changed, 4 insertions(+)
 
 diff --git a/tools/clang/scripts/build.py b/tools/clang/scripts/build.py
-index 7e290bafa8faa..57e8826ee3669 100755
+index 439310fc60c51..64be54645c156 100755
 --- a/tools/clang/scripts/build.py
 +++ b/tools/clang/scripts/build.py
 @@ -645,6 +645,8 @@ def main():
@@ -21,7 +21,7 @@ index 7e290bafa8faa..57e8826ee3669 100755
    parser.add_argument('--disable-asserts', action='store_true',
                        help='build with asserts disabled')
    parser.add_argument('--host-cc',
-@@ -1406,6 +1408,8 @@ def main():
+@@ -1421,6 +1423,8 @@ def main():
    # -DLLVM_BUILTIN_TARGETS/-DLLVM_RUNTIME_TARGETS.
    all_triples = ''
    for triple in sorted(runtimes_triples_args.keys()):

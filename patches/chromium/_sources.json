@@ -18,7 +18,12 @@
       "patches/chromium/clang-build-script-Support-disabling-the-bundled-libxml2.patch",
       "patches/chromium/Clang-build-script-Don-t-build-against-the-sysroot.patch",
       "patches/chromium/Clang-build-script-add-support-for-building-a-subset-of-ta.patch",
-      "patches/chromium/media-Add-libfdk_aac-to-the-audio-codec-allow-list.patch"
+      "patches/chromium/media-Add-libfdk_aac-to-the-audio-codec-allow-list.patch",
+      "patches/chromium/media-ffmpeg-Enable-support-for-libfdk-aac-and-OpenH264.patch",
+      "patches/chromium/media-ffmpeg-Don-t-fail-cross-compilation-on-unsupported-a.patch",
+      "patches/chromium/media-ffmpeg-Fix-files-in-libavcodec-bsf-failing-to-find-h.patch",
+      "patches/chromium/media-ffmpeg-Skip-formatting-generated-GN-files.patch",
+      "patches/chromium/media-ffmpeg-Fix-use-of-non-yet-existing-FFmpeg-config-opt.patch"
     ]
   }
 ]

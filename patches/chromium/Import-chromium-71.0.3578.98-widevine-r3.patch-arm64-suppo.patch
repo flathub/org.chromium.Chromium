@@ -1,4 +1,4 @@
-From a7e510183f169f87d4dc98eee017edfc1b11c7ce Mon Sep 17 00:00:00 2001
+From ae6b643a1a19cd376473af9f0c9935fe4d40d3e3 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Tue, 17 Nov 2020 22:57:29 -0600
 Subject: [PATCH] Import chromium-71.0.3578.98-widevine-r3.patch + arm64
@@ -12,7 +12,7 @@ to enable it on arm64.
  2 files changed, 3 insertions(+), 1 deletion(-)
 
 diff --git a/third_party/widevine/cdm/widevine.gni b/third_party/widevine/cdm/widevine.gni
-index 58f073ca562ca..d4219f13cb3cb 100644
+index 8b97b7a57419e..9a25fedfc05ee 100644
 --- a/third_party/widevine/cdm/widevine.gni
 +++ b/third_party/widevine/cdm/widevine.gni
 @@ -27,7 +27,7 @@ if (is_chromeos && !is_chromeos_device) {

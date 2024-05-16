@@ -1,17 +1,18 @@
-From b4599430e0efbab2ca5deee0cdd1daed09305d19 Mon Sep 17 00:00:00 2001
+From aa7e399c70182be1a13f404f9e3fbb33bdac678f Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <git@refi64.dev>
-Date: Wed, 20 Mar 2024 10:27:14 -0500
-Subject: [PATCH] Don't fail cross-compilatino on unsupported architectures
+Date: Thu, 16 May 2024 17:02:06 -0500
+Subject: [PATCH] media/ffmpeg: Don't fail cross-compilation on unsupported
+ architectures
 
 ---
- chromium/scripts/build_ffmpeg.py | 8 ++++----
+ media/ffmpeg/scripts/build_ffmpeg.py | 8 ++++----
  1 file changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/third_party/ffmpeg/chromium/scripts/build_ffmpeg.py b/third_party/ffmpeg/chromium/scripts/build_ffmpeg.py
-index 1d06e019fd..a50f9a1653 100755
---- a/third_party/ffmpeg/chromium/scripts/build_ffmpeg.py
-+++ b/third_party/ffmpeg/chromium/scripts/build_ffmpeg.py
-@@ -605,10 +605,10 @@ def main(argv):
+diff --git a/media/ffmpeg/scripts/build_ffmpeg.py b/media/ffmpeg/scripts/build_ffmpeg.py
+index cc3c4803f2648..92321fa2595fe 100755
+--- a/media/ffmpeg/scripts/build_ffmpeg.py
++++ b/media/ffmpeg/scripts/build_ffmpeg.py
+@@ -607,10 +607,10 @@ def main(argv):
      host_arch = ROBO_CONFIGURATION.host_architecture()
      parallel_jobs = 8
  
