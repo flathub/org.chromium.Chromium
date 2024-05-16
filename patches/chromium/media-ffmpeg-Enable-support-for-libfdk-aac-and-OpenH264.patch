@@ -1,0 +1,60 @@
+From 777404670497bacf3bc9219105d873b307d3551c Mon Sep 17 00:00:00 2001
+From: Ryan Gonzalez <git@refi64.dev>
+Date: Thu, 16 May 2024 17:01:07 -0500
+Subject: [PATCH] media/ffmpeg: Enable support for libfdk-aac and OpenH264
+
+---
+ media/ffmpeg/scripts/build_ffmpeg.py | 22 +++++++++++++++++++---
+ media/ffmpeg/scripts/generate_gn.py  |  1 +
+ 2 files changed, 20 insertions(+), 3 deletions(-)
+
+diff --git a/media/ffmpeg/scripts/build_ffmpeg.py b/media/ffmpeg/scripts/build_ffmpeg.py
+index 54bab6a1a327e..cc3c4803f2648 100755
+--- a/media/ffmpeg/scripts/build_ffmpeg.py
++++ b/media/ffmpeg/scripts/build_ffmpeg.py
+@@ -986,11 +986,27 @@ def ConfigureAndBuild(target_arch, target_os, host_os, host_arch,
+                 '--ar=cygwin-wrapper lib',
+             ])
+ 
++    if target_os == 'linux':
++        # Always use libfdk-aac
++        configure_flags['Common'].extend([
++            '--enable-demuxer=aac',
++            '--enable-parser=aac',
++            '--enable-libfdk-aac',
++            '--enable-decoder=libfdk_aac',
++            '--disable-decoder=aac',
++        ])
++
++        # Use OpenH264 when libx264 is not being used.
++        configure_flags['Chromium'].extend([
++            '--enable-libopenh264',
++            '--enable-decoder=libopenh264',
++            '--disable-decoder=h264',
++        ])
++
+     # Google Chrome & ChromeOS specific configuration.
+     configure_flags['Chrome'].extend([
+-        '--enable-decoder=aac,h264',
+-        '--enable-demuxer=aac',
+-        '--enable-parser=aac,h264',
++        '--enable-decoder=h264',
++        '--enable-parser=h264',
+     ])
+ 
+     # Google ChromeOS specific configuration.
+diff --git a/media/ffmpeg/scripts/generate_gn.py b/media/ffmpeg/scripts/generate_gn.py
+index 8bd5bd7682d98..443df9f8e3665 100755
+--- a/media/ffmpeg/scripts/generate_gn.py
++++ b/media/ffmpeg/scripts/generate_gn.py
+@@ -692,6 +692,7 @@ ALLOWED_LICENSES = [
+     'LGPL (v2.1 or later) GENERATED FILE',
+     'MIT/X11 (BSD like)',
+     'Public domain LGPL (v2.1 or later)',
++    'ISC',
+ ]
+ 
+ # Files permitted to report an UNKNOWN license. All files mentioned here should
+-- 
+2.44.0
+

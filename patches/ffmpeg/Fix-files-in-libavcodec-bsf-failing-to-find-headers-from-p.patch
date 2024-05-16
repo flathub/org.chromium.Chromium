@@ -1,4 +1,4 @@
-From bf6ab80889798ef55123b8ada5bd956bdc70bee7 Mon Sep 17 00:00:00 2001
+From c3229091c3ebb6e028fde991fb43fef7130ca161 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <git@refi64.dev>
 Date: Tue, 16 Apr 2024 19:33:17 -0500
 Subject: [PATCH] Fix files in libavcodec/bsf/ failing to find headers from
@@ -23,10 +23,10 @@ index bc722c1a25..09e25fb37b 100644
    defines = [
      "HAVE_AV_CONFIG_H",
 diff --git a/third_party/ffmpeg/chromium/scripts/generate_gn.py b/third_party/ffmpeg/chromium/scripts/generate_gn.py
-index 36b3500fca..d15f6b30a8 100755
+index 8fd2b1fbf4..616ed6711a 100755
 --- a/third_party/ffmpeg/chromium/scripts/generate_gn.py
 +++ b/third_party/ffmpeg/chromium/scripts/generate_gn.py
-@@ -774,6 +774,12 @@ def GetIncludedSources(file_path, source_dir, include_set, scan_only=False):
+@@ -784,6 +784,12 @@ def GetIncludedSources(file_path, source_dir, include_set, scan_only=False):
                                                    include_file_path)
          resolved_include_path = ''
  

@@ -1,4 +1,4 @@
-From 0c92977ad66e001fd40b6803f454894e9ff3d270 Mon Sep 17 00:00:00 2001
+From e37a08f44e9acefaa756ccbb3305a75913f4e367 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Tue, 25 Aug 2020 19:26:07 -0500
 Subject: [PATCH] flatpak: Adjust paths for the sandbox
@@ -9,10 +9,10 @@ Subject: [PATCH] flatpak: Adjust paths for the sandbox
  2 files changed, 29 insertions(+), 1 deletion(-)
 
 diff --git a/chrome/common/BUILD.gn b/chrome/common/BUILD.gn
-index ff0f2773227f9..d342db960aa38 100644
+index 164c034142dfa..cc68188a28248 100644
 --- a/chrome/common/BUILD.gn
 +++ b/chrome/common/BUILD.gn
-@@ -693,6 +693,10 @@ static_library("constants") {
+@@ -691,6 +691,10 @@ static_library("constants") {
        "//third_party/widevine/cdm:headers",
      ]
    }
@@ -24,7 +24,7 @@ index ff0f2773227f9..d342db960aa38 100644
  
  # Use a static library here because many test binaries depend on this but don't
 diff --git a/chrome/common/chrome_paths.cc b/chrome/common/chrome_paths.cc
-index 54aca1f19f909..4a9f2238cf84f 100644
+index c94a25e390864..b130309f4287f 100644
 --- a/chrome/common/chrome_paths.cc
 +++ b/chrome/common/chrome_paths.cc
 @@ -38,6 +38,10 @@
@@ -38,7 +38,7 @@ index 54aca1f19f909..4a9f2238cf84f 100644
  #if BUILDFLAG(ENABLE_WIDEVINE)
  #include "third_party/widevine/cdm/widevine_cdm_common.h"  // nogncheck
  #endif
-@@ -546,6 +550,14 @@ bool PathProvider(int key, base::FilePath* result) {
+@@ -543,6 +547,14 @@ bool PathProvider(int key, base::FilePath* result) {
        break;
  #if BUILDFLAG(IS_POSIX) && !BUILDFLAG(IS_MAC) && !BUILDFLAG(IS_OPENBSD)
      case chrome::DIR_POLICY_FILES: {
@@ -53,7 +53,7 @@ index 54aca1f19f909..4a9f2238cf84f 100644
        cur = base::FilePath(policy::kPolicyPath);
        break;
      }
-@@ -566,7 +578,13 @@ bool PathProvider(int key, base::FilePath* result) {
+@@ -563,7 +575,13 @@ bool PathProvider(int key, base::FilePath* result) {
  #endif
  #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
      case chrome::DIR_STANDALONE_EXTERNAL_EXTENSIONS: {
@@ -68,7 +68,7 @@ index 54aca1f19f909..4a9f2238cf84f 100644
        break;
      }
  #endif
-@@ -623,6 +641,12 @@ bool PathProvider(int key, base::FilePath* result) {
+@@ -620,6 +638,12 @@ bool PathProvider(int key, base::FilePath* result) {
            "/Library/Application Support/Chromium/NativeMessagingHosts"));
  #endif
  #else  // BUILDFLAG(IS_MAC)

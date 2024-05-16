@@ -1,4 +1,4 @@
-From 914c5d09df2edbcc402bed2895a3cf48153a3901 Mon Sep 17 00:00:00 2001
+From e4450ea6894b58d4ad3757015b39f9535128d669 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Tue, 17 Mar 2020 13:18:27 -0500
 Subject: [PATCH] flatpak: Add initial sandbox support
@@ -30,7 +30,7 @@ Subject: [PATCH] flatpak: Add initial sandbox support
  create mode 100644 sandbox/linux/services/flatpak_sandbox.h
 
 diff --git a/.gitignore b/.gitignore
-index a55c4c5bbbb29..9be4724cebea4 100644
+index 3356b16ed2ce6..4b8caf23d24de 100644
 --- a/.gitignore
 +++ b/.gitignore
 @@ -75,6 +75,7 @@ vs-chromium-project.txt
@@ -42,10 +42,10 @@ index a55c4c5bbbb29..9be4724cebea4 100644
  /.externalToolBuilders/
  /.settings/
 diff --git a/base/threading/thread_restrictions.h b/base/threading/thread_restrictions.h
-index e9b8366361706..fad1ee4e7e6c3 100644
+index 998eb457ecb5f..12e4564319b03 100644
 --- a/base/threading/thread_restrictions.h
 +++ b/base/threading/thread_restrictions.h
-@@ -393,6 +393,9 @@ class ScopedAllowThreadJoinForWebRtcTransport;
+@@ -395,6 +395,9 @@ class ScopedAllowThreadJoinForWebRtcTransport;
  namespace rlz_lib {
  class FinancialPing;
  }
@@ -55,7 +55,7 @@ index e9b8366361706..fad1ee4e7e6c3 100644
  namespace service_manager {
  class ServiceProcessLauncher;
  }
-@@ -641,6 +644,7 @@ class BASE_EXPORT [[maybe_unused, nodiscard]] ScopedAllowBlocking {
+@@ -645,6 +648,7 @@ class BASE_EXPORT [[maybe_unused, nodiscard]] ScopedAllowBlocking {
    friend class remoting::
        ScopedBypassIOThreadRestrictions;  // http://crbug.com/1144161
    friend class remoting::ScopedAllowBlockingForCrashReporting;
@@ -63,7 +63,7 @@ index e9b8366361706..fad1ee4e7e6c3 100644
    friend class ui::DrmDisplayHostManager;
    friend class ui::ScopedAllowBlockingForGbmSurface;
    friend class ui::SelectFileDialogLinux;
-@@ -781,6 +785,7 @@ class BASE_EXPORT [[maybe_unused, nodiscard]] ScopedAllowBaseSyncPrimitives {
+@@ -785,6 +789,7 @@ class BASE_EXPORT [[maybe_unused, nodiscard]] ScopedAllowBaseSyncPrimitives {
    friend class rlz_lib::FinancialPing;
    friend class shell_integration_linux::
        LaunchXdgUtilityScopedAllowBaseSyncPrimitives;
@@ -125,7 +125,7 @@ index ad19f25fb6c27..092ee7fd864e3 100644
                       status & sandbox::policy::SandboxLinux::kNetNS;
    // A second-layer sandbox is also required to be adequately sandboxed.
 diff --git a/content/browser/child_process_host_impl.cc b/content/browser/child_process_host_impl.cc
-index d14b26fdf0be1..03721d83d4a45 100644
+index 6aba057fc7985..e419c1a0c66b4 100644
 --- a/content/browser/child_process_host_impl.cc
 +++ b/content/browser/child_process_host_impl.cc
 @@ -40,6 +40,7 @@
@@ -262,10 +262,10 @@ index 720d823d4a695..ad470963693c4 100644
  
    // This lock protects the |zygote_pids_| set.
 diff --git a/content/zygote/zygote_linux.cc b/content/zygote/zygote_linux.cc
-index ade0ce90cda80..49e240e10a968 100644
+index 613f4bc665543..5e558d9ba36ba 100644
 --- a/content/zygote/zygote_linux.cc
 +++ b/content/zygote/zygote_linux.cc
-@@ -121,7 +121,7 @@ bool Zygote::ProcessRequests() {
+@@ -122,7 +122,7 @@ bool Zygote::ProcessRequests() {
    PCHECK(sigaddset(&sigset, SIGCHLD) == 0);
    PCHECK(sigprocmask(SIG_BLOCK, &sigset, &orig_sigmask) == 0);
  
@@ -274,7 +274,7 @@ index ade0ce90cda80..49e240e10a968 100644
      // Let the ZygoteHost know we are ready to go.
      // The receiving code is in
      // content/browser/zygote_host/zygote_host_impl_linux.cc.
-@@ -227,6 +227,10 @@ bool Zygote::UsingNSSandbox() const {
+@@ -228,6 +228,10 @@ bool Zygote::UsingNSSandbox() const {
    return sandbox_flags_ & sandbox::policy::SandboxLinux::kUserNS;
  }
  
@@ -284,7 +284,7 @@ index ade0ce90cda80..49e240e10a968 100644
 +
  bool Zygote::HandleRequestFromBrowser(int fd) {
    std::vector<base::ScopedFD> fds;
-   char buf[kZygoteMaxMessageLength];
+   uint8_t buf[kZygoteMaxMessageLength];
 diff --git a/content/zygote/zygote_linux.h b/content/zygote/zygote_linux.h
 index 165b758efc899..961afa73f66f5 100644
 --- a/content/zygote/zygote_linux.h
@@ -362,7 +362,7 @@ index c7ee91878e6dd..9c2c7a04bd968 100644
                  base::GlobalDescriptors::Descriptor(
                      static_cast<uint32_t>(kSandboxIPCChannel), GetSandboxFD()));
 diff --git a/sandbox/linux/BUILD.gn b/sandbox/linux/BUILD.gn
-index 483488a3f789f..f7b9e2b583e38 100644
+index cc86e06114c67..be8cbd5cc1407 100644
 --- a/sandbox/linux/BUILD.gn
 +++ b/sandbox/linux/BUILD.gn
 @@ -310,6 +310,10 @@ if (is_linux || is_chromeos) {
@@ -1225,10 +1225,10 @@ index 03a96cfab4e66..f2bd563515a50 100644
      sources += [
        "linux/bpf_ime_policy_linux.cc",
 diff --git a/sandbox/policy/linux/sandbox_linux.cc b/sandbox/policy/linux/sandbox_linux.cc
-index 40dacb841b1ab..2f29be3ae8274 100644
+index 0867b6462c017..a5729a562d228 100644
 --- a/sandbox/policy/linux/sandbox_linux.cc
 +++ b/sandbox/policy/linux/sandbox_linux.cc
-@@ -37,6 +37,7 @@
+@@ -38,6 +38,7 @@
  #include "sandbox/constants.h"
  #include "sandbox/linux/seccomp-bpf-helpers/sigsys_handlers.h"
  #include "sandbox/linux/services/credentials.h"
@@ -1236,7 +1236,7 @@ index 40dacb841b1ab..2f29be3ae8274 100644
  #include "sandbox/linux/services/libc_interceptor.h"
  #include "sandbox/linux/services/namespace_sandbox.h"
  #include "sandbox/linux/services/proc_util.h"
-@@ -223,6 +224,9 @@ void SandboxLinux::PreinitializeSandbox() {
+@@ -239,6 +240,9 @@ void SandboxLinux::PreinitializeSandbox() {
    const int yama_status = Yama::GetStatus();
    yama_is_enforcing_ = (yama_status & Yama::STATUS_PRESENT) &&
                         (yama_status & Yama::STATUS_ENFORCING);
@@ -1246,7 +1246,7 @@ index 40dacb841b1ab..2f29be3ae8274 100644
    pre_initialized_ = true;
  }
  
-@@ -261,6 +265,10 @@ int SandboxLinux::GetStatus() {
+@@ -277,6 +281,10 @@ int SandboxLinux::GetStatus() {
          sandbox_status_flags_ |= kPIDNS;
        if (NamespaceSandbox::InNewNetNamespace())
          sandbox_status_flags_ |= kNetNS;
@@ -1258,7 +1258,7 @@ index 40dacb841b1ab..2f29be3ae8274 100644
  
      // We report whether the sandbox will be activated when renderers, workers
 diff --git a/sandbox/policy/linux/sandbox_linux.h b/sandbox/policy/linux/sandbox_linux.h
-index 5ced21316545a..dbcf02231c4a3 100644
+index daa4ad1661b03..08ce3858afea8 100644
 --- a/sandbox/policy/linux/sandbox_linux.h
 +++ b/sandbox/policy/linux/sandbox_linux.h
 @@ -13,6 +13,7 @@
@@ -1279,7 +1279,7 @@ index 5ced21316545a..dbcf02231c4a3 100644
      // A flag that denotes an invalid sandbox status.
      kInvalid = 1 << 31,
    };
-@@ -289,6 +293,10 @@ class SANDBOX_POLICY_EXPORT SandboxLinux {
+@@ -292,6 +296,10 @@ class SANDBOX_POLICY_EXPORT SandboxLinux {
    bool seccomp_bpf_with_tsync_supported_;  // Accurate if pre_initialized_.
    bool yama_is_enforcing_;                 // Accurate if pre_initialized_.
    bool initialize_sandbox_ran_;            // InitializeSandbox() was called.
@@ -1291,7 +1291,7 @@ index 5ced21316545a..dbcf02231c4a3 100644
  #if BUILDFLAG(USING_SANITIZER)
    std::unique_ptr<__sanitizer_sandbox_arguments> sanitizer_args_;
 diff --git a/services/service_manager/service_process_launcher.cc b/services/service_manager/service_process_launcher.cc
-index 7f4f7e76bb37a..df0e75fd5212d 100644
+index 9dbb33eba71d8..3b75edceb38a7 100644
 --- a/services/service_manager/service_process_launcher.cc
 +++ b/services/service_manager/service_process_launcher.cc
 @@ -41,6 +41,7 @@

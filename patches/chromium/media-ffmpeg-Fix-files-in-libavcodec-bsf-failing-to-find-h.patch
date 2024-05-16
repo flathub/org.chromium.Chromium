@@ -1,0 +1,30 @@
+From 1ecd64c821c1e1eea2987a76543efa0e271399cd Mon Sep 17 00:00:00 2001
+From: Ryan Gonzalez <git@refi64.dev>
+Date: Thu, 16 May 2024 17:03:42 -0500
+Subject: [PATCH] media/ffmpeg: Fix files in libavcodec/bsf/ failing to find
+ headers
+
+---
+ media/ffmpeg/scripts/generate_gn.py | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/media/ffmpeg/scripts/generate_gn.py b/media/ffmpeg/scripts/generate_gn.py
+index 443df9f8e3665..c8b9458ddb058 100755
+--- a/media/ffmpeg/scripts/generate_gn.py
++++ b/media/ffmpeg/scripts/generate_gn.py
+@@ -781,6 +781,12 @@ def GetIncludedSources(file_path, source_dir, include_set, scan_only=False):
+                                                   include_file_path)
+         resolved_include_path = ''
+ 
++        # HACK: fix path to files included from the bsf/ subdirectory
++        if current_dir.endswith(
++                '/bsf') and not os.path.isfile(include_path_in_current_dir):
++            include_path_in_current_dir = os.path.join(
++                os.path.dirname(current_dir), include_file_path)
++
+         # Check if file is in current directory.
+         if os.path.isfile(include_path_in_current_dir):
+             resolved_include_path = include_path_in_current_dir
+-- 
+2.44.0
+

@@ -1,13 +1,12 @@
-From 4b6241b5f6192fc1385b29241a9495bc3f9cc8d5 Mon Sep 17 00:00:00 2001
+From aa15ebbc7ed9f9027a1b6b43166e042000727e8a Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Tue, 20 Jul 2021 14:18:31 -0500
 Subject: [PATCH] Enable support for libfdk-aac and OpenH264
 
 ---
- BUILD.gn                         |  5 +++++
- chromium/scripts/build_ffmpeg.py | 22 +++++++++++++++++++---
- chromium/scripts/generate_gn.py  |  1 +
- 3 files changed, 25 insertions(+), 3 deletions(-)
+ BUILD.gn                        | 5 +++++
+ chromium/scripts/generate_gn.py | 1 +
+ 2 files changed, 6 insertions(+)
 
 diff --git a/third_party/ffmpeg/BUILD.gn b/third_party/ffmpeg/BUILD.gn
 index 3cce79931d..bc722c1a25 100644
@@ -25,46 +24,11 @@ index 3cce79931d..bc722c1a25 100644
      } else if (is_win) {
        # Windows component build needs the .def file to export ffmpeg symbols.
        deps += [ ":ffmpeg_generate_def" ]
-diff --git a/third_party/ffmpeg/chromium/scripts/build_ffmpeg.py b/third_party/ffmpeg/chromium/scripts/build_ffmpeg.py
-index eaf8fe9d39..1d06e019fd 100755
---- a/third_party/ffmpeg/chromium/scripts/build_ffmpeg.py
-+++ b/third_party/ffmpeg/chromium/scripts/build_ffmpeg.py
-@@ -983,11 +983,27 @@ def ConfigureAndBuild(target_arch, target_os, host_os, host_arch,
-                 '--ar=cygwin-wrapper lib',
-             ])
- 
-+    if target_os == 'linux':
-+        # Always use libfdk-aac
-+        configure_flags['Common'].extend([
-+            '--enable-demuxer=aac',
-+            '--enable-parser=aac',
-+            '--enable-libfdk-aac',
-+            '--enable-decoder=libfdk_aac',
-+            '--disable-decoder=aac',
-+        ])
-+
-+        # Use OpenH264 when libx264 is not being used.
-+        configure_flags['Chromium'].extend([
-+            '--enable-libopenh264',
-+            '--enable-decoder=libopenh264',
-+            '--disable-decoder=h264',
-+        ])
-+
-     # Google Chrome & ChromeOS specific configuration.
-     configure_flags['Chrome'].extend([
--        '--enable-decoder=aac,h264',
--        '--enable-demuxer=aac',
--        '--enable-parser=aac,h264',
-+        '--enable-decoder=h264',
-+        '--enable-parser=h264',
-     ])
- 
-     # Google ChromeOS specific configuration.
 diff --git a/third_party/ffmpeg/chromium/scripts/generate_gn.py b/third_party/ffmpeg/chromium/scripts/generate_gn.py
-index fee357441d..36b3500fca 100755
+index 7f9b1d3856..8fd2b1fbf4 100755
 --- a/third_party/ffmpeg/chromium/scripts/generate_gn.py
 +++ b/third_party/ffmpeg/chromium/scripts/generate_gn.py
-@@ -685,6 +685,7 @@ ALLOWED_LICENSES = [
+@@ -695,6 +695,7 @@ ALLOWED_LICENSES = [
      'LGPL (v2.1 or later) GENERATED FILE',
      'MIT/X11 (BSD like)',
      'Public domain LGPL (v2.1 or later)',

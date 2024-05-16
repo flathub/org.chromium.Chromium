@@ -1,4 +1,4 @@
-From 83d11d16e1cefc57fc18cc462cc81be2566d47c4 Mon Sep 17 00:00:00 2001
+From cfc4611c13a8b9a988184f06125b550821f5bd46 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Tue, 1 Mar 2022 19:29:12 -0600
 Subject: [PATCH] clang build script: Support disabling the bundled libxml2
@@ -11,7 +11,7 @@ attempting to build a toolchain without network access.
  1 file changed, 18 insertions(+), 7 deletions(-)
 
 diff --git a/tools/clang/scripts/build.py b/tools/clang/scripts/build.py
-index 3d2a504a58da7..44f2a2e6af5be 100755
+index 91f4db0785e2c..4285328ceb8cb 100755
 --- a/tools/clang/scripts/build.py
 +++ b/tools/clang/scripts/build.py
 @@ -690,6 +690,8 @@ def main():
@@ -34,7 +34,7 @@ index 3d2a504a58da7..44f2a2e6af5be 100755
    # Don't buffer stdout, so that print statements are immediately flushed.
    # LLVM tests print output without newlines, so with buffering they won't be
    # immediately printed.
-@@ -929,13 +935,18 @@ def main():
+@@ -920,13 +926,18 @@ def main():
      base_cmake_args.append('-DLLVM_WINSYSROOT="%s"' %
                             os.path.dirname(os.path.dirname(GetWinSDKDir())))
  

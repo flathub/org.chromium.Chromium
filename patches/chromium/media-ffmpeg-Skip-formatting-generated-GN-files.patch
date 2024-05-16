@@ -1,0 +1,25 @@
+From 83723188e69f3a746910b7da0e991ffdeefd84f2 Mon Sep 17 00:00:00 2001
+From: Ryan Gonzalez <git@refi64.dev>
+Date: Thu, 16 May 2024 17:04:22 -0500
+Subject: [PATCH] media/ffmpeg: Skip formatting generated GN files
+
+---
+ media/ffmpeg/scripts/generate_gn.py | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/media/ffmpeg/scripts/generate_gn.py b/media/ffmpeg/scripts/generate_gn.py
+index c8b9458ddb058..04f770dfbf85c 100755
+--- a/media/ffmpeg/scripts/generate_gn.py
++++ b/media/ffmpeg/scripts/generate_gn.py
+@@ -1051,7 +1051,7 @@ def main():
+     with open(gn_file_name, 'w') as fd:
+         WriteGn(fd, sets)
+ 
+-    subprocess.run(['gn', 'format', gn_file_name])
++    # subprocess.run(['gn', 'format', gn_file_name])
+ 
+ if __name__ == '__main__':
+     main()
+-- 
+2.44.0
+
