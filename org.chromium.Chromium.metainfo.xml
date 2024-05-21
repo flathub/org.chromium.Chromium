@@ -26,6 +26,9 @@
     </screenshot>
   </screenshots>
   <releases>
+    <release version="125.0.6422.76" date="2024-05-21">
+      <description></description>
+    </release>
     <release version="125.0.6422.60" date="2024-05-15"/>
     <release version="124.0.6367.207" date="2024-05-13"/>
     <release version="124.0.6367.201" date="2024-05-09"/>
