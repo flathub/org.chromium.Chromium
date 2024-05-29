@@ -84,6 +84,9 @@ modules:
 
   - name: rust-nightly
     buildsystem: simple
+    build-options:
+      strip: false
+      no-debuginfo: true
     cleanup:
       - "*"
     sources:
