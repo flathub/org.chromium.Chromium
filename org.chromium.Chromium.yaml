@@ -129,6 +129,8 @@ modules:
 
   - name: chromium
     buildsystem: simple
+    build-options:
+      prepend-ld-library-path: /app/lib/sdk/rust-nightly/lib
     build-commands:
       - ./bootstrap.sh
       - ./build.sh
