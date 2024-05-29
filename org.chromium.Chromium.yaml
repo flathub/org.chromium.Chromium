@@ -65,7 +65,6 @@ sdk-extensions:
   - org.freedesktop.Sdk.Extension.llvm17
   - org.freedesktop.Sdk.Extension.node18
   - org.freedesktop.Sdk.Extension.openjdk21
-  - org.freedesktop.Sdk.Extension.rust-nightly
 
 modules:
   - name: readelf-symlink
@@ -82,6 +81,48 @@ modules:
       - for dir in native-messaging-hosts policies; do ln -s /app/chromium/{$dir,extensions}/$dir;
         done
       - touch /app/chromium/extensions/no-mount-stamp
+
+  - name: rust-nightly
+    buildsystem: simple
+    cleanup:
+      - "*"
+    sources:
+      - type: archive
+        only-arches:
+          - aarch64
+        dest: rust
+        url: https://static.rust-lang.org/dist/2024-05-14/rust-nightly-aarch64-unknown-linux-gnu.tar.xz
+        sha256: 0cbbcbc542c9e7073813d92e02c35c8c503829d65e59c235c641bf9ac989b98f
+        # x-checker-data:
+        #  type: rust
+        #  package: rust
+        #  channel: nightly
+        #  target: aarch64-unknown-linux-gnu
+      - type: archive
+        only-arches:
+          - x86_64
+        dest: rust
+        url: https://static.rust-lang.org/dist/2024-05-14/rust-nightly-x86_64-unknown-linux-gnu.tar.xz
+        sha256: d2cf0e8c9741080b348422678f1669d7cdd9d60daa46959d0f90a36dfb88cd3b
+        # x-checker-data:
+        #  type: rust
+        #  package: rust
+        #  channel: nightly
+        #  target: x86_64-unknown-linux-gnu
+      - type: archive
+        dest: rust-src
+        url: https://static.rust-lang.org/dist/2024-05-14/rust-src-nightly.tar.xz
+        sha256: 827393c706c85065f8cc25b15c3fc66b00a4fbac14dd004bb7158b4db04cf8f3
+        # x-checker-data:
+        #  type: rust
+        #  package: rust-src
+        #  channel: nightly
+        #  target: '*'
+    build-commands:
+      - cd rust && ./install.sh --prefix=/app/lib/sdk/rust-nightly --without=rust-docs
+        --without=rust-docs-json-preview --disable-ldconfig --verbose
+      - cd rust-src && ./install.sh --prefix=/app/lib/sdk/rust-nightly --disable-ldconfig
+        --verbose
 
   - name: chromium
     buildsystem: simple
