@@ -1,0 +1,301 @@
+From a9b963ca2b139e01e29d19ba05c78c736daffd62 Mon Sep 17 00:00:00 2001
+From: Nick Diego Yamane <nickdiego@igalia.com>
+Date: Wed, 15 May 2024 16:36:17 +0000
+Subject: [PATCH] wayland: factor HandleDragEnd out of Reset in data drag
+ controller
+
+The nested message loop used for outgoing drag sessions should be tied
+to the dnd_drop_performed event rather than the whole underlying drag
+flow, which includes async wl_data_source events, such as, dnd_finished
+and cancelled. Further details can be found at analysis [1].
+
+Another effect of this change is that it works as a mitigation to
+prevent browser process from hanging, ie: stopping to respond to input
+events caused by an never ending drag-and-drop loop when dealing with
+misbehaving/buggy or malicious Wayland compositors. A real case of this
+was found in the wild with some versions of Kwin 6, as described in the
+linked crbugs.
+
+[1] https://notes.nickdiego.dev/chromium/wayland-events-during-drag
+
+Bug: 329479345, 336449364, 325741108
+Test: WaylandDataDragControllerTest.OutgoingSessionWithoutDndFinished in ozone_unittests
+Change-Id: Ib4757223ce9e490c2a65999da77bf1257f7fc3ae
+Reviewed-on: https://chromium-review.googlesource.com/c/chromium/src/+/5539621
+Commit-Queue: Nick Yamane <nickdiego@igalia.com>
+Reviewed-by: Max Ihlenfeldt <max@igalia.com>
+Reviewed-by: Orko Garai <orko@igalia.com>
+Cr-Commit-Position: refs/heads/main@{#1301363}
+---
+ .../host/wayland_data_drag_controller.cc      | 70 +++++++++++++------
+ .../host/wayland_data_drag_controller.h       | 15 +++-
+ .../wayland_data_drag_controller_unittest.cc  | 32 +++++++++
+ .../wayland/host/wayland_data_source.cc       | 10 ++-
+ .../wayland/host/wayland_data_source.h        |  6 ++
+ 5 files changed, 108 insertions(+), 25 deletions(-)
+
+diff --git a/ui/ozone/platform/wayland/host/wayland_data_drag_controller.cc b/ui/ozone/platform/wayland/host/wayland_data_drag_controller.cc
+index 283a037f9f4ec..06c3126fe3dcd 100644
+--- a/ui/ozone/platform/wayland/host/wayland_data_drag_controller.cc
++++ b/ui/ozone/platform/wayland/host/wayland_data_drag_controller.cc
+@@ -125,9 +125,13 @@ WaylandDataDragController::~WaylandDataDragController() {
+ bool WaylandDataDragController::StartSession(const OSExchangeData& data,
+                                              int operations,
+                                              DragEventSource source) {
+-  DCHECK_EQ(state_, State::kIdle);
+-  DCHECK(!origin_window_);
+-  DCHECK(!icon_surface_);
++  // TODO(crbug.com/340398746): Should be DCHECK'ed instead, though due to buggy
++  // compositors, eg: KWin 6, which do not send data_source.dnd_finish|cancelled
++  // in some cases, it was temporarily turned into this conditional avoid
++  // browser crashes. Revert once it stabilizes at compositors side.
++  if (state_ != State::kIdle) {
++    Reset();
++  }
+ 
+   auto* origin_window = source == DragEventSource::kTouch
+                             ? window_manager_->GetCurrentTouchFocusedWindow()
+@@ -213,7 +217,8 @@ void WaylandDataDragController::CancelSession() {
+   // deferring the reset (e.g. until we receive wl_data_device.leave) in turn
+   // might lead to issues for real users if the compositor implements the spec
+   // incorrectly or just in a way we didn't foresee.
+-  Reset(DragResult::kCancelled, ui::EventTimeForNow());
++  HandleDragEnd(DragResult::kCancelled, ui::EventTimeForNow());
++  Reset();
+ }
+ 
+ void WaylandDataDragController::UpdateDragImage(const gfx::ImageSkia& image,
+@@ -507,8 +512,25 @@ void WaylandDataDragController::OnDataSourceFinish(WaylandDataSource* source,
+           << " origin=" << !!origin_window_
+           << " nested_dispatcher=" << !!nested_dispatcher_;
+ 
+-  auto result = completed ? DragResult::kCompleted : DragResult::kCancelled;
+-  Reset(result, timestamp);
++  // HandleDragEnd below is likely no-op, though is called to protect against
++  // buggy/malicious compositors, where no prior dnd_drop_performed was
++  // received, for example. In which case, it could result in UI hangs where
++  // input events would stop being processed because the nested drag message
++  // loop would keep running indefinitely.
++  HandleDragEnd(completed ? DragResult::kCompleted : DragResult::kCancelled,
++                timestamp);
++  Reset();
++}
++
++void WaylandDataDragController::OnDataSourceDropPerformed(
++    WaylandDataSource* source,
++    base::TimeTicks timestamp) {
++  CHECK_EQ(data_source_.get(), source);
++  VLOG(1) << __FUNCTION__ << " window=" << !!window_
++          << " origin=" << !!origin_window_
++          << " nested_dispatcher=" << !!nested_dispatcher_;
++
++  HandleDragEnd(DragResult::kCompleted, timestamp);
+ }
+ 
+ const WaylandWindow* WaylandDataDragController::GetDragTarget() const {
+@@ -654,12 +676,29 @@ void WaylandDataDragController::CancelDataFetchingIfNeeded() {
+   }
+ }
+ 
+-void WaylandDataDragController::Reset(DragResult result,
+-                                      base::TimeTicks timestamp) {
++void WaylandDataDragController::Reset() {
+   if (state_ == State::kIdle) {
+     return;
+   }
+ 
++  data_source_.reset();
++  data_offer_.reset();
++  icon_buffer_.reset();
++  icon_surface_.reset();
++  icon_surface_buffer_scale_ = 1.0f;
++  icon_image_ = gfx::ImageSkia();
++  icon_frame_callback_.reset();
++  offered_exchange_data_provider_.reset();
++  data_device_->ResetDragDelegate();
++  has_received_enter_ = false;
++  state_ = State::kIdle;
++}
++
++// TODO(crbug.com/329479345): Drop DragResult in favor of intermediary states
++// `kDropping` and `kCancelling`, move `Reset` back into this function, called
++// conditionally depending on the state it would be transitioning to.
++void WaylandDataDragController::HandleDragEnd(DragResult result,
++                                              base::TimeTicks timestamp) {
+   if (origin_window_) {
+     DragOperation operation =
+         (result == DragResult::kCompleted)
+@@ -684,18 +723,6 @@ void WaylandDataDragController::Reset(DragResult result,
+   if (pointer_grabber_for_window_drag_) {
+     DispatchPointerRelease(timestamp);
+   }
+-
+-  data_source_.reset();
+-  data_offer_.reset();
+-  icon_buffer_.reset();
+-  icon_surface_.reset();
+-  icon_surface_buffer_scale_ = 1.0f;
+-  icon_image_ = gfx::ImageSkia();
+-  icon_frame_callback_.reset();
+-  offered_exchange_data_provider_.reset();
+-  data_device_->ResetDragDelegate();
+-  has_received_enter_ = false;
+-  state_ = State::kIdle;
+ }
+ 
+ std::optional<wl::Serial>
+@@ -782,7 +809,8 @@ uint32_t WaylandDataDragController::DispatchEvent(const PlatformEvent& event) {
+   // once.
+   if (event->type() == ET_MOUSE_RELEASED) {
+     if (!has_received_enter_) {
+-      Reset(DragResult::kCancelled, event->time_stamp());
++      HandleDragEnd(DragResult::kCancelled, event->time_stamp());
++      Reset();
+     } else {
+       return POST_DISPATCH_STOP_PROPAGATION;
+     }
+diff --git a/ui/ozone/platform/wayland/host/wayland_data_drag_controller.h b/ui/ozone/platform/wayland/host/wayland_data_drag_controller.h
+index 4e41c18621738..5ae2a3f1ba16e 100644
+--- a/ui/ozone/platform/wayland/host/wayland_data_drag_controller.h
++++ b/ui/ozone/platform/wayland/host/wayland_data_drag_controller.h
+@@ -140,6 +140,8 @@ class WaylandDataDragController : public WaylandDataDevice::DragDelegate,
+                            SuppressPointerButtonReleasesAfterEnter);
+   FRIEND_TEST_ALL_PREFIXES(WaylandDataDragControllerTest,
+                            StartDragWithWrongMimeType);
++  FRIEND_TEST_ALL_PREFIXES(WaylandDataDragControllerTest,
++                           OutgoingSessionWithoutDndFinished);
+ 
+   enum class DragResult {
+     kCancelled,
+@@ -164,6 +166,8 @@ class WaylandDataDragController : public WaylandDataDevice::DragDelegate,
+   void OnDataSourceFinish(WaylandDataSource* source,
+                           base::TimeTicks timestamp,
+                           bool completed) override;
++  void OnDataSourceDropPerformed(WaylandDataSource* source,
++                                 base::TimeTicks timestamp) override;
+   void OnDataSourceSend(WaylandDataSource* source,
+                         const std::string& mime_type,
+                         std::string* contents) override;
+@@ -184,9 +188,14 @@ class WaylandDataDragController : public WaylandDataDevice::DragDelegate,
+       std::unique_ptr<ui::OSExchangeData> received_data);
+   void CancelDataFetchingIfNeeded();
+ 
+-  // Completes/cancels the drag session and resets everything to idle state.
+-  // Does nothing if the current state is already `kIdle`.
+-  void Reset(DragResult result, base::TimeTicks timestamp);
++  // Resets everything to idle state. Does nothing if the current state is
++  // already `kIdle`.
++  void Reset();
++
++  // Perform steps required when ending a drag session. e.g: quit the nested
++  // drag loop (if any), remove the event dispatcher override, and notify the
++  // drag/drop handlers based on `result`.
++  void HandleDragEnd(DragResult result, base::TimeTicks timestamp);
+ 
+   std::optional<wl::Serial> GetAndValidateSerialForDrag(
+       mojom::DragEventSource source);
+diff --git a/ui/ozone/platform/wayland/host/wayland_data_drag_controller_unittest.cc b/ui/ozone/platform/wayland/host/wayland_data_drag_controller_unittest.cc
+index 5a08cdf41cddf..5f6599567aee9 100644
+--- a/ui/ozone/platform/wayland/host/wayland_data_drag_controller_unittest.cc
++++ b/ui/ozone/platform/wayland/host/wayland_data_drag_controller_unittest.cc
+@@ -1438,6 +1438,38 @@ TEST_P(WaylandDataDragControllerTest,
+       window_.get(), DragDropTypes::DRAG_COPY | DragDropTypes::DRAG_MOVE);
+ }
+ 
++// Regression test for https://crbug.com/336449364.
++TEST_P(WaylandDataDragControllerTest, OutgoingSessionWithoutDndFinished) {
++  FocusAndPressLeftPointerButton(window_.get(), &delegate_);
++
++  // Once the drag session effectively starts at server-side, emulate a
++  // data_source.dnd_drop_performed without its subsequent dnd_finished.
++  ScheduleTestTask(
++      base::BindLambdaForTesting([&]() { SendDndDropPerformed(); }));
++
++  // Start the drag session, which spins a nested message loop, and ensure it
++  // quits even without wl_data_source.dnd_finished. In which case, the expected
++  // side effect is drag controller's internal state left inconsistent, ie: not
++  // reset to `kIdle`.
++  RunMouseDragWithSampleData(
++      window_.get(), DragDropTypes::DRAG_COPY | DragDropTypes::DRAG_MOVE);
++  EXPECT_NE(drag_controller_state(), WaylandDataDragController::State::kIdle);
++
++  // Then ensure that, even after such server-side bogus drag events flow,
++  // subsequent drags can start successfully.
++  FocusAndPressLeftPointerButton(window_.get(), &delegate_);
++  OSExchangeData os_exchange_data;
++  os_exchange_data.SetHtml(sample_text_for_dnd(), {});
++  bool started = drag_controller()->StartSession(
++      os_exchange_data, DragDropTypes::DRAG_COPY | DragDropTypes::DRAG_MOVE,
++      DragEventSource::kMouse);
++  wl::SyncDisplay(connection_->display_wrapper(), *connection_->display());
++  ASSERT_TRUE(started);
++
++  SendDndFinished();
++  EXPECT_EQ(drag_controller_state(), WaylandDataDragController::State::kIdle);
++}
++
+ #if !BUILDFLAG(IS_CHROMEOS_LACROS)
+ INSTANTIATE_TEST_SUITE_P(XdgVersionStableTest,
+                          WaylandDataDragControllerTest,
+diff --git a/ui/ozone/platform/wayland/host/wayland_data_source.cc b/ui/ozone/platform/wayland/host/wayland_data_source.cc
+index 5a4e53468a622..fc319454719d4 100644
+--- a/ui/ozone/platform/wayland/host/wayland_data_source.cc
++++ b/ui/ozone/platform/wayland/host/wayland_data_source.cc
+@@ -36,6 +36,13 @@ DataSource<T>::~DataSource() {
+   VLOG(1) << "DataSoure deleted:" << this;
+ }
+ 
++template <typename T>
++void DataSource<T>::HandleDropEvent() {
++  VLOG(1) << "OnDataSourceDropPerformed in WaylandDataSource";
++  // No timestamp for these events. Use EventTimeForNow(), for now.
++  delegate_->OnDataSourceDropPerformed(this, ui::EventTimeForNow());
++}
++
+ template <typename T>
+ void DataSource<T>::HandleFinishEvent(bool completed) {
+   VLOG(1) << "OnDataSourceFinish in WaylandDataSource";
+@@ -108,7 +115,8 @@ void DataSource<T>::OnTarget(void* data, T* source, const char* mime_type) {
+ 
+ template <typename T>
+ void DataSource<T>::OnDndDropPerformed(void* data, T* source) {
+-  NOTIMPLEMENTED_LOG_ONCE();
++  auto* self = static_cast<DataSource<T>*>(data);
++  self->HandleDropEvent();
+ }
+ 
+ //////////////////////////////////////////////////////////////////////////////
+diff --git a/ui/ozone/platform/wayland/host/wayland_data_source.h b/ui/ozone/platform/wayland/host/wayland_data_source.h
+index 53c74cbdcef40..8bbd3690df5d3 100644
+--- a/ui/ozone/platform/wayland/host/wayland_data_source.h
++++ b/ui/ozone/platform/wayland/host/wayland_data_source.h
+@@ -11,6 +11,7 @@
+ 
+ #include "base/memory/raw_ptr.h"
+ #include "base/notreached.h"
++#include "base/time/time.h"
+ #include "ui/ozone/platform/wayland/common/wayland_object.h"
+ 
+ struct wl_data_source;
+@@ -64,6 +65,10 @@ class DataSource {
+     virtual void OnDataSourceSend(DataSource<T>* source,
+                                   const std::string& mime_type,
+                                   std::string* contents) = 0;
++    // Optional callback intended to be implemented only by dnd-capable delegate
++    // implementations.
++    virtual void OnDataSourceDropPerformed(DataSource<T>* source,
++                                           base::TimeTicks timestamp) {}
+ 
+    protected:
+     virtual ~Delegate() = default;
+@@ -86,6 +91,7 @@ class DataSource {
+ 
+  private:
+   void HandleFinishEvent(bool completed);
++  void HandleDropEvent();
+   void HandleSendEvent(const std::string& mime_type, int32_t fd);
+ 
+   // {T}_listener callbacks:
+-- 
+2.44.1
+
