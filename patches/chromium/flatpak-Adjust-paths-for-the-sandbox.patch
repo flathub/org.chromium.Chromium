@@ -82,5 +82,5 @@ index c94a25e390864..b130309f4287f 100644
        cur = base::FilePath(
            FILE_PATH_LITERAL("/etc/opt/chrome/native-messaging-hosts"));
 -- 
-2.44.0
+2.44.1
 
