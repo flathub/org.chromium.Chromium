@@ -24,7 +24,10 @@
       "patches/chromium/media-ffmpeg-Fix-files-in-libavcodec-bsf-failing-to-find-h.patch",
       "patches/chromium/media-ffmpeg-Skip-formatting-generated-GN-files.patch",
       "patches/chromium/media-ffmpeg-Fix-use-of-non-yet-existing-FFmpeg-config-opt.patch",
-      "patches/chromium/wayland-factor-HandleDragEnd-out-of-Reset-in-data-drag-con.patch"
+      "patches/chromium/ozone-Simplify-wayland-drag-in-progress-check.patch",
+      "patches/chromium/wayland-factor-HandleDragEnd-out-of-Reset-in-data-drag-con.patch",
+      "patches/chromium/ozone-Handle-input-release-events-during-wayland-window-dr.patch",
+      "patches/chromium/ozone-Release-all-pointer-buttons-when-window-drag-ends.patch"
     ]
   }
 ]
