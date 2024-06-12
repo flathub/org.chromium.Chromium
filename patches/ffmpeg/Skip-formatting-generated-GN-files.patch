@@ -1,4 +1,4 @@
-From bd008f9daf231f7e797208060c3057b9cebb6f6a Mon Sep 17 00:00:00 2001
+From 6c9670b8b53d009160b293b390383a1bfb0a60ad Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <git@refi64.dev>
 Date: Tue, 16 Apr 2024 19:52:03 -0500
 Subject: [PATCH] Skip formatting generated GN files
@@ -21,5 +21,5 @@ index 616ed6711a..9caf1b6b56 100755
  if __name__ == '__main__':
      main()
 -- 
-2.44.0
+2.44.1
 

@@ -1,4 +1,4 @@
-From c3229091c3ebb6e028fde991fb43fef7130ca161 Mon Sep 17 00:00:00 2001
+From d411ba3162cd2f5bd2cfa20987d9096357b2a625 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <git@refi64.dev>
 Date: Tue, 16 Apr 2024 19:33:17 -0500
 Subject: [PATCH] Fix files in libavcodec/bsf/ failing to find headers from
@@ -40,5 +40,5 @@ index 8fd2b1fbf4..616ed6711a 100755
          if os.path.isfile(include_path_in_current_dir):
              resolved_include_path = include_path_in_current_dir
 -- 
-2.44.0
+2.44.1
 

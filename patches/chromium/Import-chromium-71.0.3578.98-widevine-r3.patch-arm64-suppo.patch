@@ -1,4 +1,4 @@
-From ae6b643a1a19cd376473af9f0c9935fe4d40d3e3 Mon Sep 17 00:00:00 2001
+From f999386dee100419306f14b9648d178592d18a0c Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Tue, 17 Nov 2020 22:57:29 -0600
 Subject: [PATCH] Import chromium-71.0.3578.98-widevine-r3.patch + arm64
@@ -36,5 +36,5 @@ index db80700b6c1b2..370bb3c9724ec 100644
 +
  #endif  // WIDEVINE_CDM_VERSION_H_
 -- 
-2.44.0
+2.44.1
 
