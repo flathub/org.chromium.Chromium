@@ -1,0 +1,271 @@
+From 8427c66b9bd460430f3c8adedd9ff60ab2474b0d Mon Sep 17 00:00:00 2001
+From: Thomas Lukaszewicz <tluk@chromium.org>
+Date: Mon, 27 May 2024 18:45:49 +0000
+Subject: [PATCH] [ozone] Release all pointer buttons when window drag ends
+
+Currently WaylandWindowDragController will release the left mouse
+button when the drag ends to notify clients the drag has ended and
+reset internal state.
+
+There are cases where a drag can start with multiple mouse buttons
+pressed. If Ozone fails to release all pressed mouse buttons after
+the operation the mouse buttons may remain stuck in the pressed
+state, potentially locking up the UI.
+
+This CL ensures all pressed buttons are released when the drag ends
+to completely reset pointer state.
+
+Bug: 336321329, 341802515
+Change-Id: I6507a43f0760185d7a75c063bd0579b9897b6b2c
+Reviewed-on: https://chromium-review.googlesource.com/c/chromium/src/+/5570782
+Reviewed-by: Nick Yamane <nickdiego@igalia.com>
+Commit-Queue: Thomas Lukaszewicz <tluk@chromium.org>
+Code-Coverage: findit-for-me@appspot.gserviceaccount.com <findit-for-me@appspot.gserviceaccount.com>
+Cr-Commit-Position: refs/heads/main@{#1306497}
+---
+ .../wayland/host/wayland_event_source.cc      | 35 +++++++++---
+ .../wayland/host/wayland_event_source.h       |  2 +
+ .../host/wayland_event_source_unittest.cc     | 55 +++++++++++++++++++
+ .../platform/wayland/host/wayland_pointer.h   |  2 +
+ .../host/wayland_window_drag_controller.cc    |  7 +--
+ .../host/wayland_window_drag_controller.h     |  2 +
+ ...wayland_window_drag_controller_unittest.cc | 35 ++++++++++++
+ 7 files changed, 126 insertions(+), 12 deletions(-)
+
+diff --git a/ui/ozone/platform/wayland/host/wayland_event_source.cc b/ui/ozone/platform/wayland/host/wayland_event_source.cc
+index d1ea9c690ee19..e67cea708fe66 100644
+--- a/ui/ozone/platform/wayland/host/wayland_event_source.cc
++++ b/ui/ozone/platform/wayland/host/wayland_event_source.cc
+@@ -45,13 +45,14 @@ namespace ui {
+ 
+ namespace {
+ 
+-constexpr auto kPointerToStringMap = base::MakeFixedFlatMap<int, const char*>({
+-    {EF_LEFT_MOUSE_BUTTON, "Left"},
+-    {EF_MIDDLE_MOUSE_BUTTON, "Middle"},
+-    {EF_RIGHT_MOUSE_BUTTON, "Right"},
+-    {EF_BACK_MOUSE_BUTTON, "Back"},
+-    {EF_FORWARD_MOUSE_BUTTON, "Forward"},
+-});
++constexpr auto kMouseButtonToStringMap =
++    base::MakeFixedFlatMap<int, const char*>({
++        {EF_LEFT_MOUSE_BUTTON, "Left"},
++        {EF_MIDDLE_MOUSE_BUTTON, "Middle"},
++        {EF_RIGHT_MOUSE_BUTTON, "Right"},
++        {EF_BACK_MOUSE_BUTTON, "Back"},
++        {EF_FORWARD_MOUSE_BUTTON, "Forward"},
++    });
+ 
+ constexpr auto kModifierToStringMap = base::MakeFixedFlatMap<int, const char*>({
+     {ui::EF_SHIFT_DOWN, "Shift"},
+@@ -65,7 +66,7 @@ constexpr auto kModifierToStringMap = base::MakeFixedFlatMap<int, const char*>({
+ });
+ 
+ std::string ToPointerFlagsString(int flags) {
+-  return ToMatchingKeyMaskString(flags, kPointerToStringMap);
++  return ToMatchingKeyMaskString(flags, kMouseButtonToStringMap);
+ }
+ 
+ std::string ToKeyboardModifierStrings(int modifiers) {
+@@ -855,6 +856,24 @@ bool WaylandEventSource::IsPointerButtonPressed(EventFlags button) const {
+   return pointer_flags_ & button;
+ }
+ 
++void WaylandEventSource::ReleasePressedPointerButtons(
++    WaylandWindow* window,
++    base::TimeTicks timestamp) {
++  CHECK(pointer_flags_);
++  for (const auto& [button, name] : kMouseButtonToStringMap) {
++    if (button & pointer_flags_) {
++      VLOG(1) << "Synthesizing pointer release for: " << name;
++      OnPointerButtonEvent(ET_MOUSE_RELEASED, button, timestamp, window,
++                           wl::EventDispatchPolicy::kImmediate);
++      pointer_flags_ &= ~button;
++    }
++    if (!pointer_flags_) {
++      break;
++    }
++  }
++  CHECK(!pointer_flags_);
++}
++
+ void WaylandEventSource::OnPointerStylusToolChanged(
+     EventPointerType pointer_type) {
+   // When the reported pointer stylus type is `mouse`, handle it as a regular
+diff --git a/ui/ozone/platform/wayland/host/wayland_event_source.h b/ui/ozone/platform/wayland/host/wayland_event_source.h
+index 8c82fe0a5572a..1c8ee3d27386c 100644
+--- a/ui/ozone/platform/wayland/host/wayland_event_source.h
++++ b/ui/ozone/platform/wayland/host/wayland_event_source.h
+@@ -139,6 +139,8 @@ class WaylandEventSource : public PlatformEventSource,
+   void OnResetPointerFlags() override;
+   const gfx::PointF& GetPointerLocation() const override;
+   bool IsPointerButtonPressed(EventFlags button) const override;
++  void ReleasePressedPointerButtons(WaylandWindow* window,
++                                    base::TimeTicks timestamp) override;
+   void OnPointerStylusToolChanged(EventPointerType pointer_type) override;
+   void OnPointerStylusForceChanged(float force) override;
+   void OnPointerStylusTiltChanged(const gfx::Vector2dF& tilt) override;
+diff --git a/ui/ozone/platform/wayland/host/wayland_event_source_unittest.cc b/ui/ozone/platform/wayland/host/wayland_event_source_unittest.cc
+index 06020a18e833f..fc915a3b570fa 100644
+--- a/ui/ozone/platform/wayland/host/wayland_event_source_unittest.cc
++++ b/ui/ozone/platform/wayland/host/wayland_event_source_unittest.cc
+@@ -173,4 +173,59 @@ TEST_F(WaylandEventSourceTest, IgnoreReleaseWithoutPress) {
+   });
+ }
+ 
++TEST_F(WaylandEventSourceTest, ReleasesAllPressedPointerButtons) {
++  PostToServerAndWait([](wl::TestWaylandServerThread* server) {
++    wl_seat_send_capabilities(server->seat()->resource(),
++                              WL_SEAT_CAPABILITY_POINTER);
++  });
++  ASSERT_TRUE(connection_->seat()->pointer());
++
++  EXPECT_FALSE(pointer_delegate_->IsPointerButtonPressed(EF_LEFT_MOUSE_BUTTON));
++  EXPECT_FALSE(
++      pointer_delegate_->IsPointerButtonPressed(EF_RIGHT_MOUSE_BUTTON));
++  EXPECT_FALSE(
++      pointer_delegate_->IsPointerButtonPressed(EF_MIDDLE_MOUSE_BUTTON));
++
++  // Dispatch enter, left, right and middle press pointer events.
++  EXPECT_CALL(delegate_, DispatchEvent(_)).Times(4);
++  PostToServerAndWait([surface_id = window_->root_surface()->get_surface_id()](
++                          wl::TestWaylandServerThread* server) {
++    auto* const surface =
++        server->GetObject<wl::MockSurface>(surface_id)->resource();
++    auto* const pointer = server->seat()->pointer()->resource();
++
++    wl_pointer_send_enter(pointer, server->GetNextSerial(), surface, 0, 0);
++    wl_pointer_send_frame(pointer);
++    wl_pointer_send_button(pointer, server->GetNextSerial(),
++                           server->GetNextTime(), BTN_LEFT,
++                           WL_POINTER_BUTTON_STATE_PRESSED);
++    wl_pointer_send_frame(pointer);
++    wl_pointer_send_button(pointer, server->GetNextSerial(),
++                           server->GetNextTime(), BTN_RIGHT,
++                           WL_POINTER_BUTTON_STATE_PRESSED);
++    wl_pointer_send_frame(pointer);
++    wl_pointer_send_button(pointer, server->GetNextSerial(),
++                           server->GetNextTime(), BTN_MIDDLE,
++                           WL_POINTER_BUTTON_STATE_PRESSED);
++    wl_pointer_send_frame(pointer);
++  });
++
++  // Left, right and middle mouse buttons should register as pressed.
++  EXPECT_TRUE(pointer_delegate_->IsPointerButtonPressed(EF_LEFT_MOUSE_BUTTON));
++  EXPECT_TRUE(pointer_delegate_->IsPointerButtonPressed(EF_RIGHT_MOUSE_BUTTON));
++  EXPECT_TRUE(
++      pointer_delegate_->IsPointerButtonPressed(EF_MIDDLE_MOUSE_BUTTON));
++
++  // Verify release buttons are synthesized for mouse pressed events.
++  EXPECT_CALL(delegate_, DispatchEvent(_)).Times(3);
++  pointer_delegate_->ReleasePressedPointerButtons(window_.get(),
++                                                  base::TimeTicks::Now());
++
++  EXPECT_FALSE(pointer_delegate_->IsPointerButtonPressed(EF_LEFT_MOUSE_BUTTON));
++  EXPECT_FALSE(
++      pointer_delegate_->IsPointerButtonPressed(EF_RIGHT_MOUSE_BUTTON));
++  EXPECT_FALSE(
++      pointer_delegate_->IsPointerButtonPressed(EF_MIDDLE_MOUSE_BUTTON));
++}
++
+ }  // namespace ui
+diff --git a/ui/ozone/platform/wayland/host/wayland_pointer.h b/ui/ozone/platform/wayland/host/wayland_pointer.h
+index dd04a1989deb8..2b575f4a891a3 100644
+--- a/ui/ozone/platform/wayland/host/wayland_pointer.h
++++ b/ui/ozone/platform/wayland/host/wayland_pointer.h
+@@ -155,6 +155,8 @@ class WaylandPointer::Delegate {
+   virtual void OnResetPointerFlags() = 0;
+   virtual const gfx::PointF& GetPointerLocation() const = 0;
+   virtual bool IsPointerButtonPressed(EventFlags button) const = 0;
++  virtual void ReleasePressedPointerButtons(WaylandWindow* window,
++                                            base::TimeTicks timestamp) = 0;
+   virtual void OnPointerStylusToolChanged(EventPointerType pointer_type) = 0;
+   virtual void OnPointerStylusForceChanged(float force) = 0;
+   virtual void OnPointerStylusTiltChanged(const gfx::Vector2dF& tilt) = 0;
+diff --git a/ui/ozone/platform/wayland/host/wayland_window_drag_controller.cc b/ui/ozone/platform/wayland/host/wayland_window_drag_controller.cc
+index 884becea6fea8..c1a1a1c83dfb3 100644
+--- a/ui/ozone/platform/wayland/host/wayland_window_drag_controller.cc
++++ b/ui/ozone/platform/wayland/host/wayland_window_drag_controller.cc
+@@ -582,7 +582,7 @@ void WaylandWindowDragController::HandleMotionEvent(LocatedEvent* event) {
+   should_process_drag_motion_events_ = false;
+ }
+ 
+-// Dispatch mouse release event (to tell clients that the drop just happened)
++// Dispatch mouse release events (to tell clients that the drop just happened)
+ // clear focus and reset internal state. Must be called when the session is
+ // about to finish.
+ void WaylandWindowDragController::HandleDropAndResetState(
+@@ -615,9 +615,8 @@ void WaylandWindowDragController::HandleDropAndResetState(
+   } else {
+     if (*drag_source_ == DragEventSource::kMouse) {
+       if (pointer_grab_owner_) {
+-        pointer_delegate_->OnPointerButtonEvent(
+-            ET_MOUSE_RELEASED, EF_LEFT_MOUSE_BUTTON, timestamp,
+-            pointer_grab_owner_, wl::EventDispatchPolicy::kImmediate);
++        pointer_delegate_->ReleasePressedPointerButtons(pointer_grab_owner_,
++                                                        timestamp);
+       }
+     } else {
+       const auto touch_pointer_ids = touch_delegate_->GetActiveTouchPointIds();
+diff --git a/ui/ozone/platform/wayland/host/wayland_window_drag_controller.h b/ui/ozone/platform/wayland/host/wayland_window_drag_controller.h
+index 4ca268290942a..5b84586e6b347 100644
+--- a/ui/ozone/platform/wayland/host/wayland_window_drag_controller.h
++++ b/ui/ozone/platform/wayland/host/wayland_window_drag_controller.h
+@@ -116,6 +116,8 @@ class WaylandWindowDragController : public WaylandDataDevice::DragDelegate,
+ 
+   const gfx::Vector2d& drag_offset_for_testing() const { return drag_offset_; }
+ 
++  bool has_received_enter_for_testing() const { return has_received_enter_; }
++
+  private:
+   class ExtendedDragSource;
+ 
+diff --git a/ui/ozone/platform/wayland/host/wayland_window_drag_controller_unittest.cc b/ui/ozone/platform/wayland/host/wayland_window_drag_controller_unittest.cc
+index 8b3f4fbc40200..070e9e47516e3 100644
+--- a/ui/ozone/platform/wayland/host/wayland_window_drag_controller_unittest.cc
++++ b/ui/ozone/platform/wayland/host/wayland_window_drag_controller_unittest.cc
+@@ -2099,6 +2099,41 @@ TEST_P(WaylandWindowDragControllerTest,
+   EXPECT_EQ(State::kIdle, drag_controller_state());
+ }
+ 
++// Regression test for b/336321329. Ensures all pressed mouse buttons are
++// released when the window drag ends.
++TEST_P(WaylandWindowDragControllerTest, AllPointersReleasedAfterDragEnd) {
++  EXPECT_FALSE(window_manager()->GetCurrentPointerOrTouchFocusedWindow());
++
++  // Dispatch enter and press events for several mouse buttons.
++  SendPointerEnter(window_.get(), &delegate_);
++  SendPointerPress(window_.get(), &delegate_, BTN_LEFT);
++  SendPointerPress(window_.get(), &delegate_, BTN_RIGHT);
++  SendPointerPress(window_.get(), &delegate_, BTN_MIDDLE);
++
++  EXPECT_TRUE(pointer_delegate()->IsPointerButtonPressed(EF_LEFT_MOUSE_BUTTON));
++  EXPECT_TRUE(
++      pointer_delegate()->IsPointerButtonPressed(EF_RIGHT_MOUSE_BUTTON));
++  EXPECT_TRUE(
++      pointer_delegate()->IsPointerButtonPressed(EF_MIDDLE_MOUSE_BUTTON));
++
++  // Start a drag with multiple mouse buttons pressed.
++  GetWaylandExtension(*window_)->StartWindowDraggingSessionIfNeeded(
++      DragEventSource::kMouse,
++      /*allow_system_drag=*/false);
++  ASSERT_EQ(State::kAttached, drag_controller_state());
++
++  // End the drag, all pressed mouse buttons should have been released.
++  SendDndFinished();
++  EXPECT_EQ(State::kIdle, drag_controller_state());
++
++  EXPECT_FALSE(
++      pointer_delegate()->IsPointerButtonPressed(EF_LEFT_MOUSE_BUTTON));
++  EXPECT_FALSE(
++      pointer_delegate()->IsPointerButtonPressed(EF_RIGHT_MOUSE_BUTTON));
++  EXPECT_FALSE(
++      pointer_delegate()->IsPointerButtonPressed(EF_MIDDLE_MOUSE_BUTTON));
++}
++
+ #if !BUILDFLAG(IS_CHROMEOS_LACROS)
+ // Lacros requires aura shell.
+ INSTANTIATE_TEST_SUITE_P(XdgVersionStableTest,
+-- 
+2.44.1
+

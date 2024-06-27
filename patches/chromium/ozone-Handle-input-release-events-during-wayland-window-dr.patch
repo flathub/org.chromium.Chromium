@@ -1,0 +1,357 @@
+From eaf4fa791bef5324796c2f8523ca4e6f57126be9 Mon Sep 17 00:00:00 2001
+From: Thomas Lukaszewicz <tluk@chromium.org>
+Date: Wed, 15 May 2024 19:58:21 +0000
+Subject: [PATCH] [ozone] Handle input release events during wayland window
+ drags
+
+See problem 1 in go/ozone-dnd-async-init for details.
+
+When Chrome requests a drag session (for window or system dnd) it
+requests a drag session via the wl_data_device::start_drag request.
+
+Synchronous with this request Chrome will set up the supporting
+classes and structures for the drag session and proceeds under the
+assumption the drag has started.
+
+However after the start_drag request there may be existing events
+already dispatched by the server that are incongruent with a drag
+state (pointer released for e.g.).
+
+Processing such an event whilst in a dragging state does not make
+sense and can lead to crashes. We do not want to no-op event
+processing since Wayland is a stateful protocol and pointer / touch
+devices can start to drift out of sync with the server.
+
+This CL updates WaylandWindowDragController to cancel the drag if
+input release events are received before the server has acknowledged
+the drag, no-oping these events otherwise. This aligns the window
+drag controller with the data drag controller.
+
+Bug: 330274075
+Change-Id: I7ac8472ec1ca3de719a9a1d50d0af20a18cf4174
+Reviewed-on: https://chromium-review.googlesource.com/c/chromium/src/+/5513723
+Reviewed-by: Nick Yamane <nickdiego@igalia.com>
+Code-Coverage: findit-for-me@appspot.gserviceaccount.com <findit-for-me@appspot.gserviceaccount.com>
+Commit-Queue: Thomas Lukaszewicz <tluk@chromium.org>
+Cr-Commit-Position: refs/heads/main@{#1301519}
+---
+ .../platform/wayland/common/wayland_util.cc   | 26 ++++++++
+ .../platform/wayland/common/wayland_util.h    | 11 ++++
+ .../host/wayland_data_drag_controller.cc      | 30 ++++------
+ .../host/wayland_window_drag_controller.cc    | 43 +++++++++-----
+ .../host/wayland_window_drag_controller.h     |  3 +
+ ...wayland_window_drag_controller_unittest.cc | 59 +++++++++++++++++++
+ 6 files changed, 137 insertions(+), 35 deletions(-)
+
+diff --git a/ui/ozone/platform/wayland/common/wayland_util.cc b/ui/ozone/platform/wayland/common/wayland_util.cc
+index f5a450144c3cf..aab4f4b4bbc69 100644
+--- a/ui/ozone/platform/wayland/common/wayland_util.cc
++++ b/ui/ozone/platform/wayland/common/wayland_util.cc
+@@ -347,4 +347,30 @@ base::TimeTicks EventMillisecondsToTimeTicks(uint32_t milliseconds) {
+ #endif
+ }
+ 
++bool MaybeHandlePlatformEventForDrag(const ui::PlatformEvent& event,
++                                     bool start_drag_ack_received,
++                                     base::OnceClosure cancel_drag_cb) {
++  // Two distinct problematic edge cases are handled here, where mouse button or
++  // touch release events come in after start_drag has already been requested:
++  //
++  // 1. If it's received before the drag session effectively starts at
++  //    compositor side, which is possible given the asynchronous nature of the
++  //    Wayland protocol. In this case, to preventing UI from getting stuck on
++  //    the drag nested loop, we just abort the drag session.
++  //
++  // 2. Otherwise, button release events may be received from buggy compositors
++  //    in addition to the actual dnd drop events, in which case the event is
++  //    suppressed, otherwise it leads to broken UI state, as observed for
++  //    example in https://crbug.com/329703410.
++  if (!event->IsSynthesized() && (event->type() == ui::ET_MOUSE_RELEASED ||
++                                  event->type() == ui::ET_TOUCH_RELEASED)) {
++    if (!start_drag_ack_received) {
++      std::move(cancel_drag_cb).Run();
++    } else {
++      return true;
++    }
++  }
++  return false;
++}
++
+ }  // namespace wl
+diff --git a/ui/ozone/platform/wayland/common/wayland_util.h b/ui/ozone/platform/wayland/common/wayland_util.h
+index 8570f2294558c..7a0e1ed227b4e 100644
+--- a/ui/ozone/platform/wayland/common/wayland_util.h
++++ b/ui/ozone/platform/wayland/common/wayland_util.h
+@@ -10,9 +10,11 @@
+ #include "base/containers/flat_map.h"
+ #include "base/files/scoped_file.h"
+ #include "base/functional/callback.h"
++#include "base/functional/callback_forward.h"
+ #include "base/time/time.h"
+ #include "third_party/abseil-cpp/absl/types/variant.h"
+ #include "third_party/skia/include/core/SkColor.h"
++#include "ui/events/platform_event.h"
+ #include "ui/gfx/geometry/rect.h"
+ #include "ui/gfx/geometry/rect_f.h"
+ #include "ui/gfx/geometry/transform.h"
+@@ -123,6 +125,15 @@ void TransformToWlArray(
+ // Converts `milliseconds`, which is server dependent, to base::TimeTicks.
+ base::TimeTicks EventMillisecondsToTimeTicks(uint32_t milliseconds);
+ 
++// Common event dispatch handler for wayland drag sessions. Returns true if the
++// platform event was handled and event propagation should stop.
++// `start_drag_ack_received` should be true if the server has acknowledged the
++// client's start_drag request. `cancel_drag_cb` may be run if the drag session
++// needs to be cancelled by the client.
++bool MaybeHandlePlatformEventForDrag(const ui::PlatformEvent& event,
++                                     bool start_drag_ack_received,
++                                     base::OnceClosure cancel_drag_cb);
++
+ }  // namespace wl
+ 
+ #endif  // UI_OZONE_PLATFORM_WAYLAND_COMMON_WAYLAND_UTIL_H_
+diff --git a/ui/ozone/platform/wayland/host/wayland_data_drag_controller.cc b/ui/ozone/platform/wayland/host/wayland_data_drag_controller.cc
+index 8985d41d10716..ea87ffac28d2f 100644
+--- a/ui/ozone/platform/wayland/host/wayland_data_drag_controller.cc
++++ b/ui/ozone/platform/wayland/host/wayland_data_drag_controller.cc
+@@ -794,30 +794,20 @@ bool WaylandDataDragController::CanDispatchEvent(const PlatformEvent& event) {
+ uint32_t WaylandDataDragController::DispatchEvent(const PlatformEvent& event) {
+   DCHECK_NE(state_, State::kIdle);
+ 
+-  // Two distinct problematic edge cases are handled here, where mouse button
+-  // release events come in after start_drag has already been requested:
+-  //
+-  // 1. If it's received before the drag session effectively starts at
+-  // compositor side, which is possible given the asynchronous nature of the
+-  // Wayland protocol. In this case, to preventing UI from getting stuck on the
+-  // drag nested loop, we just abort the drag session by calling.
+-  //
+-  // 2. Otherwise, button release events may be received from buggy compositors
+-  // in addition to the actual dnd drop events, in which case the event is
+-  // suppressed, otherwise it leads to broken UI state, as observed for example
+-  // in https://crbug.com/329703410.
+-  //
+   // Currently, there's no reliable way in the protocol to determine when the
+   // drag session has effectively started, so as a best-effort heuristic we
+   // consider it started once wl_data_device.enter has been received at least
+   // once.
+-  if (event->type() == ET_MOUSE_RELEASED) {
+-    if (!has_received_enter_) {
+-      HandleDragEnd(DragResult::kCancelled, event->time_stamp());
+-      Reset();
+-    } else {
+-      return POST_DISPATCH_STOP_PROPAGATION;
+-    }
++  auto cancel_drag_cb = base::BindOnce(
++      [](WaylandDataDragController* self, base::TimeTicks time_stamp) {
++        self->HandleDragEnd(DragResult::kCancelled, time_stamp);
++        self->Reset();
++      },
++      base::Unretained(this), event->time_stamp());
++  if (wl::MaybeHandlePlatformEventForDrag(
++          event, /*start_drag_ack_received=*/has_received_enter_,
++          std::move(cancel_drag_cb))) {
++    return POST_DISPATCH_STOP_PROPAGATION;
+   }
+ 
+   return POST_DISPATCH_PERFORM_DEFAULT;
+diff --git a/ui/ozone/platform/wayland/host/wayland_window_drag_controller.cc b/ui/ozone/platform/wayland/host/wayland_window_drag_controller.cc
+index b465e06ab118e..884becea6fea8 100644
+--- a/ui/ozone/platform/wayland/host/wayland_window_drag_controller.cc
++++ b/ui/ozone/platform/wayland/host/wayland_window_drag_controller.cc
+@@ -161,6 +161,9 @@ bool WaylandWindowDragController::StartDragSession(
+                           /*icon_surface=*/nullptr, this);
+   pointer_grab_owner_ = origin_window_;
+   should_process_drag_motion_events_ = false;
++  has_received_enter_ = false;
++  nested_dispatcher_ =
++      PlatformEventSource::GetInstance()->OverrideDispatcher(this);
+ 
+   // Observe window so we can take ownership of the origin surface in case it
+   // is destroyed during the DND session.
+@@ -244,6 +247,7 @@ void WaylandWindowDragController::OnDragEnter(WaylandWindow* window,
+   CHECK(data_source_);
+   CHECK(data_offer_);
+ 
++  has_received_enter_ = true;
+   drag_target_window_ = window;
+ 
+   // Forward focus change event to the input delegate, so other components, such
+@@ -415,11 +419,13 @@ void WaylandWindowDragController::OnDataSourceFinish(WaylandDataSource* source,
+   VLOG(1) << "DataSourceFinish received. completed=" << completed
+           << ", state=" << state_;
+   // Release DND objects.
++  nested_dispatcher_.reset();
+   data_offer_.reset();
+   data_source_.reset();
+   extended_drag_source_.reset();
+   origin_surface_.reset();
+   origin_window_ = nullptr;
++  has_received_enter_ = false;
+ 
+   // When extended-drag is available and the drop happens while a non-null
+   // surface was being dragged (i.e: detached mode) which had pointer focus
+@@ -465,16 +471,30 @@ void WaylandWindowDragController::OnDataSourceSend(WaylandDataSource* source,
+ }
+ 
+ bool WaylandWindowDragController::CanDispatchEvent(const PlatformEvent& event) {
+-  return state_ == State::kDetached;
++  return state_ != State::kIdle;
+ }
+ 
+ uint32_t WaylandWindowDragController::DispatchEvent(
+     const PlatformEvent& event) {
+-  DCHECK_EQ(state_, State::kDetached);
+-  DCHECK(base::CurrentUIThread::IsSet());
++  CHECK_NE(state_, State::kIdle);
++  CHECK(base::CurrentUIThread::IsSet());
++
++  // Currently, there's no reliable way in the protocol to determine when the
++  // drag session has effectively started, so as a best-effort heuristic we
++  // consider it started once wl_data_device.enter has been received at least
++  // once.
++  auto cancel_drag_cb = base::BindOnce(
++      &WaylandWindowDragController::OnDataSourceFinish, base::Unretained(this),
++      data_source_.get(), EventTimeForNow(), /*completed=*/false);
++  if (wl::MaybeHandlePlatformEventForDrag(
++          event, /*start_drag_ack_received=*/has_received_enter_,
++          std::move(cancel_drag_cb))) {
++    return POST_DISPATCH_STOP_PROPAGATION;
++  }
+ 
+-  if (event->type() == ET_MOUSE_MOVED || event->type() == ET_MOUSE_DRAGGED ||
+-      event->type() == ET_TOUCH_MOVED) {
++  if (state_ == State::kDetached &&
++      (event->type() == ET_MOUSE_MOVED || event->type() == ET_MOUSE_DRAGGED ||
++       event->type() == ET_TOUCH_MOVED)) {
+     HandleMotionEvent(event->AsLocatedEvent());
+ #if BUILDFLAG(IS_CHROMEOS_LACROS)
+     if (event->type() != ET_TOUCH_MOVED) {
+@@ -616,14 +636,10 @@ void WaylandWindowDragController::HandleDropAndResetState(
+ void WaylandWindowDragController::RunLoop() {
+   DCHECK_EQ(state_, State::kDetached);
+   DCHECK(dragged_window_);
+-  auto old_dispatcher = std::move(nested_dispatcher_);
++  CHECK(nested_dispatcher_);
+ 
+   VLOG(1) << "Starting drag loop. widget=" << dragged_window_->GetWidget()
+-          << " offset=" << drag_offset_.ToString()
+-          << ", has old dispatcher=" << !!old_dispatcher;
+-
+-  nested_dispatcher_ =
+-      PlatformEventSource::GetInstance()->OverrideDispatcher(this);
++          << " offset=" << drag_offset_.ToString();
+ 
+   base::WeakPtr<WaylandWindowDragController> alive(weak_factory_.GetWeakPtr());
+ 
+@@ -636,15 +652,12 @@ void WaylandWindowDragController::RunLoop() {
+     return;
+   }
+ 
+-  nested_dispatcher_ = std::move(old_dispatcher);
+-
+   VLOG(1) << "Exited drag loop: state=" << state_;
+ }
+ 
+ void WaylandWindowDragController::QuitLoop() {
+   DCHECK(!quit_loop_closure_.is_null());
+-  VLOG(1) << "Quit Loop: resetting nested dispatcher=" << !!nested_dispatcher_;
+-  nested_dispatcher_.reset();
++  VLOG(1) << "Quit Loop";
+   std::move(quit_loop_closure_).Run();
+ }
+ 
+diff --git a/ui/ozone/platform/wayland/host/wayland_window_drag_controller.h b/ui/ozone/platform/wayland/host/wayland_window_drag_controller.h
+index 8860ac42d1e38..4ca268290942a 100644
+--- a/ui/ozone/platform/wayland/host/wayland_window_drag_controller.h
++++ b/ui/ozone/platform/wayland/host/wayland_window_drag_controller.h
+@@ -223,6 +223,9 @@ class WaylandWindowDragController : public WaylandDataDevice::DragDelegate,
+   // is kept alive until the end of the session.
+   std::unique_ptr<WaylandSurface> origin_surface_;
+ 
++  // In outgoing sessions, tracks if any drag enter has already been received.
++  bool has_received_enter_ = false;
++
+   std::unique_ptr<ScopedEventDispatcher> nested_dispatcher_;
+   base::OnceClosure quit_loop_closure_;
+ 
+diff --git a/ui/ozone/platform/wayland/host/wayland_window_drag_controller_unittest.cc b/ui/ozone/platform/wayland/host/wayland_window_drag_controller_unittest.cc
+index 0a3e602712101..8b3f4fbc40200 100644
+--- a/ui/ozone/platform/wayland/host/wayland_window_drag_controller_unittest.cc
++++ b/ui/ozone/platform/wayland/host/wayland_window_drag_controller_unittest.cc
+@@ -78,6 +78,14 @@ class WaylandWindowDragControllerTest : public WaylandDragDropTest {
+     return connection_->window_drag_controller()->state_;
+   }
+ 
++  WaylandPointer::Delegate* pointer_delegate() {
++    return drag_controller()->pointer_delegate_.get();
++  }
++
++  WaylandTouch::Delegate* touch_delegate() {
++    return drag_controller()->touch_delegate_.get();
++  }
++
+   wl::SerialTracker& serial_tracker() { return connection_->serial_tracker(); }
+ 
+   MockWaylandPlatformWindowDelegate& delegate() { return delegate_; }
+@@ -2040,6 +2048,57 @@ TEST_P(WaylandWindowDragControllerTest,
+             screen_->GetLocalProcessWidgetAtPoint({20, 20}, {}));
+ }
+ 
++TEST_P(WaylandWindowDragControllerTest,
++       PointerReleaseBeforeServerAckCancellsDrag) {
++  // Ensure there is no window currently focused.
++  EXPECT_FALSE(window_manager()->GetCurrentPointerOrTouchFocusedWindow());
++  EXPECT_EQ(gfx::kNullAcceleratedWidget,
++            screen_->GetLocalProcessWidgetAtPoint({10, 10}, {}));
++
++  SendPointerEnter(window_.get(), &delegate_);
++  SendPointerPress(window_.get(), &delegate_, BTN_LEFT);
++  SendPointerMotion(window_.get(), &delegate_, /*location=*/{10, 10});
++
++  // Start the drag session.
++  GetWaylandExtension(*window_)->StartWindowDraggingSessionIfNeeded(
++      DragEventSource::kMouse,
++      /*allow_system_drag=*/false);
++  EXPECT_EQ(State::kAttached, drag_controller_state());
++
++  // Simulate a pointer release event arriving at the client before the server
++  // has acknowledged the drag request. This should cancel the drag.
++  pointer_delegate()->OnPointerButtonEvent(
++      ET_MOUSE_RELEASED, EF_LEFT_MOUSE_BUTTON, base::TimeTicks::Now(),
++      window_.get(), wl::EventDispatchPolicy::kImmediate,
++      /*allow_release_of_unpressed_button=*/false,
++      /*is_synthesized=*/false);
++  EXPECT_EQ(State::kIdle, drag_controller_state());
++}
++
++TEST_P(WaylandWindowDragControllerTest,
++       TouchReleaseBeforeServerAckCancellsDrag) {
++  // Ensure there is no window currently focused.
++  EXPECT_FALSE(window_manager()->GetCurrentPointerOrTouchFocusedWindow());
++  EXPECT_EQ(gfx::kNullAcceleratedWidget,
++            screen_->GetLocalProcessWidgetAtPoint({10, 10}, {}));
++
++  SendTouchDown(window_.get(), &delegate_, /*id=*/0, /*location=*/{0, 0});
++  SendTouchMotion(window_.get(), &delegate_, /*id=*/0, /*location=*/{10, 10});
++
++  // Start the drag session.
++  GetWaylandExtension(*window_)->StartWindowDraggingSessionIfNeeded(
++      DragEventSource::kTouch,
++      /*allow_system_drag=*/false);
++  EXPECT_EQ(State::kAttached, drag_controller_state());
++
++  // Simulate a touch release event arriving at the client before the server
++  // has acknowledged the drag request. This should cancel the drag.
++  touch_delegate()->OnTouchReleaseEvent(base::TimeTicks::Now(), /*id=*/0,
++                                        wl::EventDispatchPolicy::kImmediate,
++                                        /*is_synthesized=*/false);
++  EXPECT_EQ(State::kIdle, drag_controller_state());
++}
++
+ #if !BUILDFLAG(IS_CHROMEOS_LACROS)
+ // Lacros requires aura shell.
+ INSTANTIATE_TEST_SUITE_P(XdgVersionStableTest,
+-- 
+2.44.1
+
