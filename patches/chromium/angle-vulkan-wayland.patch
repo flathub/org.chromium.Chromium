@@ -1,0 +1,23 @@
+From 43eb933c53cc93db78f5dad35cca0a9d6fe6f34b Mon Sep 17 00:00:00 2001
+From: Jordan Pryde <jordan@pryde.me>
+Date: Thu, 23 May 2024 15:04:03 -0700
+Subject: [PATCH] Allow --use-angle=vulkan when ozone platform is Wayland
+
+---
+ ui/ozone/platform/wayland/gpu/wayland_surface_factory.cc | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/ui/ozone/platform/wayland/gpu/wayland_surface_factory.cc b/ui/ozone/platform/wayland/gpu/wayland_surface_factory.cc
+index b6e99324c0..7602a6b8e6 100644
+--- a/ui/ozone/platform/wayland/gpu/wayland_surface_factory.cc
++++ b/ui/ozone/platform/wayland/gpu/wayland_surface_factory.cc
+@@ -214,6 +214,7 @@ WaylandSurfaceFactory::GetAllowedGLImplementations() {
+     impls.emplace_back(gl::ANGLEImplementation::kOpenGL);
+     impls.emplace_back(gl::ANGLEImplementation::kOpenGLES);
+     impls.emplace_back(gl::ANGLEImplementation::kSwiftShader);
++    impls.emplace_back(gl::ANGLEImplementation::kVulkan);
+     impls.emplace_back(gl::kGLImplementationEGLGLES2);
+   }
+   return impls;
+-- 
+2.45.1
