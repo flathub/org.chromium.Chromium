@@ -23,7 +23,8 @@
       "patches/chromium/media-ffmpeg-Don-t-fail-cross-compilation-on-unsupported-a.patch",
       "patches/chromium/media-ffmpeg-Fix-files-in-libavcodec-bsf-failing-to-find-h.patch",
       "patches/chromium/media-ffmpeg-Skip-formatting-generated-GN-files.patch",
-      "patches/chromium/media-ffmpeg-Fix-use-of-non-yet-existing-FFmpeg-config-opt.patch"
+      "patches/chromium/media-ffmpeg-Fix-use-of-non-yet-existing-FFmpeg-config-opt.patch",
+      "patches/chromium/angle-vulkan-wayland.patch"
     ]
   }
 ]
