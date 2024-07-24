@@ -1,12 +1,11 @@
-From 888de453c47512386795696194176245c26674d0 Mon Sep 17 00:00:00 2001
+From 678dee2803f577f2f80f02a1d983f4ed57d37ba9 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Tue, 20 Jul 2021 14:18:31 -0500
 Subject: [PATCH] Enable support for libfdk-aac and OpenH264
 
 ---
- BUILD.gn                        | 5 +++++
- chromium/scripts/generate_gn.py | 1 +
- 2 files changed, 6 insertions(+)
+ BUILD.gn | 5 +++++
+ 1 file changed, 5 insertions(+)
 
 diff --git a/third_party/ffmpeg/BUILD.gn b/third_party/ffmpeg/BUILD.gn
 index 3cce79931d..bc722c1a25 100644
@@ -24,18 +23,6 @@ index 3cce79931d..bc722c1a25 100644
      } else if (is_win) {
        # Windows component build needs the .def file to export ffmpeg symbols.
        deps += [ ":ffmpeg_generate_def" ]
-diff --git a/third_party/ffmpeg/chromium/scripts/generate_gn.py b/third_party/ffmpeg/chromium/scripts/generate_gn.py
-index 7f9b1d3856..8fd2b1fbf4 100755
---- a/third_party/ffmpeg/chromium/scripts/generate_gn.py
-+++ b/third_party/ffmpeg/chromium/scripts/generate_gn.py
-@@ -695,6 +695,7 @@ ALLOWED_LICENSES = [
-     'LGPL (v2.1 or later) GENERATED FILE',
-     'MIT/X11 (BSD like)',
-     'Public domain LGPL (v2.1 or later)',
-+    'ISC',
- ]
- 
- # Files permitted to report an UNKNOWN license. All files mentioned here should
 -- 
-2.44.1
+2.45.1
 

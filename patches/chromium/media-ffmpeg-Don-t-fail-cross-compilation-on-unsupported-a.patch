@@ -1,4 +1,4 @@
-From 0a02348d51ceb3694c07c6cf32055aa34bd24a75 Mon Sep 17 00:00:00 2001
+From b2a634ce9e646801d4c927b7aaa53e88927b3ab5 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <git@refi64.dev>
 Date: Thu, 16 May 2024 17:02:06 -0500
 Subject: [PATCH] media/ffmpeg: Don't fail cross-compilation on unsupported
@@ -9,10 +9,10 @@ Subject: [PATCH] media/ffmpeg: Don't fail cross-compilation on unsupported
  1 file changed, 4 insertions(+), 4 deletions(-)
 
 diff --git a/media/ffmpeg/scripts/build_ffmpeg.py b/media/ffmpeg/scripts/build_ffmpeg.py
-index 9d98783041bc1..ac10cc34b7910 100755
+index 5815754c77ee4..027f2e8d429a3 100755
 --- a/media/ffmpeg/scripts/build_ffmpeg.py
 +++ b/media/ffmpeg/scripts/build_ffmpeg.py
-@@ -607,10 +607,10 @@ def main(argv):
+@@ -606,10 +606,10 @@ def main(argv):
      host_arch = ROBO_CONFIGURATION.host_architecture()
      parallel_jobs = 8
  
@@ -28,5 +28,5 @@ index 9d98783041bc1..ac10cc34b7910 100755
      for os in ARCH_MAP.keys():
          if os != target_os and target_os != 'all':
 -- 
-2.44.1
+2.45.1
 
