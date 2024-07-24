@@ -4,8 +4,7 @@
     "paths": [
       "patches/ffmpeg/Enable-support-for-libfdk-aac-and-OpenH264.patch",
       "patches/ffmpeg/ffmpeg-Handle-transient-decode-errors-arising-from-libfdk-.patch",
-      "patches/ffmpeg/Fix-files-in-libavcodec-bsf-failing-to-find-headers-from-p.patch",
-      "patches/ffmpeg/Skip-formatting-generated-GN-files.patch",
+      "patches/ffmpeg/Fix-files-in-libavcodec-bsf-failing-to-find-headers.patch",
       "patches/ffmpeg/Update-build-configuration.patch"
     ]
   }

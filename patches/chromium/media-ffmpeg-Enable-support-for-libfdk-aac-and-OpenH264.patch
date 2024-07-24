@@ -1,4 +1,4 @@
-From d654742b01fc1c10bf7a56daee5deeee7cac3d7f Mon Sep 17 00:00:00 2001
+From 9141c6620bb33f52c54e258af90db6a7b5c14494 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <git@refi64.dev>
 Date: Thu, 16 May 2024 17:01:07 -0500
 Subject: [PATCH] media/ffmpeg: Enable support for libfdk-aac and OpenH264
@@ -9,10 +9,10 @@ Subject: [PATCH] media/ffmpeg: Enable support for libfdk-aac and OpenH264
  2 files changed, 20 insertions(+), 3 deletions(-)
 
 diff --git a/media/ffmpeg/scripts/build_ffmpeg.py b/media/ffmpeg/scripts/build_ffmpeg.py
-index 75589ce6a2181..9d98783041bc1 100755
+index 9c653ac53574d..5815754c77ee4 100755
 --- a/media/ffmpeg/scripts/build_ffmpeg.py
 +++ b/media/ffmpeg/scripts/build_ffmpeg.py
-@@ -986,11 +986,27 @@ def ConfigureAndBuild(target_arch, target_os, host_os, host_arch,
+@@ -985,11 +985,27 @@ def ConfigureAndBuild(target_arch, target_os, host_os, host_arch,
                  '--ar=cygwin-wrapper lib',
              ])
  
@@ -33,7 +33,7 @@ index 75589ce6a2181..9d98783041bc1 100755
 +            '--disable-decoder=h264',
 +        ])
 +
-     # Google Chrome & ChromeOS specific configuration.
+     # Google Chrome specific configuration.
      configure_flags['Chrome'].extend([
 -        '--enable-decoder=aac,h264',
 -        '--enable-demuxer=aac',
@@ -42,12 +42,12 @@ index 75589ce6a2181..9d98783041bc1 100755
 +        '--enable-parser=h264',
      ])
  
-     # Google ChromeOS specific configuration.
+     configure_flags['ChromeAndroid'].extend([
 diff --git a/media/ffmpeg/scripts/generate_gn.py b/media/ffmpeg/scripts/generate_gn.py
-index e2d6b7ef211c7..90faee8d5fb63 100755
+index cfae245e81f89..0ed786d8c3a6e 100755
 --- a/media/ffmpeg/scripts/generate_gn.py
 +++ b/media/ffmpeg/scripts/generate_gn.py
-@@ -692,6 +692,7 @@ ALLOWED_LICENSES = [
+@@ -697,6 +697,7 @@ ALLOWED_LICENSES = [
      'LGPL (v2.1 or later) GENERATED FILE',
      'MIT/X11 (BSD like)',
      'Public domain LGPL (v2.1 or later)',
@@ -56,5 +56,5 @@ index e2d6b7ef211c7..90faee8d5fb63 100755
  
  # Files permitted to report an UNKNOWN license. All files mentioned here should
 -- 
-2.44.1
+2.45.1
 
