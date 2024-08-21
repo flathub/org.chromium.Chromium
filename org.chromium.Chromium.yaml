@@ -137,8 +137,8 @@ modules:
       - ./install.sh
     sources:
       - type: archive
-        url: https://commondatastorage.googleapis.com/chromium-browser-official/chromium-127.0.6533.119.tar.xz
-        sha256: acc9e3f9fd2d180b8831865a1ac4f5cdd9ffe6211f47f467296d9ee1be2a577e
+        url: https://commondatastorage.googleapis.com/chromium-browser-official/chromium-128.0.6613.84.tar.xz
+        sha256: 9297c1e1dc9310534f6a48f90eacc2eac1d964ac3c827dc0798594e8a2742dc4
         x-checker-data:
           type: chromium
           component: chromium
@@ -163,7 +163,7 @@ modules:
         only-arches: [aarch64]
       - type: git
         url: https://chromium.googlesource.com/external/github.com/llvm/llvm-project
-        commit: llvmorg-19-init-10646-g084e2b53
+        commit: llvmorg-19-init-14561-gecea8371
         dest: third_party/llvm
         only-arches: [aarch64]
         x-checker-data:
