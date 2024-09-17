@@ -163,7 +163,7 @@ modules:
         only-arches: [aarch64]
       - type: git
         url: https://chromium.googlesource.com/external/github.com/llvm/llvm-project
-        commit: llvmorg-19-init-14561-gecea8371
+        commit: llvmorg-20-init-1009-g7088a5ed
         dest: third_party/llvm
         only-arches: [aarch64]
         x-checker-data:
