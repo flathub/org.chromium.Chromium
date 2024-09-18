@@ -1,4 +1,4 @@
-From 25de58a4edd33ff280ae8acbccb74aa2d84b8194 Mon Sep 17 00:00:00 2001
+From 0baa2d3fb1bbfe2a91057876dab29bfa1f19feef Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <git@refi64.dev>
 Date: Thu, 25 Jul 2024 10:08:59 -0500
 Subject: [PATCH] Revert "Enable crabbyavif build and feature behind a flag"
@@ -39,10 +39,10 @@ index 687033e4486a5..4006422194a49 100644
  }
  
 diff --git a/third_party/blink/renderer/platform/image-decoders/image_decoder.cc b/third_party/blink/renderer/platform/image-decoders/image_decoder.cc
-index b92dde7e6fb6f..7887c60fccb62 100644
+index f208b6599164c..4fb788fe8581a 100644
 --- a/third_party/blink/renderer/platform/image-decoders/image_decoder.cc
 +++ b/third_party/blink/renderer/platform/image-decoders/image_decoder.cc
-@@ -31,7 +31,6 @@
+@@ -36,7 +36,6 @@
  #include "media/media_buildflags.h"
  #include "skia/ext/cicp.h"
  #include "third_party/blink/public/common/buildflags.h"
@@ -50,7 +50,7 @@ index b92dde7e6fb6f..7887c60fccb62 100644
  #include "third_party/blink/public/platform/platform.h"
  #include "third_party/blink/renderer/platform/image-decoders/bmp/bmp_image_decoder.h"
  #include "third_party/blink/renderer/platform/image-decoders/fast_shared_buffer_reader.h"
-@@ -47,7 +46,6 @@
+@@ -52,7 +51,6 @@
  
  #if BUILDFLAG(ENABLE_AV1_DECODER)
  #include "third_party/blink/renderer/platform/image-decoders/avif/avif_image_decoder.h"
@@ -58,7 +58,7 @@ index b92dde7e6fb6f..7887c60fccb62 100644
  #endif
  
  namespace blink {
-@@ -192,9 +190,7 @@ String SniffMimeTypeInternal(scoped_refptr<SegmentReader> reader) {
+@@ -197,9 +195,7 @@ String SniffMimeTypeInternal(scoped_refptr<SegmentReader> reader) {
      return "image/bmp";
    }
  #if BUILDFLAG(ENABLE_AV1_DECODER)
@@ -69,7 +69,7 @@ index b92dde7e6fb6f..7887c60fccb62 100644
      return "image/avif";
    }
  #endif
-@@ -300,15 +296,9 @@ std::unique_ptr<ImageDecoder> ImageDecoder::CreateByMimeType(
+@@ -309,15 +305,9 @@ std::unique_ptr<ImageDecoder> ImageDecoder::CreateByMimeType(
                                                  max_decoded_bytes);
  #if BUILDFLAG(ENABLE_AV1_DECODER)
    } else if (mime_type == "image/avif") {
