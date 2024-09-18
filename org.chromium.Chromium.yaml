@@ -149,8 +149,8 @@ modules:
           # yet, so just remove it for now.
           - rm -rf third_party/llvm-build
       - type: archive
-        url: https://commondatastorage.googleapis.com/chromium-browser-clang/Linux_x64/clang-llvmorg-19-init-10646-g084e2b53-57.tgz
-        sha256: 256569cef49a1a955570a3026b8910689cac106a1336238f592296c544f6b8c3
+        url: https://commondatastorage.googleapis.com/chromium-browser-clang/Linux_x64/clang-llvmorg-20-init-1009-g7088a5ed-10.tar.xz
+        sha256: 32ac9d9864a6bd99242f1a97778b3a074ac1151ce3eca369903f2ef5337c787a
         dest: third_party/llvm-build/Release+Asserts
         strip-components: 0
         only-arches: [x86_64]
