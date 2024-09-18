@@ -1,4 +1,4 @@
-From 83dcb6f4c4f6a3bbe39dba2bcf514e963fe39a57 Mon Sep 17 00:00:00 2001
+From 59b4a08d4c69d5e1289edda374eaf5c6b1575f4f Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <git@refi64.dev>
 Date: Thu, 16 May 2024 17:03:42 -0500
 Subject: [PATCH] media/ffmpeg: Fix files in libavcodec/bsf/ failing to find
@@ -9,7 +9,7 @@ Subject: [PATCH] media/ffmpeg: Fix files in libavcodec/bsf/ failing to find
  1 file changed, 6 insertions(+)
 
 diff --git a/media/ffmpeg/scripts/generate_gn.py b/media/ffmpeg/scripts/generate_gn.py
-index 0ed786d8c3a6e..3ab3a5aac297b 100755
+index 769131ca5db41..e2768171693be 100755
 --- a/media/ffmpeg/scripts/generate_gn.py
 +++ b/media/ffmpeg/scripts/generate_gn.py
 @@ -786,6 +786,12 @@ def GetIncludedSources(file_path, source_dir, include_set, scan_only=False):
