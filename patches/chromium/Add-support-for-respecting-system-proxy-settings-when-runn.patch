@@ -1,4 +1,4 @@
-From f41b5f737336941046e5f07552ad516dd6f7221e Mon Sep 17 00:00:00 2001
+From 64dc09b4f0886c8e581cfdfdfc3c5c308f0044cd Mon Sep 17 00:00:00 2001
 From: Andre Moreira Magalhaes <andre.magalhaes@endlessos.org>
 Date: Thu, 17 Dec 2020 19:05:10 -0300
 Subject: [PATCH] Add support for respecting system proxy settings when running
@@ -54,10 +54,10 @@ Closes https://github.com/flathub/org.chromium.Chromium/issues/36
  create mode 100644 net/proxy_resolution/proxy_resolver_linux.h
 
 diff --git a/chrome/app/generated_resources.grd b/chrome/app/generated_resources.grd
-index 0b811678f9f49..4790a65643a95 100644
+index b597bcdb0c4ff..660c480ccbf9e 100644
 --- a/chrome/app/generated_resources.grd
 +++ b/chrome/app/generated_resources.grd
-@@ -14863,6 +14863,12 @@ Please help our engineers fix this problem. Tell us what happened right before y
+@@ -14898,6 +14898,12 @@ Please help our engineers fix this problem. Tell us what happened right before y
  
            &lt;p&gt;But you can still configure via the command line.  Please see &lt;code&gt;man <ph name="PRODUCT_BINARY_NAME">$2<ex>google-chrome</ex></ph>&lt;/code&gt; for more information on flags and environment variables.&lt;/p&gt;
          </message>
@@ -71,10 +71,10 @@ index 0b811678f9f49..4790a65643a95 100644
  
        <message name="IDS_IMAGE_FILES" desc="The description of the image file extensions in the select file dialog.">
 diff --git a/chrome/browser/net/system_network_context_manager.cc b/chrome/browser/net/system_network_context_manager.cc
-index 249ff5ecffa8d..a4e7d811f2167 100644
+index afb5ce8d83b05..e2c8185ad0b7a 100644
 --- a/chrome/browser/net/system_network_context_manager.cc
 +++ b/chrome/browser/net/system_network_context_manager.cc
-@@ -104,6 +104,7 @@
+@@ -105,6 +105,7 @@
  #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
  #include "chrome/common/chrome_paths_internal.h"
  #include "chrome/grit/branded_strings.h"
@@ -82,7 +82,7 @@ index 249ff5ecffa8d..a4e7d811f2167 100644
  #include "ui/base/l10n/l10n_util.h"
  #endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
  
-@@ -863,7 +864,13 @@ void SystemNetworkContextManager::ConfigureDefaultNetworkContextParams(
+@@ -877,7 +878,13 @@ void SystemNetworkContextManager::ConfigureDefaultNetworkContextParams(
    // or if it does work, now.
    // Should be possible now that a private isolate is used.
    // http://crbug.com/474654
@@ -131,10 +131,10 @@ index 63e740fe81847..6ba3d0402968b 100644
                                  base::ASCIIToUTF16(binary.BaseName().value())));
    AppendFooter(&data);
 diff --git a/net/BUILD.gn b/net/BUILD.gn
-index ca877b38dc730..17ed1f2877a55 100644
+index e229ec4c97bb6..b6af4ebf7e09c 100644
 --- a/net/BUILD.gn
 +++ b/net/BUILD.gn
-@@ -1251,6 +1251,8 @@ component("net") {
+@@ -1274,6 +1274,8 @@ component("net") {
      sources += [
        "base/address_map_cache_linux.cc",
        "base/address_map_cache_linux.h",
@@ -143,7 +143,7 @@ index ca877b38dc730..17ed1f2877a55 100644
      ]
    }
  
-@@ -1715,6 +1717,7 @@ source_set("net_deps") {
+@@ -1751,6 +1753,7 @@ source_set("net_deps") {
  
    if (use_gio) {
      public_configs += [ "//build/linux:gio_config" ]
@@ -379,5 +379,5 @@ index 0000000000000..7ae45eeae1a43
 +
 +#endif  // NET_PROXY_RESOLUTION_PROXY_RESOLVER_LINUX_H_
 -- 
-2.45.1
+2.46.0
 

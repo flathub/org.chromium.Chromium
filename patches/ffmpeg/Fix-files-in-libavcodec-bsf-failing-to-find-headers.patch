@@ -1,4 +1,4 @@
-From 97a539de618ea91b0f84aecb9b951a532f7c6f36 Mon Sep 17 00:00:00 2001
+From 062c1e8750375180df04435124e9c0e6a0717175 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <git@refi64.dev>
 Date: Wed, 24 Jul 2024 17:55:22 -0500
 Subject: [PATCH] Fix files in libavcodec/bsf/ failing to find headers
@@ -8,10 +8,10 @@ Subject: [PATCH] Fix files in libavcodec/bsf/ failing to find headers
  1 file changed, 1 insertion(+)
 
 diff --git a/third_party/ffmpeg/BUILD.gn b/third_party/ffmpeg/BUILD.gn
-index bc722c1a25..344842ca15 100644
+index 309d0ac870..2a653e87ba 100644
 --- a/third_party/ffmpeg/BUILD.gn
 +++ b/third_party/ffmpeg/BUILD.gn
-@@ -203,6 +203,7 @@ target(link_target_type, "ffmpeg_internal") {
+@@ -210,6 +210,7 @@ target(link_target_type, "ffmpeg_internal") {
    include_dirs = [
      platform_config_root,
      ".",
@@ -20,5 +20,5 @@ index bc722c1a25..344842ca15 100644
    defines = [
      "HAVE_AV_CONFIG_H",
 -- 
-2.45.1
+2.46.0
 

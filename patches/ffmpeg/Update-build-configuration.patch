@@ -1,4 +1,4 @@
-From eba1b396d725eb057c5c85eecdadaebaf5f824bf Mon Sep 17 00:00:00 2001
+From b0076bbdc3fee33d4634d231afbd53a575020075 Mon Sep 17 00:00:00 2001
 From: CroFT <croft@refi64.com>
 Date: Wed, 18 Sep 2024 10:05:14 -0500
 Subject: [PATCH] Update build configuration
@@ -1248,5 +1248,5 @@ index f95975311a..c2a57cadbc 100644
 +// Automatically generated on Wed Sep 18 15:05:13 2024. See crbug.com/495833.
  #include "tx_float_init.c"
 -- 
-2.45.1
+2.46.0
 
