@@ -1,4 +1,4 @@
-From 0baa2d3fb1bbfe2a91057876dab29bfa1f19feef Mon Sep 17 00:00:00 2001
+From af784f939b6235a7d7cd5cdd656bdd2e1719db6d Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <git@refi64.dev>
 Date: Thu, 25 Jul 2024 10:08:59 -0500
 Subject: [PATCH] Revert "Enable crabbyavif build and feature behind a flag"
@@ -10,10 +10,10 @@ This reverts commit b1f2281f75c4ffb28a5ae35ffb050dfeec1f4b19.
  2 files changed, 5 insertions(+), 21 deletions(-)
 
 diff --git a/third_party/blink/renderer/platform/image-decoders/BUILD.gn b/third_party/blink/renderer/platform/image-decoders/BUILD.gn
-index 687033e4486a5..4006422194a49 100644
+index 6668b18e562d6..761c5fe3f67eb 100644
 --- a/third_party/blink/renderer/platform/image-decoders/BUILD.gn
 +++ b/third_party/blink/renderer/platform/image-decoders/BUILD.gn
-@@ -74,12 +74,9 @@ component("image_decoders") {
+@@ -76,12 +76,9 @@ component("image_decoders") {
      sources += [
        "avif/avif_image_decoder.cc",
        "avif/avif_image_decoder.h",
@@ -26,7 +26,7 @@ index 687033e4486a5..4006422194a49 100644
        "//third_party/libavif",
        "//third_party/libavifinfo",
      ]
-@@ -121,10 +118,7 @@ source_set("unit_tests") {
+@@ -123,9 +120,6 @@ source_set("unit_tests") {
    }
  
    if (enable_av1_decoder) {
@@ -37,7 +37,6 @@ index 687033e4486a5..4006422194a49 100644
 +    sources += [ "avif/avif_image_decoder_test.cc" ]
    }
  }
- 
 diff --git a/third_party/blink/renderer/platform/image-decoders/image_decoder.cc b/third_party/blink/renderer/platform/image-decoders/image_decoder.cc
 index f208b6599164c..4fb788fe8581a 100644
 --- a/third_party/blink/renderer/platform/image-decoders/image_decoder.cc
@@ -89,5 +88,5 @@ index f208b6599164c..4fb788fe8581a 100644
    }
  
 -- 
-2.45.1
+2.46.0
 

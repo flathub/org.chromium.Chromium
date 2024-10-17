@@ -1,4 +1,4 @@
-From 150b4d3e9a944d3494c62fefe10e425b3906884f Mon Sep 17 00:00:00 2001
+From 3de07cda5cf9f0677fd5edc8f2a33ce823811070 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Tue, 17 Mar 2020 13:18:27 -0500
 Subject: [PATCH] flatpak: Add initial sandbox support
@@ -42,10 +42,10 @@ index 9056030523807..2c13d0ad5f1c7 100644
  /.externalToolBuilders/
  /.settings/
 diff --git a/base/threading/thread_restrictions.h b/base/threading/thread_restrictions.h
-index e297d5ce77866..036e5c38f2e39 100644
+index 0de909d74fffc..defd433d29269 100644
 --- a/base/threading/thread_restrictions.h
 +++ b/base/threading/thread_restrictions.h
-@@ -406,6 +406,9 @@ class ScopedAllowThreadJoinForWebRtcTransport;
+@@ -403,6 +403,9 @@ class ScopedAllowThreadJoinForWebRtcTransport;
  namespace rlz_lib {
  class FinancialPing;
  }
@@ -55,7 +55,7 @@ index e297d5ce77866..036e5c38f2e39 100644
  namespace service_manager {
  class ServiceProcessLauncher;
  }
-@@ -658,6 +661,7 @@ class BASE_EXPORT [[maybe_unused, nodiscard]] ScopedAllowBlocking {
+@@ -645,6 +648,7 @@ class BASE_EXPORT ScopedAllowBlocking {
    friend class remoting::
        ScopedBypassIOThreadRestrictions;  // http://crbug.com/1144161
    friend class remoting::ScopedAllowBlockingForCrashReporting;
@@ -63,7 +63,7 @@ index e297d5ce77866..036e5c38f2e39 100644
    friend class ui::DrmDisplayHostManager;
    friend class ui::ScopedAllowBlockingForGbmSurface;
    friend class ui::SelectFileDialogLinux;
-@@ -807,6 +811,7 @@ class BASE_EXPORT [[maybe_unused, nodiscard]] ScopedAllowBaseSyncPrimitives {
+@@ -788,6 +792,7 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitives {
    friend class rlz_lib::FinancialPing;
    friend class shell_integration_linux::
        LaunchXdgUtilityScopedAllowBaseSyncPrimitives;
@@ -151,7 +151,7 @@ index 95df576580a9e..8d5e0694660b6 100644
    }
  #endif
 diff --git a/content/browser/zygote_host/zygote_host_impl_linux.cc b/content/browser/zygote_host/zygote_host_impl_linux.cc
-index 688cb570c0392..c9b7c54b858b3 100644
+index 8eca918b65cbe..1703fb6ade044 100644
 --- a/content/browser/zygote_host/zygote_host_impl_linux.cc
 +++ b/content/browser/zygote_host/zygote_host_impl_linux.cc
 @@ -12,6 +12,7 @@
@@ -1211,10 +1211,10 @@ index 0000000000000..167bbc85945ad
 +
 +#endif  // SANDBOX_LINUX_SERVICES_FLATPAK_SANDBOX_H_
 diff --git a/sandbox/policy/BUILD.gn b/sandbox/policy/BUILD.gn
-index 465480903a6f6..50a86f073b2b5 100644
+index c908ecf7070ad..c581821f7729e 100644
 --- a/sandbox/policy/BUILD.gn
 +++ b/sandbox/policy/BUILD.gn
-@@ -125,6 +125,9 @@ component("policy") {
+@@ -127,6 +127,9 @@ component("policy") {
        "//sandbox/linux:suid_sandbox_client",
      ]
    }
@@ -1321,5 +1321,5 @@ index 9dbb33eba71d8..3b75edceb38a7 100644
  }
  
 -- 
-2.45.1
+2.46.0
 

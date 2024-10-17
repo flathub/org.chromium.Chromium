@@ -1,4 +1,4 @@
-From 5d2727059c350ef57d69f85506e7d1460c0b1800 Mon Sep 17 00:00:00 2001
+From abd75bcf37800e1a2850a017718ac83a5546dbba Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Tue, 20 Jul 2021 14:18:31 -0500
 Subject: [PATCH] Enable support for libfdk-aac and OpenH264
@@ -8,10 +8,10 @@ Subject: [PATCH] Enable support for libfdk-aac and OpenH264
  1 file changed, 5 insertions(+)
 
 diff --git a/third_party/ffmpeg/BUILD.gn b/third_party/ffmpeg/BUILD.gn
-index 3cce79931d..bc722c1a25 100644
+index 0ac39bfbd0..309d0ac870 100644
 --- a/third_party/ffmpeg/BUILD.gn
 +++ b/third_party/ffmpeg/BUILD.gn
-@@ -433,6 +433,11 @@ if (is_component_ffmpeg) {
+@@ -440,6 +440,11 @@ if (is_component_ffmpeg) {
          "-L",
          rebase_path(target_gen_dir, root_build_dir),
        ]
@@ -24,5 +24,5 @@ index 3cce79931d..bc722c1a25 100644
        # Windows component build needs the .def file to export ffmpeg symbols.
        deps += [ ":ffmpeg_generate_def" ]
 -- 
-2.45.1
+2.46.0
 
