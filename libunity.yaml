@@ -1,0 +1,92 @@
+name: libunity
+buildsystem: autotools
+build-options:
+    prepend-path: /usr/lib/sdk/vala/bin
+    prepend-ld-library-path: /usr/lib/sdk/vala/lib
+    env:
+        ACLOCAL_FLAGS: "-I /app/share/aclocal"
+sources:
+  - type: archive
+    url: https://launchpad.net/ubuntu/+archive/primary/+sourcefiles/libunity/7.1.4+19.04.20190319-0ubuntu1/libunity_7.1.4+19.04.20190319.orig.tar.gz
+    sha256: 56ecb380d74bf74caba193d9e8ad6b0c85ccf9eeb461bc9731c2b8636e1f1492
+
+  - type: patch
+    path: patches/libunity/0001-Fix-FTB-with-recent-vala-requiring-non-public-abstra.patch
+
+  - type: patch
+    path: patches/libunity/libunity-7.1.4-vala-053.patch
+cleanup:
+  - /bin
+  - /share/unity
+  - /share/glib-2.0
+  - /share/unity-scopes
+modules:
+  - name: gnome-common
+    buildsystem: autotools
+    config-opts:
+      - --disable-schemas-compile
+      - --disable-silent-rules
+      - --disable-static
+    sources:
+      - type: archive
+        url: https://download.gnome.org/sources/gnome-common/3.7/gnome-common-3.7.4.tar.xz
+        sha256: 2af2d97010d2a9aeb3b99dd2ce07d1ef023e15a27b412ffe4f067f016ff7117b
+    cleanup:
+      - "*"
+
+  - name: automake
+    buildsystem: simple
+    build-commands:
+      - ln -s /usr/bin/automake ${FLATPAK_DEST}/bin/automake-1.13
+    cleanup:
+      - "*"
+
+  - shared-modules/intltool/intltool-0.51.json
+
+  - name: aclocal
+    buildsystem: simple
+    build-commands:
+      - ln -s /usr/bin/aclocal ${FLATPAK_DEST}/bin/aclocal-1.13
+    cleanup:
+      - "*"
+
+  - name: dee
+    buildsystem: autotools
+    sources:
+      - type: archive
+        url: https://launchpad.net/dee/1.0/1.2.7/+download/dee-1.2.7.tar.gz
+        sha256: 1bf0336ce684aa0f48d6eae2469628c1a9b43695a77443bc31a5790aa673bf8a
+
+      - type: patch
+        path: patches/dee/dee-1.2.7-deprecated-g_type_class_add_private.patch
+
+      - type: patch
+        path: patches/dee/dee-1.2.7-fix-g_string_free-usage.patch
+
+      - type: patch
+        path: patches/dee/dee-1.2.7-gcc6-fixes.patch
+    cleanup:
+      - /bin
+
+  - name: libdbusmenu-glib
+    buildsystem: autotools
+    build-options:
+        cflags: "-Wno-error"
+        env:
+            HAVE_VALGRIND_FALSE: "#"
+            HAVE_VALGRIND_TRUE: ""
+    config-opts:
+      - --disable-static
+      - --disable-gtk-doc
+      - --enable-introspection=yes
+      - --disable-vala
+      - --disable-dumper
+      - --disable-tests
+      - --with-gtk=3
+    sources:
+      - type: archive
+        url: https://launchpad.net/libdbusmenu/16.04/16.04.0/+download/libdbusmenu-16.04.0.tar.gz
+        sha256: b9cc4a2acd74509435892823607d966d424bd9ad5d0b00938f27240a1bfa878a
+
+      - type: patch
+        path: patches/libdbusmenu-glib/no-Werror.patch
