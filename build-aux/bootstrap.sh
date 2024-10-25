@@ -1,7 +1,7 @@
 #!/bin/bash -ex
 
 # Needed to build GN itself.
-. /usr/lib/sdk/llvm17/enable.sh
+. /usr/lib/sdk/llvm18/enable.sh
 
 # GN will use these variables to configure its own build, but they introduce
 # compat issues w/ Clang and aren't used by Chromium itself anyway, so just
@@ -17,8 +17,8 @@ if [[ -d third_party/llvm-build/Release+Asserts/bin ]]; then
 else
   python3 tools/clang/scripts/build.py --disable-asserts \
       --skip-checkout --use-system-cmake --use-system-libxml \
-      --host-cc=/usr/lib/sdk/llvm17/bin/clang \
-      --host-cxx=/usr/lib/sdk/llvm17/bin/clang++ \
+      --host-cc=/usr/lib/sdk/llvm18/bin/clang \
+      --host-cxx=/usr/lib/sdk/llvm18/bin/clang++ \
       --target-triple=$(clang -dumpmachine) \
       --without-android --without-fuchsia --without-zstd \
       --with-ml-inliner-model=
