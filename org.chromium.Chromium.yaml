@@ -28,6 +28,7 @@ finish-args:
   - --talk-name=org.kde.kwalletd5
   - --talk-name=org.kde.kwalletd6
   - --talk-name=org.gnome.SessionManager
+  - --talk-name=com.canonical.Unity
   - --own-name=org.mpris.MediaPlayer2.chromium.*
 
 add-extensions:
@@ -62,11 +63,14 @@ add-extensions:
     autodelete: true
 
 sdk-extensions:
+  - org.freedesktop.Sdk.Extension.vala
   - org.freedesktop.Sdk.Extension.llvm17
   - org.freedesktop.Sdk.Extension.node18
   - org.freedesktop.Sdk.Extension.openjdk21
 
 modules:
+  - libunity.yaml
+
   - name: readelf-symlink
     only-arches: [aarch64]
     buildsystem: simple

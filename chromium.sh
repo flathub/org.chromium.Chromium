@@ -31,5 +31,6 @@ fi
 # Unlink any profiles from the sync keys to avoid any expected deletions.
 unlink_profiles
 
+export CHROME_DESKTOP="org.chromium.Chromium.desktop"
 export LIBGL_DRIVERS_PATH=/usr/lib/$(uname -m)-linux-gnu/GL/lib/dri
 exec cobalt "$@"
