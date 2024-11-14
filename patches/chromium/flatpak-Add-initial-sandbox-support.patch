@@ -1,4 +1,4 @@
-From 3de07cda5cf9f0677fd5edc8f2a33ce823811070 Mon Sep 17 00:00:00 2001
+From ab11528f26a212417b0b6084b52c02e992fe43f7 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Tue, 17 Mar 2020 13:18:27 -0500
 Subject: [PATCH] flatpak: Add initial sandbox support
@@ -42,10 +42,10 @@ index 9056030523807..2c13d0ad5f1c7 100644
  /.externalToolBuilders/
  /.settings/
 diff --git a/base/threading/thread_restrictions.h b/base/threading/thread_restrictions.h
-index 0de909d74fffc..defd433d29269 100644
+index 149838be725f2..81034acc71e97 100644
 --- a/base/threading/thread_restrictions.h
 +++ b/base/threading/thread_restrictions.h
-@@ -403,6 +403,9 @@ class ScopedAllowThreadJoinForWebRtcTransport;
+@@ -407,6 +407,9 @@ class ScopedAllowThreadJoinForWebRtcTransport;
  namespace rlz_lib {
  class FinancialPing;
  }
@@ -55,7 +55,7 @@ index 0de909d74fffc..defd433d29269 100644
  namespace service_manager {
  class ServiceProcessLauncher;
  }
-@@ -645,6 +648,7 @@ class BASE_EXPORT ScopedAllowBlocking {
+@@ -649,6 +652,7 @@ class BASE_EXPORT ScopedAllowBlocking {
    friend class remoting::
        ScopedBypassIOThreadRestrictions;  // http://crbug.com/1144161
    friend class remoting::ScopedAllowBlockingForCrashReporting;
@@ -63,7 +63,7 @@ index 0de909d74fffc..defd433d29269 100644
    friend class ui::DrmDisplayHostManager;
    friend class ui::ScopedAllowBlockingForGbmSurface;
    friend class ui::SelectFileDialogLinux;
-@@ -788,6 +792,7 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitives {
+@@ -792,6 +796,7 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitives {
    friend class rlz_lib::FinancialPing;
    friend class shell_integration_linux::
        LaunchXdgUtilityScopedAllowBaseSyncPrimitives;
@@ -362,10 +362,10 @@ index c7ee91878e6dd..9c2c7a04bd968 100644
                  base::GlobalDescriptors::Descriptor(
                      static_cast<uint32_t>(kSandboxIPCChannel), GetSandboxFD()));
 diff --git a/sandbox/linux/BUILD.gn b/sandbox/linux/BUILD.gn
-index cc86e06114c67..be8cbd5cc1407 100644
+index 97e3deed4f2b9..61916ed9805d3 100644
 --- a/sandbox/linux/BUILD.gn
 +++ b/sandbox/linux/BUILD.gn
-@@ -310,6 +310,10 @@ if (is_linux || is_chromeos) {
+@@ -311,6 +311,10 @@ if (is_linux || is_chromeos) {
  
  component("sandbox_services") {
    sources = [
@@ -376,7 +376,7 @@ index cc86e06114c67..be8cbd5cc1407 100644
      "services/init_process_reaper.cc",
      "services/init_process_reaper.h",
      "services/proc_util.cc",
-@@ -328,8 +332,10 @@ component("sandbox_services") {
+@@ -329,8 +333,10 @@ component("sandbox_services") {
  
    defines = [ "SANDBOX_IMPLEMENTATION" ]
  
@@ -1211,10 +1211,10 @@ index 0000000000000..167bbc85945ad
 +
 +#endif  // SANDBOX_LINUX_SERVICES_FLATPAK_SANDBOX_H_
 diff --git a/sandbox/policy/BUILD.gn b/sandbox/policy/BUILD.gn
-index c908ecf7070ad..c581821f7729e 100644
+index 4fe53b047b9aa..794e1ad1805d8 100644
 --- a/sandbox/policy/BUILD.gn
 +++ b/sandbox/policy/BUILD.gn
-@@ -127,6 +127,9 @@ component("policy") {
+@@ -129,6 +129,9 @@ component("policy") {
        "//sandbox/linux:suid_sandbox_client",
      ]
    }
@@ -1291,7 +1291,7 @@ index 0e4f78b9e6cb7..91b638d8a96e0 100644
  #if BUILDFLAG(USING_SANITIZER)
    std::unique_ptr<__sanitizer_sandbox_arguments> sanitizer_args_;
 diff --git a/services/service_manager/service_process_launcher.cc b/services/service_manager/service_process_launcher.cc
-index 9dbb33eba71d8..3b75edceb38a7 100644
+index e24a262fe90d5..c20fdbd88a1a6 100644
 --- a/services/service_manager/service_process_launcher.cc
 +++ b/services/service_manager/service_process_launcher.cc
 @@ -41,6 +41,7 @@
@@ -1321,5 +1321,5 @@ index 9dbb33eba71d8..3b75edceb38a7 100644
  }
  
 -- 
-2.46.0
+2.46.1
 

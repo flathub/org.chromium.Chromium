@@ -1,0 +1,31 @@
+From 20b09f3f073a66017a39f44ba34707d246454614 Mon Sep 17 00:00:00 2001
+From: Ryan Gonzalez <hello@refi64.dev>
+Date: Fri, 15 Nov 2024 08:46:22 -0600
+Subject: [PATCH] Revert "[cppgc] Decommit pooled pages by default"
+
+This reverts commit 1ab1a14ad97394d384d8dc6de51bb229625e66d6.
+
+V8 hardcodes kGuardPageSize to be 4KiB on Linux, even though it may be
+running on a 16KiB system. With decommit_pooled_pages enabled, the mmap
+calls to decommit will inevitably return EINVAL, subsequently crashing
+PartitionAlloc.
+---
+ src/flags/flag-definitions.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/v8/src/flags/flag-definitions.h b/v8/src/flags/flag-definitions.h
+index d627d7ec14a..17cbc1dd9a1 100644
+--- a/v8/src/flags/flag-definitions.h
++++ b/v8/src/flags/flag-definitions.h
+@@ -817,7 +817,7 @@ DEFINE_BOOL(trace_block_coverage, false,
+             "trace collected block coverage information")
+ DEFINE_BOOL(trace_protector_invalidation, false,
+             "trace protector cell invalidations")
+-DEFINE_BOOL(decommit_pooled_pages, true,
++DEFINE_BOOL(decommit_pooled_pages, false,
+             "decommit, rather than discard pooled pages")
+ 
+ #ifdef V8_MINORMS_STRING_SHORTCUTTING
+-- 
+2.46.1
+

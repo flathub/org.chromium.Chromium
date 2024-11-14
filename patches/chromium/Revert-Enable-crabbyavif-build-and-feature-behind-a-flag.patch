@@ -1,4 +1,4 @@
-From af784f939b6235a7d7cd5cdd656bdd2e1719db6d Mon Sep 17 00:00:00 2001
+From 7d542cb509fb8407d02a908671651bd6a8d59afd Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <git@refi64.dev>
 Date: Thu, 25 Jul 2024 10:08:59 -0500
 Subject: [PATCH] Revert "Enable crabbyavif build and feature behind a flag"
@@ -88,5 +88,5 @@ index f208b6599164c..4fb788fe8581a 100644
    }
  
 -- 
-2.46.0
+2.46.1
 
