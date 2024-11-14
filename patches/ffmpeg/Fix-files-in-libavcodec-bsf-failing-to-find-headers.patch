@@ -1,4 +1,4 @@
-From 062c1e8750375180df04435124e9c0e6a0717175 Mon Sep 17 00:00:00 2001
+From b677f9df67724db80d2e488ac687f63916ba68a8 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <git@refi64.dev>
 Date: Wed, 24 Jul 2024 17:55:22 -0500
 Subject: [PATCH] Fix files in libavcodec/bsf/ failing to find headers
@@ -20,5 +20,5 @@ index 309d0ac870..2a653e87ba 100644
    defines = [
      "HAVE_AV_CONFIG_H",
 -- 
-2.46.0
+2.46.1
 

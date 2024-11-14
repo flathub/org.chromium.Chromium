@@ -137,7 +137,7 @@ modules:
       - ./install.sh
     sources:
       - type: archive
-        url: https://chromium-tarballs.syd1.digitaloceanspaces.com/chromium-131.0.6778.69.tar.xz
+        url: https://chromium-tarballs.distfiles.gentoo.org/chromium-131.0.6778.69.tar.xz
         sha256: 56d332bd53b26ad4f9a8f36c4cba37e9f05126a353d57666d12690944769bfaa
         x-checker-data:
           type: chromium
@@ -157,6 +157,11 @@ modules:
         x-checker-data:
           type: chromium
           component: llvm-prebuilt
+      - type: git
+        url: https://gn.googlesource.com/gn
+        # TODO: make this auto-updated?
+        commit: feafd1012a32c05ec6095f69ddc3850afb621f3a
+        dest: tools/gn.git
       - type: shell
         commands:
           - rm -rf third_party/llvm
@@ -171,6 +176,10 @@ modules:
           component: llvm-git
       - patches/chromium/_sources.json
       - patches/ffmpeg/_sources.json
+      # XXX: this patch file is standalone because it's not integrated with the
+      # patch set tooling used for main Chromium & FFmpeg.
+      - type: patch
+        path: patches/Revert-cppgc-Decommit-pooled-pages-by-default.patch
       - type: file
         path: org.chromium.Chromium.desktop
       - type: file
