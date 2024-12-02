@@ -183,11 +183,12 @@ modules:
       - type: shell
         commands:
           - |
-            file=v8/src/heap/cppgc/globals.h
-            cp $file tmp
-            sed -i 's/kGuardPageSize = 4096/kGuardPageSize = 0/' $file
-            diff tmp $file || :
-            rm tmp
+            for file in v8/src/heap/cppgc/globals.h v8/include/cppgc/internal/api-constants.h; do
+              cp $file tmp
+              sed -i 's/kGuardPageSize = 4096/kGuardPageSize = 0/' $file
+              diff tmp $file || :
+              rm tmp
+            done
       - type: file
         path: org.chromium.Chromium.desktop
       - type: file
