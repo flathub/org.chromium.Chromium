@@ -178,8 +178,16 @@ modules:
       - patches/ffmpeg/_sources.json
       # XXX: this patch file is standalone because it's not integrated with the
       # patch set tooling used for main Chromium & FFmpeg.
-      - type: patch
-        path: patches/Revert-cppgc-Decommit-pooled-pages-by-default.patch
+      # - type: patch
+      #   path: patches/Revert-cppgc-Decommit-pooled-pages-by-default.patch
+      - type: shell
+        commands:
+          - |
+            file=v8/src/heap/cppgc/globals.h
+            cp $file tmp
+            sed -i 's/kGuardPageSize = 4096/kGuardPageSize = 0/' $file
+            diff tmp $file || :
+            rm tmp
       - type: file
         path: org.chromium.Chromium.desktop
       - type: file
