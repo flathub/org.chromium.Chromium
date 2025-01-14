@@ -137,8 +137,8 @@ modules:
       - ./install.sh
     sources:
       - type: archive
-        url: https://commondatastorage.googleapis.com/chromium-browser-official/chromium-131.0.6778.264.tar.xz
-        sha256: 7e02c65865a3095180d60838d2d7a912873d8d4f582c27c2afb9ef876152f2a5
+        url: https://commondatastorage.googleapis.com/chromium-browser-official/chromium-132.0.6834.83.tar.xz
+        sha256: f98315eacbf3be106feca37f8243d8c4092d4fd832c918aa36dc229eb6ab39e0
         x-checker-data:
           type: chromium
           component: chromium
@@ -149,8 +149,8 @@ modules:
           # yet, so just remove it for now.
           - rm -rf third_party/llvm-build
       - type: archive
-        url: https://commondatastorage.googleapis.com/chromium-browser-clang/Linux_x64/clang-llvmorg-20-init-6794-g3dbd929e-1.tar.xz
-        sha256: ce5dea9d2f304d0f3ab07200cd2608711578f7254bf6e685bea8381c248b7686
+        url: https://commondatastorage.googleapis.com/chromium-browser-clang/Linux_x64/clang-llvmorg-20-init-9764-gb81d8e90-6.tar.xz
+        sha256: 10fbc53c0730a50e2117b3414a45784667d6cf7d91a3bcaab2b3a78ede08c5d2
         dest: third_party/llvm-build/Release+Asserts
         strip-components: 0
         only-arches: [x86_64]
@@ -168,7 +168,7 @@ modules:
         only-arches: [aarch64]
       - type: git
         url: https://chromium.googlesource.com/external/github.com/llvm/llvm-project
-        commit: llvmorg-20-init-6794-g3dbd929e
+        commit: llvmorg-20-init-9764-gb81d8e90
         dest: third_party/llvm
         only-arches: [aarch64]
         x-checker-data:
