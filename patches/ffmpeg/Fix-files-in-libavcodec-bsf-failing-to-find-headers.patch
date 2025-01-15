@@ -1,4 +1,4 @@
-From b677f9df67724db80d2e488ac687f63916ba68a8 Mon Sep 17 00:00:00 2001
+From 4075b947afa80d9386e867a27df49466ef240218 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <git@refi64.dev>
 Date: Wed, 24 Jul 2024 17:55:22 -0500
 Subject: [PATCH] Fix files in libavcodec/bsf/ failing to find headers

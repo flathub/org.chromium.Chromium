@@ -94,8 +94,8 @@ modules:
         only-arches:
           - aarch64
         dest: rust
-        url: https://static.rust-lang.org/dist/2024-05-14/rust-nightly-aarch64-unknown-linux-gnu.tar.xz
-        sha256: 0cbbcbc542c9e7073813d92e02c35c8c503829d65e59c235c641bf9ac989b98f
+        url: https://static.rust-lang.org/dist/2024-10-22/rust-nightly-aarch64-unknown-linux-gnu.tar.xz
+        sha256: 28c47ee693bb16be0f500a8cc4a8f71d3f4aee469602fea9e0f0a0263d20c0a6
         # x-checker-data:
         #  type: rust
         #  package: rust
@@ -105,8 +105,8 @@ modules:
         only-arches:
           - x86_64
         dest: rust
-        url: https://static.rust-lang.org/dist/2024-05-14/rust-nightly-x86_64-unknown-linux-gnu.tar.xz
-        sha256: d2cf0e8c9741080b348422678f1669d7cdd9d60daa46959d0f90a36dfb88cd3b
+        url: https://static.rust-lang.org/dist/2024-10-22/rust-nightly-x86_64-unknown-linux-gnu.tar.xz
+        sha256: 60e10d4e7bb75f259e002ee9125dc220f7ed2952ec7099ac07462b34f6d30804
         # x-checker-data:
         #  type: rust
         #  package: rust
@@ -114,8 +114,8 @@ modules:
         #  target: x86_64-unknown-linux-gnu
       - type: archive
         dest: rust-src
-        url: https://static.rust-lang.org/dist/2024-05-14/rust-src-nightly.tar.xz
-        sha256: 827393c706c85065f8cc25b15c3fc66b00a4fbac14dd004bb7158b4db04cf8f3
+        url: https://static.rust-lang.org/dist/2024-10-22/rust-src-nightly.tar.xz
+        sha256: f95861f600a0894a6abf49ca232698d97d99d92e65d141643e731ae127198918
         # x-checker-data:
         #  type: rust
         #  package: rust-src
@@ -126,6 +126,26 @@ modules:
         --without=rust-docs-json-preview --disable-ldconfig --verbose
       - cd rust-src && ./install.sh --prefix=/app/lib/sdk/rust-nightly --disable-ldconfig
         --verbose
+
+  - name: rust-bindgen
+    buildsystem: simple
+    build-options:
+      strip: false
+      no-debuginfo: true
+      prepend-path: /app/lib/sdk/rust-nightly/bin
+      env:
+        CARGO_HOME: /run/build/rust-bindgen/cargo
+    build-commands:
+      - cargo --offline fetch --manifest-path Cargo.toml --verbose
+      - cargo --offline build --release --verbose
+      - install -Dm 755 target/release/bindgen -t /app/lib/sdk/bindgen/bin
+    sources:
+      - type: git
+        url: https://chromium.googlesource.com/external/github.com/rust-lang/rust-bindgen
+        commit: f93d5dfa6d5d7409bea584f3eab38e1fc52b8360
+      - ./generated-sources.bindgen.json
+    cleanup:
+      - '*'
 
   - name: chromium
     buildsystem: simple
@@ -145,9 +165,8 @@ modules:
           is-main-source: true
       - type: shell
         commands:
-          # I don't know if this being included in the tarballs is intentional
-          # yet, so just remove it for now.
           - rm -rf third_party/llvm-build
+          - rm -rf third_party/rust-toolchain
       - type: archive
         url: https://commondatastorage.googleapis.com/chromium-browser-clang/Linux_x64/clang-llvmorg-20-init-9764-gb81d8e90-6.tar.xz
         sha256: 10fbc53c0730a50e2117b3414a45784667d6cf7d91a3bcaab2b3a78ede08c5d2
@@ -157,11 +176,16 @@ modules:
         x-checker-data:
           type: chromium
           component: llvm-prebuilt
-      - type: git
-        url: https://gn.googlesource.com/gn
-        # TODO: make this auto-updated?
-        commit: feafd1012a32c05ec6095f69ddc3850afb621f3a
-        dest: tools/gn.git
+      - type: archive
+        url: https://commondatastorage.googleapis.com/chromium-browser-clang/Linux_x64/rust-toolchain-bca5fdebe0e539d123f33df5f2149d5976392e76-1-llvmorg-20-init-9764-gb81d8e90.tar.xz
+        sha256: 0c4092f5769c5ececd096732b00f2c5c4e1741d4112881a2c83fe7e78271d792
+        dest: third_party/rust-toolchain
+        strip-components: 0
+        only-arches: [x86_64]
+        # TODO
+        # x-checker-data:
+        #   type: chromium
+        #   component: llvm-prebuilt
       - type: shell
         commands:
           - rm -rf third_party/llvm

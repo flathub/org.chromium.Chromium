@@ -1,4 +1,4 @@
-From 051d1d4f3d6181b614acd0bc850f071f4dab8c21 Mon Sep 17 00:00:00 2001
+From 2fbb5a9997702be2e48d0a80bfe70c685f862c4b Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Thu, 19 Nov 2020 16:20:05 -0600
 Subject: [PATCH] Enable new-dtags on non-component builds
@@ -8,10 +8,10 @@ Subject: [PATCH] Enable new-dtags on non-component builds
  1 file changed, 16 insertions(+), 7 deletions(-)
 
 diff --git a/build/config/gcc/BUILD.gn b/build/config/gcc/BUILD.gn
-index 147ebfc53426c..d598bfa70b1b6 100644
+index a659210b196aa..e1bfa708b2405 100644
 --- a/build/config/gcc/BUILD.gn
 +++ b/build/config/gcc/BUILD.gn
-@@ -101,13 +101,22 @@ config("executable_config") {
+@@ -102,13 +102,22 @@ config("executable_config") {
    }
  
    if (!is_android && current_os != "aix") {

@@ -1,4 +1,4 @@
-From 6bc8e8f72e28a20409d51cf274bfa58528c8e2c6 Mon Sep 17 00:00:00 2001
+From 24473d0a7ba25ad553c6b77e0edd2dc692996ff4 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <git@refi64.dev>
 Date: Thu, 16 May 2024 17:01:07 -0500
 Subject: [PATCH] media/ffmpeg: Enable support for libfdk-aac and OpenH264
