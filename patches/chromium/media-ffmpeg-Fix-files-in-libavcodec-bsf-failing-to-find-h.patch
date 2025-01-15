@@ -1,4 +1,4 @@
-From 37c296d27ad767b30b4c6fadacb970fa8322c6e1 Mon Sep 17 00:00:00 2001
+From 98f907fe17cfcdc05f7e1c4cd374b06ebb782f75 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <git@refi64.dev>
 Date: Thu, 16 May 2024 17:03:42 -0500
 Subject: [PATCH] media/ffmpeg: Fix files in libavcodec/bsf/ failing to find

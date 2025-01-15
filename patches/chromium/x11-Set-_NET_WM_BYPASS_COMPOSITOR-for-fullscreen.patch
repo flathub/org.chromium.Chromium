@@ -1,4 +1,4 @@
-From 075eb6d51794e1d09421a6d3513e7473b879dd6a Mon Sep 17 00:00:00 2001
+From 3e3cbbf5c78c05ae020aeae9dbbcecfbdd214e0b Mon Sep 17 00:00:00 2001
 From: Daniel Drake <drake@endlessm.com>
 Date: Fri, 3 Jul 2015 14:59:24 -0600
 Subject: [PATCH] x11: Set _NET_WM_BYPASS_COMPOSITOR for fullscreen
@@ -10,10 +10,10 @@ This improves performance at full screen.
  2 files changed, 9 insertions(+)
 
 diff --git a/ui/ozone/platform/x11/x11_window.cc b/ui/ozone/platform/x11/x11_window.cc
-index c21f3aa2e68f7..4fac39d2093ac 100644
+index e51966febabea..28029974acda2 100644
 --- a/ui/ozone/platform/x11/x11_window.cc
 +++ b/ui/ozone/platform/x11/x11_window.cc
-@@ -668,6 +668,8 @@ void X11Window::SetFullscreen(bool fullscreen, int64_t target_display_id) {
+@@ -667,6 +667,8 @@ void X11Window::SetFullscreen(bool fullscreen, int64_t target_display_id) {
    state_ = new_state;
    SetFullscreen(fullscreen);
  
@@ -22,7 +22,7 @@ index c21f3aa2e68f7..4fac39d2093ac 100644
    if (unmaximize_and_remaximize) {
      Maximize();
    }
-@@ -1948,6 +1950,12 @@ void X11Window::SetFullscreen(bool fullscreen) {
+@@ -1965,6 +1967,12 @@ void X11Window::SetFullscreen(bool fullscreen) {
                   x11::Atom::None);
  }
  

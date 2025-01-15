@@ -1,4 +1,4 @@
-From bd294db8cf6e2fca7967f31eacf1cb148930b380 Mon Sep 17 00:00:00 2001
+From 3b02205c7fa8d259746ce8822de9785462e0cd34 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Wed, 11 Nov 2020 16:51:49 -0600
 Subject: [PATCH] Remove the ability to create desktop shortcuts

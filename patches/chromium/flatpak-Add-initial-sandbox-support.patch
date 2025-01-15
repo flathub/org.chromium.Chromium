@@ -1,4 +1,4 @@
-From ab11528f26a212417b0b6084b52c02e992fe43f7 Mon Sep 17 00:00:00 2001
+From 31c2a6eb9acd43fb4623740d93c9c49fa6841d11 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Tue, 17 Mar 2020 13:18:27 -0500
 Subject: [PATCH] flatpak: Add initial sandbox support
@@ -42,10 +42,10 @@ index 9056030523807..2c13d0ad5f1c7 100644
  /.externalToolBuilders/
  /.settings/
 diff --git a/base/threading/thread_restrictions.h b/base/threading/thread_restrictions.h
-index 149838be725f2..81034acc71e97 100644
+index 8eb5907fd9278..f32462e5cc917 100644
 --- a/base/threading/thread_restrictions.h
 +++ b/base/threading/thread_restrictions.h
-@@ -407,6 +407,9 @@ class ScopedAllowThreadJoinForWebRtcTransport;
+@@ -406,6 +406,9 @@ class ScopedAllowThreadJoinForWebRtcTransport;
  namespace rlz_lib {
  class FinancialPing;
  }
@@ -55,7 +55,7 @@ index 149838be725f2..81034acc71e97 100644
  namespace service_manager {
  class ServiceProcessLauncher;
  }
-@@ -649,6 +652,7 @@ class BASE_EXPORT ScopedAllowBlocking {
+@@ -642,6 +645,7 @@ class BASE_EXPORT ScopedAllowBlocking {
    friend class remoting::
        ScopedBypassIOThreadRestrictions;  // http://crbug.com/1144161
    friend class remoting::ScopedAllowBlockingForCrashReporting;
@@ -63,7 +63,7 @@ index 149838be725f2..81034acc71e97 100644
    friend class ui::DrmDisplayHostManager;
    friend class ui::ScopedAllowBlockingForGbmSurface;
    friend class ui::SelectFileDialogLinux;
-@@ -792,6 +796,7 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitives {
+@@ -784,6 +788,7 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitives {
    friend class rlz_lib::FinancialPing;
    friend class shell_integration_linux::
        LaunchXdgUtilityScopedAllowBaseSyncPrimitives;
@@ -72,7 +72,7 @@ index 149838be725f2..81034acc71e97 100644
    friend class syncer::HttpBridge;
    friend class syncer::GetLocalChangesRequest;
 diff --git a/chrome/browser/resources/sandbox_internals/sandbox_internals.ts b/chrome/browser/resources/sandbox_internals/sandbox_internals.ts
-index f6d2f3f0bc41c..fcc58c6735eaa 100644
+index 1d2c06f540674..9946482709bbf 100644
 --- a/chrome/browser/resources/sandbox_internals/sandbox_internals.ts
 +++ b/chrome/browser/resources/sandbox_internals/sandbox_internals.ts
 @@ -140,6 +140,7 @@ function addGoodBadRow(name: string, result: boolean): HTMLElement {
@@ -125,7 +125,7 @@ index 82aa27787a5e0..32bf674f33da6 100644
                       status & sandbox::policy::SandboxLinux::kNetNS;
    // A second-layer sandbox is also required to be adequately sandboxed.
 diff --git a/content/browser/child_process_host_impl.cc b/content/browser/child_process_host_impl.cc
-index 95df576580a9e..8d5e0694660b6 100644
+index 0e759b5801254..00cb148be7776 100644
 --- a/content/browser/child_process_host_impl.cc
 +++ b/content/browser/child_process_host_impl.cc
 @@ -45,6 +45,7 @@
@@ -262,7 +262,7 @@ index 720d823d4a695..ad470963693c4 100644
  
    // This lock protects the |zygote_pids_| set.
 diff --git a/content/zygote/zygote_linux.cc b/content/zygote/zygote_linux.cc
-index bdcb36f7eb2fe..239a6462e4b41 100644
+index bfa900e74f50b..1fd2f1b08cfb5 100644
 --- a/content/zygote/zygote_linux.cc
 +++ b/content/zygote/zygote_linux.cc
 @@ -127,7 +127,7 @@ bool Zygote::ProcessRequests() {
@@ -274,7 +274,7 @@ index bdcb36f7eb2fe..239a6462e4b41 100644
      // Let the ZygoteHost know we are ready to go.
      // The receiving code is in
      // content/browser/zygote_host/zygote_host_impl_linux.cc.
-@@ -233,6 +233,10 @@ bool Zygote::UsingNSSandbox() const {
+@@ -232,6 +232,10 @@ bool Zygote::UsingNSSandbox() const {
    return sandbox_flags_ & sandbox::policy::SandboxLinux::kUserNS;
  }
  

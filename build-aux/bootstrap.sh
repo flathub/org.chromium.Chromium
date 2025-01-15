@@ -31,13 +31,20 @@ if [[ -d third_party/llvm-build/Release+Asserts/bin ]]; then
     python3 -c 'import update; print(update.PACKAGE_VERSION)' \
     > third_party/llvm-build/Release+Asserts/cr_build_revision
 else
-  python3 tools/clang/scripts/build.py --disable-asserts \
+  python3 tools/clang/scripts/build.py --disable-asserts --pic \
       --skip-checkout --use-system-cmake --use-system-libxml \
       --host-cc=/usr/lib/sdk/llvm18/bin/clang \
       --host-cxx=/usr/lib/sdk/llvm18/bin/clang++ \
       --target-triple=$(clang -dumpmachine) \
       --without-android --without-fuchsia --without-zstd \
       --with-ml-inliner-model=
+fi
+
+cp -r /app/lib/sdk/bindgen bindgen
+if [[ -e third_party/rust-toolchain/lib/libclang.so ]]; then
+  ln -s "$PWD/third_party/rust-toolchain/lib" -t bindgen
+else
+  ln -s "$PWD/third_party/llvm-build/Release+Asserts/lib" -t bindgen
 fi
 
 # (TODO: enable use_qt in the future?)
@@ -69,6 +76,7 @@ tools/gn/bootstrap/bootstrap.py -v --no-clean --gn-gen-args='
     enable_remoting=false
     rust_sysroot_absolute="/app/lib/sdk/rust-nightly"
     rustc_version="'"$(/app/lib/sdk/rust-nightly/bin/rustc -V)"'"
+    rust_bindgen_root="'$PWD/bindgen'"
     chrome_pgo_phase='$chrome_pgo_phase'
 '
 mkdir -p out/ReleaseFree
