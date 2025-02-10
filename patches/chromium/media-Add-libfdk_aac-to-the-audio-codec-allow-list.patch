@@ -1,17 +1,17 @@
-From e3317b5b66a503b3e0860892174a54ab6b5ebdb9 Mon Sep 17 00:00:00 2001
+From ddf84d32aa188b4944018f5280a3eadf2aa3fcbc Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <git@refi64.dev>
 Date: Wed, 13 Dec 2023 14:13:55 -0600
 Subject: [PATCH] media: Add libfdk_aac to the audio codec allow list
 
 ---
- media/filters/ffmpeg_glue.cc | 2 +-
+ media/ffmpeg/ffmpeg_common.cc | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/media/filters/ffmpeg_glue.cc b/media/filters/ffmpeg_glue.cc
-index 939964aa9aac3..982ac5a05a2a9 100644
---- a/media/filters/ffmpeg_glue.cc
-+++ b/media/filters/ffmpeg_glue.cc
-@@ -163,7 +163,7 @@ const char* FFmpegGlue::GetAllowedAudioDecoders() {
+diff --git a/media/ffmpeg/ffmpeg_common.cc b/media/ffmpeg/ffmpeg_common.cc
+index cfd0552ee3108..e2ec74aeeee48 100644
+--- a/media/ffmpeg/ffmpeg_common.cc
++++ b/media/ffmpeg/ffmpeg_common.cc
+@@ -1028,7 +1028,7 @@ const char* GetAllowedAudioDecoders() {
          "vorbis,libopus,flac,pcm_u8,pcm_s16le,pcm_s24le,pcm_s32le,pcm_f32le,"
          "mp3,pcm_s16be,pcm_s24be,pcm_mulaw,pcm_alaw");
  #if BUILDFLAG(USE_PROPRIETARY_CODECS)
@@ -21,5 +21,5 @@ index 939964aa9aac3..982ac5a05a2a9 100644
      return allowed_decoders;
    }());
 -- 
-2.46.1
+2.47.1
 

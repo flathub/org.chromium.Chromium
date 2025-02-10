@@ -1,4 +1,4 @@
-From 98f907fe17cfcdc05f7e1c4cd374b06ebb782f75 Mon Sep 17 00:00:00 2001
+From daebbcf4e14cb86c4f2767c83312f587ea7ba19a Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <git@refi64.dev>
 Date: Thu, 16 May 2024 17:03:42 -0500
 Subject: [PATCH] media/ffmpeg: Fix files in libavcodec/bsf/ failing to find
@@ -26,5 +26,5 @@ index 769131ca5db41..e2768171693be 100755
          if os.path.isfile(include_path_in_current_dir):
              resolved_include_path = include_path_in_current_dir
 -- 
-2.46.1
+2.47.1
 
