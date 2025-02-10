@@ -1,4 +1,4 @@
-From 3b02205c7fa8d259746ce8822de9785462e0cd34 Mon Sep 17 00:00:00 2001
+From 5167940163c054a2560a648a50a2274991d1e643 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Wed, 11 Nov 2020 16:51:49 -0600
 Subject: [PATCH] Remove the ability to create desktop shortcuts
@@ -9,10 +9,10 @@ Subject: [PATCH] Remove the ability to create desktop shortcuts
  2 files changed, 2 insertions(+), 10 deletions(-)
 
 diff --git a/chrome/browser/ui/views/create_application_shortcut_view.cc b/chrome/browser/ui/views/create_application_shortcut_view.cc
-index 261cfac5ea79d..a6c6eb4b07bd7 100644
+index 05ad12f7fde6f..2ae9439b86637 100644
 --- a/chrome/browser/ui/views/create_application_shortcut_view.cc
 +++ b/chrome/browser/ui/views/create_application_shortcut_view.cc
-@@ -125,10 +125,6 @@ void CreateChromeApplicationShortcutView::InitControls() {
+@@ -127,10 +127,6 @@ void CreateChromeApplicationShortcutView::InitControls() {
    create_shortcuts_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
    create_shortcuts_label->SetMultiLine(true);
  
@@ -23,17 +23,17 @@ index 261cfac5ea79d..a6c6eb4b07bd7 100644
    std::unique_ptr<views::Checkbox> menu_check_box;
    std::unique_ptr<views::Checkbox> pin_to_taskbar_checkbox;
  
-@@ -156,7 +152,6 @@ void CreateChromeApplicationShortcutView::InitControls() {
+@@ -158,7 +154,6 @@ void CreateChromeApplicationShortcutView::InitControls() {
        views::BoxLayout::Orientation::kVertical, gfx::Insets(),
        provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL)));
    AddChildView(std::move(create_shortcuts_label));
 -  desktop_check_box_ = AddChildView(std::move(desktop_check_box));
-   if (menu_check_box)
+   if (menu_check_box) {
      menu_check_box_ = AddChildView(std::move(menu_check_box));
-   if (pin_to_taskbar_checkbox)
-@@ -180,9 +175,8 @@ bool CreateChromeApplicationShortcutView::IsDialogButtonEnabled(
-   if (!shortcut_info_)
+   }
+@@ -185,9 +180,8 @@ bool CreateChromeApplicationShortcutView::IsDialogButtonEnabled(
      return false;  // Dialog's not ready because app info hasn't been loaded.
+   }
  
 -  // One of the three location checkboxes must be checked:
 -  return desktop_check_box_->GetChecked() ||
@@ -43,8 +43,8 @@ index 261cfac5ea79d..a6c6eb4b07bd7 100644
           (quick_launch_check_box_ && quick_launch_check_box_->GetChecked());
  }
  
-@@ -201,7 +195,6 @@ void CreateChromeApplicationShortcutView::OnDialogAccepted() {
-     return;
+@@ -208,7 +202,6 @@ void CreateChromeApplicationShortcutView::OnDialogAccepted() {
+   }
  
    web_app::ShortcutLocations creation_locations;
 -  creation_locations.on_desktop = desktop_check_box_->GetChecked();
@@ -64,5 +64,5 @@ index 1283cb6358927..554a6d7c53baf 100644
    raw_ptr<views::Checkbox> quick_launch_check_box_ = nullptr;
  
 -- 
-2.46.1
+2.47.1
 

@@ -1,4 +1,4 @@
-From 9911c525dfed44b30b234967790630000be54a92 Mon Sep 17 00:00:00 2001
+From bc05c36cbe8cafb7a6d9ea3d4a10cfac5bc0d532 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Tue, 20 Jul 2021 14:18:31 -0500
 Subject: [PATCH] Enable support for libfdk-aac and OpenH264
@@ -24,5 +24,5 @@ index 0ac39bfbd0..309d0ac870 100644
        # Windows component build needs the .def file to export ffmpeg symbols.
        deps += [ ":ffmpeg_generate_def" ]
 -- 
-2.46.1
+2.47.1
 
