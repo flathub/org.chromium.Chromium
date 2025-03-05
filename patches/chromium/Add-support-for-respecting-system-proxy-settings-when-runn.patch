@@ -1,4 +1,4 @@
-From 8f56c205e835c0891fd60425be66efaac62afa44 Mon Sep 17 00:00:00 2001
+From d6b58d077f7f45297f13545e2fef59a4d200cac4 Mon Sep 17 00:00:00 2001
 From: Andre Moreira Magalhaes <andre.magalhaes@endlessos.org>
 Date: Thu, 17 Dec 2020 19:05:10 -0300
 Subject: [PATCH] Add support for respecting system proxy settings when running
@@ -42,22 +42,22 @@ Some general notes on implementation:
 Closes https://github.com/flathub/org.chromium.Chromium/issues/36
 ---
  chrome/app/generated_resources.grd            |   6 +
- .../net/system_network_context_manager.cc     |   9 +-
+ .../net/system_network_context_manager.cc     |  12 +-
  chrome/browser/ui/webui/about/about_ui.cc     |  14 +-
  net/BUILD.gn                                  |   3 +
  .../configured_proxy_resolution_service.cc    |   6 +-
  .../proxy_config_service_linux.cc             |  10 +-
  net/proxy_resolution/proxy_resolver_linux.cc  | 123 ++++++++++++++++++
  net/proxy_resolution/proxy_resolver_linux.h   |  29 +++++
- 8 files changed, 196 insertions(+), 4 deletions(-)
+ 8 files changed, 199 insertions(+), 4 deletions(-)
  create mode 100644 net/proxy_resolution/proxy_resolver_linux.cc
  create mode 100644 net/proxy_resolution/proxy_resolver_linux.h
 
 diff --git a/chrome/app/generated_resources.grd b/chrome/app/generated_resources.grd
-index 557152948491f..edfd7d162d8e6 100644
+index 4f78acb34ff37..dd5c3c1082412 100644
 --- a/chrome/app/generated_resources.grd
 +++ b/chrome/app/generated_resources.grd
-@@ -15526,6 +15526,12 @@ Please help our engineers fix this problem. Tell us what happened right before y
+@@ -15458,6 +15458,12 @@ Please help our engineers fix this problem. Tell us what happened right before y
  
            &lt;p&gt;But you can still configure via the command line.  Please see &lt;code&gt;man <ph name="PRODUCT_BINARY_NAME">$2<ex>google-chrome</ex></ph>&lt;/code&gt; for more information on flags and environment variables.&lt;/p&gt;
          </message>
@@ -71,18 +71,21 @@ index 557152948491f..edfd7d162d8e6 100644
  
        <message name="IDS_IMAGE_FILES" desc="The description of the image file extensions in the select file dialog.">
 diff --git a/chrome/browser/net/system_network_context_manager.cc b/chrome/browser/net/system_network_context_manager.cc
-index e3494387a0f7a..c80e92b190202 100644
+index acef4b496befd..2c3af6b195cbf 100644
 --- a/chrome/browser/net/system_network_context_manager.cc
 +++ b/chrome/browser/net/system_network_context_manager.cc
-@@ -105,6 +105,7 @@
- #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
- #include "chrome/common/chrome_paths_internal.h"
- #include "chrome/grit/branded_strings.h"
-+#include "sandbox/linux/services/flatpak_sandbox.h"
- #include "ui/base/l10n/l10n_util.h"
- #endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
+@@ -97,6 +97,10 @@
+ #include "chrome/browser/browser_process_platform_part.h"
+ #endif  // BUILDFLAG(IS_CHROMEOS)
  
-@@ -886,7 +887,13 @@ void SystemNetworkContextManager::ConfigureDefaultNetworkContextParams(
++#if BUILDFLAG(IS_LINUX)
++#include "sandbox/linux/services/flatpak_sandbox.h"
++#endif
++
+ #if BUILDFLAG(ENABLE_EXTENSIONS)
+ #include "extensions/common/constants.h"
+ #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
+@@ -869,7 +873,13 @@ void SystemNetworkContextManager::ConfigureDefaultNetworkContextParams(
    // or if it does work, now.
    // Should be possible now that a private isolate is used.
    // http://crbug.com/474654
@@ -98,12 +101,12 @@ index e3494387a0f7a..c80e92b190202 100644
        LOG(ERROR) << "Cannot use V8 Proxy resolver in single process mode.";
      } else {
 diff --git a/chrome/browser/ui/webui/about/about_ui.cc b/chrome/browser/ui/webui/about/about_ui.cc
-index 4a28298d21ee8..aac7e66e9f4d2 100644
+index 0939e62b45530..ef160e2157679 100644
 --- a/chrome/browser/ui/webui/about/about_ui.cc
 +++ b/chrome/browser/ui/webui/about/about_ui.cc
-@@ -90,6 +90,10 @@
- #include "chrome/common/webui_url_constants.h"
- #endif  // BUILDFLAG(IS_CHROMEOS)
+@@ -86,6 +86,10 @@
+ #include "third_party/zlib/google/compression_utils.h"
+ #endif
  
 +#if defined(OS_LINUX)
 +#include "sandbox/linux/services/flatpak_sandbox.h"
@@ -112,7 +115,7 @@ index 4a28298d21ee8..aac7e66e9f4d2 100644
  using content::BrowserThread;
  
  namespace {
-@@ -508,8 +512,16 @@ std::string AboutLinuxProxyConfig() {
+@@ -504,8 +508,16 @@ std::string AboutLinuxProxyConfig() {
    data.append("<style>body { max-width: 70ex; padding: 2ex 5ex; }</style>");
    AppendBody(&data);
    base::FilePath binary = base::CommandLine::ForCurrentProcess()->GetProgram();
@@ -131,10 +134,10 @@ index 4a28298d21ee8..aac7e66e9f4d2 100644
                                  base::ASCIIToUTF16(binary.BaseName().value())));
    AppendFooter(&data);
 diff --git a/net/BUILD.gn b/net/BUILD.gn
-index 8971de32d923b..c0d201a55014a 100644
+index 2a21dff5f55d7..0c4edd5bfe52b 100644
 --- a/net/BUILD.gn
 +++ b/net/BUILD.gn
-@@ -1300,6 +1300,8 @@ component("net") {
+@@ -1306,6 +1306,8 @@ component("net") {
      sources += [
        "base/address_map_cache_linux.cc",
        "base/address_map_cache_linux.h",
@@ -143,7 +146,7 @@ index 8971de32d923b..c0d201a55014a 100644
      ]
    }
  
-@@ -1782,6 +1784,7 @@ source_set("net_deps") {
+@@ -1788,6 +1790,7 @@ source_set("net_deps") {
  
    if (use_gio) {
      public_configs += [ "//build/linux:gio_config" ]

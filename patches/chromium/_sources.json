@@ -21,8 +21,7 @@
       "patches/chromium/media-ffmpeg-Enable-support-for-libfdk-aac-and-OpenH264.patch",
       "patches/chromium/media-ffmpeg-Don-t-fail-cross-compilation-on-unsupported-a.patch",
       "patches/chromium/media-ffmpeg-Fix-files-in-libavcodec-bsf-failing-to-find-h.patch",
-      "patches/chromium/media-ffmpeg-Skip-formatting-generated-GN-files.patch",
-      "patches/chromium/Revert-Enable-crabbyavif-build-and-feature-behind-a-flag.patch"
+      "patches/chromium/media-ffmpeg-Skip-formatting-generated-GN-files.patch"
     ]
   }
 ]
