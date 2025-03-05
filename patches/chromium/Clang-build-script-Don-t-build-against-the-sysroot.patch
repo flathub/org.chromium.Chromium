@@ -1,4 +1,4 @@
-From c5c27957d7b25d6dace7ee24a509644113643dae Mon Sep 17 00:00:00 2001
+From 08d61dbd2f7cf11464dc0075c66b94dc96d33ac1 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Wed, 31 Aug 2022 10:09:01 -0500
 Subject: [PATCH] Clang build script: Don't build against the sysroot
@@ -8,10 +8,10 @@ Subject: [PATCH] Clang build script: Don't build against the sysroot
  1 file changed, 6 insertions(+), 6 deletions(-)
 
 diff --git a/tools/clang/scripts/build.py b/tools/clang/scripts/build.py
-index f2ad9bc143051..fb8a3ca2a4c07 100755
+index eea961b8d63e8..e654704a7c747 100755
 --- a/tools/clang/scripts/build.py
 +++ b/tools/clang/scripts/build.py
-@@ -772,7 +772,7 @@ def main():
+@@ -778,7 +778,7 @@ def main():
      ninja_dir = os.path.join(THIRD_PARTY_DIR, 'ninja')
      os.environ['PATH'] = ninja_dir + os.pathsep + os.environ.get('PATH', '')
  
@@ -20,7 +20,7 @@ index f2ad9bc143051..fb8a3ca2a4c07 100755
      sysroot_amd64 = DownloadDebianSysroot('amd64', args.skip_checkout)
      sysroot_i386 = DownloadDebianSysroot('i386', args.skip_checkout)
      sysroot_arm = DownloadDebianSysroot('arm', args.skip_checkout)
-@@ -876,7 +876,7 @@ def main():
+@@ -882,7 +882,7 @@ def main():
      if sys.platform.startswith('linux'):
        base_cmake_args += [ '-DLLVM_STATIC_LINK_CXX_STDLIB=ON' ]
  
@@ -29,16 +29,16 @@ index f2ad9bc143051..fb8a3ca2a4c07 100755
      # Add the sysroot to base_cmake_args.
      if platform.machine() == 'aarch64':
        base_cmake_args.append('-DCMAKE_SYSROOT=' + sysroot_arm64)
-@@ -1196,7 +1196,7 @@ def main():
+@@ -1202,7 +1202,7 @@ def main():
    if sys.platform.startswith('linux'):
      runtimes_triples_args['i386-unknown-linux-gnu'] = {
          "args": [
 -            'CMAKE_SYSROOT=%s' % sysroot_i386,
 +            # 'CMAKE_SYSROOT=%s' % sysroot_i386,
-             # TODO(crbug.com/40242553): pass proper flags to i386 tests so they compile correctly
+             # TODO(crbug.com/40242553): pass proper flags to i386 tests so they
+             # compile correctly
              'LLVM_INCLUDE_TESTS=OFF',
-         ],
-@@ -1207,7 +1207,7 @@ def main():
+@@ -1214,7 +1214,7 @@ def main():
      }
      runtimes_triples_args['x86_64-unknown-linux-gnu'] = {
          "args": [
@@ -47,7 +47,7 @@ index f2ad9bc143051..fb8a3ca2a4c07 100755
          ],
          "profile": True,
          "sanitizers": True,
-@@ -1221,7 +1221,7 @@ def main():
+@@ -1228,7 +1228,7 @@ def main():
      # Maybe it should work for builtins too?
      runtimes_triples_args['armv7-unknown-linux-gnueabihf'] = {
          "args": [
@@ -56,7 +56,7 @@ index f2ad9bc143051..fb8a3ca2a4c07 100755
              # Can't run tests on x86 host.
              'LLVM_INCLUDE_TESTS=OFF',
          ],
-@@ -1232,7 +1232,7 @@ def main():
+@@ -1239,7 +1239,7 @@ def main():
      }
      runtimes_triples_args['aarch64-unknown-linux-gnu'] = {
          "args": [
