@@ -157,8 +157,8 @@ modules:
       - ./install.sh
     sources:
       - type: archive
-        url: https://commondatastorage.googleapis.com/chromium-browser-official/chromium-134.0.6998.117.tar.xz
-        sha256: f74be3321f4f1c494b29f8924d8fe863f7e175912fdebc8aab1b5410ed0cc2f8
+        url: https://chromium-tarballs.distfiles.gentoo.org/chromium-134.0.6998.165-linux.tar.xz
+        sha256: dd6a8d05771dc4879a8a74779e54fff0313ef1345be721167a594dd7bfe4c239
         x-checker-data:
           type: chromium
           component: chromium
