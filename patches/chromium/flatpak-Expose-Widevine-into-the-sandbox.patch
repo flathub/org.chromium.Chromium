@@ -1,4 +1,4 @@
-From c2f983fb2836f37b64bb9e7c2200c9efa64b2564 Mon Sep 17 00:00:00 2001
+From c5330fa947e1db2db4055994e0da993620f2b5ef Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Tue, 17 Nov 2020 13:00:39 -0600
 Subject: [PATCH] flatpak: Expose Widevine into the sandbox
@@ -100,7 +100,7 @@ index 595a469c765a6..56cbbb33addde 100644
      process = base::LaunchProcess(*cmd_line, options);
    }
 diff --git a/sandbox/linux/services/flatpak_sandbox.cc b/sandbox/linux/services/flatpak_sandbox.cc
-index 31229fdf59127..cabda783879e6 100644
+index b5da5a5801fde..7c9205e7bf602 100644
 --- a/sandbox/linux/services/flatpak_sandbox.cc
 +++ b/sandbox/linux/services/flatpak_sandbox.cc
 @@ -4,6 +4,7 @@

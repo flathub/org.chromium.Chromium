@@ -1,4 +1,4 @@
-From 747f7b29d464a495da733bb4174cc2a3a8ca04ae Mon Sep 17 00:00:00 2001
+From 86eae9458ed8ee3c32ed5f2041e7de624e33c845 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Thu, 30 Sep 2021 11:27:43 -0500
 Subject: [PATCH] Clang build script: Disable hwasan
@@ -10,10 +10,10 @@ and we don't really need this for the Flatpak anyway.
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/tools/clang/scripts/build.py b/tools/clang/scripts/build.py
-index f554da66a4267..2cdece78164d4 100755
+index fe7897a57e412..aab82e0328922 100755
 --- a/tools/clang/scripts/build.py
 +++ b/tools/clang/scripts/build.py
-@@ -593,7 +593,7 @@ def compiler_rt_cmake_flags(*, sanitizers, profile):
+@@ -601,7 +601,7 @@ def compiler_rt_cmake_flags(*, sanitizers, profile):
        'COMPILER_RT_BUILD_SANITIZERS=' + ('ON' if sanitizers else 'OFF'),
        'COMPILER_RT_BUILD_XRAY=OFF',
        # See crbug.com/1205046: don't build scudo (and others we don't need).
