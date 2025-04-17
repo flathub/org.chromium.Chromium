@@ -48,5 +48,5 @@ index fc10443418093..56fd0e6c994bc 100644
    bool IsTargetedBy(const x11::Event& xev) const;
    void HandleEvent(const x11::Event& xev);
 -- 
-2.47.1
+2.48.1
 
