@@ -1,4 +1,4 @@
-From 2420c8c34504c316f3ec2d09ed205b726cfce09a Mon Sep 17 00:00:00 2001
+From a8a20147e8de5e1e8be5699494c57a099c6a628b Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <git@refi64.dev>
 Date: Wed, 13 Dec 2023 14:13:55 -0600
 Subject: [PATCH] media: Add libfdk_aac to the audio codec allow list
@@ -21,5 +21,5 @@ index cfd0552ee3108..e2ec74aeeee48 100644
      return allowed_decoders;
    }());
 -- 
-2.48.1
+2.49.0
 

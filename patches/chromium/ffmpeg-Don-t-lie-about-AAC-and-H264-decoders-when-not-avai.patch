@@ -1,4 +1,4 @@
-From 7cecbc592010edd6c3b196225a0c66c52fd506cc Mon Sep 17 00:00:00 2001
+From b27fcb6b8a6928a4c5ae7100a662951e1dc1cc36 Mon Sep 17 00:00:00 2001
 From: Mario Sanchez Prada <mario@endlessm.com>
 Date: Tue, 25 Oct 2016 16:57:00 +0000
 Subject: [PATCH] ffmpeg: Don't lie about AAC and H264 decoders when not
@@ -31,10 +31,10 @@ https://phabricator.endlessm.com/T30300
  2 files changed, 83 insertions(+), 7 deletions(-)
 
 diff --git a/media/base/BUILD.gn b/media/base/BUILD.gn
-index 3503f274e30ed..186151a128050 100644
+index b1aaecd8953d5..fe7141ba12bda 100644
 --- a/media/base/BUILD.gn
 +++ b/media/base/BUILD.gn
-@@ -428,6 +428,10 @@ source_set("base") {
+@@ -430,6 +430,10 @@ source_set("base") {
        "//third_party/ffmpeg",
        "//third_party/ffmpeg:ffmpeg_features",
      ]
@@ -186,5 +186,5 @@ index 30ef5e1ac00db..1c4662698f848 100644
    CodecSet video_3gpp_codecs(aac);
    video_3gpp_codecs.emplace(H264);
 -- 
-2.48.1
+2.49.0
 

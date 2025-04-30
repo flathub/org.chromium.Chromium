@@ -1,6 +1,6 @@
-From f6264e1949ea4d9844b618cd3fe825aa007e91e7 Mon Sep 17 00:00:00 2001
+From 3eade79a2e0f2b9313a435786bdef90780e85504 Mon Sep 17 00:00:00 2001
 From: CroFT <croft@refi64.com>
-Date: Wed, 2 Apr 2025 10:44:02 -0500
+Date: Wed, 30 Apr 2025 09:59:18 -0500
 Subject: [PATCH] Update build configuration
 
 ---
@@ -195,7 +195,7 @@ index fe5adb0d92..5b981d2ccd 100644
      &ff_libopus_decoder,
      NULL };
 diff --git a/third_party/ffmpeg/chromium/config/Chrome/linux/arm64/libavutil/ffversion.h b/third_party/ffmpeg/chromium/config/Chrome/linux/arm64/libavutil/ffversion.h
-index 4139ab7cab..c1cf920d76 100644
+index 4139ab7cab..6cc82c6234 100644
 --- a/third_party/ffmpeg/chromium/config/Chrome/linux/arm64/libavutil/ffversion.h
 +++ b/third_party/ffmpeg/chromium/config/Chrome/linux/arm64/libavutil/ffversion.h
 @@ -1,5 +1,5 @@
@@ -203,7 +203,7 @@ index 4139ab7cab..c1cf920d76 100644
  #ifndef AVUTIL_FFVERSION_H
  #define AVUTIL_FFVERSION_H
 -#define FFMPEG_VERSION "N-119605-gcae04bf941"
-+#define FFMPEG_VERSION "git-2025-04-02-6bd9b3082e"
++#define FFMPEG_VERSION "git-2025-04-30-de59aafbe7"
  #endif /* AVUTIL_FFVERSION_H */
 diff --git a/third_party/ffmpeg/chromium/config/Chrome/linux/x64/config.asm b/third_party/ffmpeg/chromium/config/Chrome/linux/x64/config.asm
 index 04d1fa146f..963e14895a 100644
@@ -359,7 +359,7 @@ index fe5adb0d92..5b981d2ccd 100644
      &ff_libopus_decoder,
      NULL };
 diff --git a/third_party/ffmpeg/chromium/config/Chrome/linux/x64/libavutil/ffversion.h b/third_party/ffmpeg/chromium/config/Chrome/linux/x64/libavutil/ffversion.h
-index 4139ab7cab..c1cf920d76 100644
+index 4139ab7cab..6cc82c6234 100644
 --- a/third_party/ffmpeg/chromium/config/Chrome/linux/x64/libavutil/ffversion.h
 +++ b/third_party/ffmpeg/chromium/config/Chrome/linux/x64/libavutil/ffversion.h
 @@ -1,5 +1,5 @@
@@ -367,7 +367,7 @@ index 4139ab7cab..c1cf920d76 100644
  #ifndef AVUTIL_FFVERSION_H
  #define AVUTIL_FFVERSION_H
 -#define FFMPEG_VERSION "N-119605-gcae04bf941"
-+#define FFMPEG_VERSION "git-2025-04-02-6bd9b3082e"
++#define FFMPEG_VERSION "git-2025-04-30-de59aafbe7"
  #endif /* AVUTIL_FFVERSION_H */
 diff --git a/third_party/ffmpeg/chromium/config/Chromium/linux/arm64/config.h b/third_party/ffmpeg/chromium/config/Chromium/linux/arm64/config.h
 index b487a78e6b..b008601729 100644
@@ -523,7 +523,7 @@ index 570a6441d3..29f1f59381 100644
      &ff_matroska_demuxer,
      &ff_mov_demuxer,
 diff --git a/third_party/ffmpeg/chromium/config/Chromium/linux/arm64/libavutil/ffversion.h b/third_party/ffmpeg/chromium/config/Chromium/linux/arm64/libavutil/ffversion.h
-index 4139ab7cab..c1cf920d76 100644
+index 4139ab7cab..6cc82c6234 100644
 --- a/third_party/ffmpeg/chromium/config/Chromium/linux/arm64/libavutil/ffversion.h
 +++ b/third_party/ffmpeg/chromium/config/Chromium/linux/arm64/libavutil/ffversion.h
 @@ -1,5 +1,5 @@
@@ -531,7 +531,7 @@ index 4139ab7cab..c1cf920d76 100644
  #ifndef AVUTIL_FFVERSION_H
  #define AVUTIL_FFVERSION_H
 -#define FFMPEG_VERSION "N-119605-gcae04bf941"
-+#define FFMPEG_VERSION "git-2025-04-02-6bd9b3082e"
++#define FFMPEG_VERSION "git-2025-04-30-de59aafbe7"
  #endif /* AVUTIL_FFVERSION_H */
 diff --git a/third_party/ffmpeg/chromium/config/Chromium/linux/x64/config.asm b/third_party/ffmpeg/chromium/config/Chromium/linux/x64/config.asm
 index e80c0a6ab9..09596bfbed 100644
@@ -754,7 +754,7 @@ index 570a6441d3..29f1f59381 100644
      &ff_matroska_demuxer,
      &ff_mov_demuxer,
 diff --git a/third_party/ffmpeg/chromium/config/Chromium/linux/x64/libavutil/ffversion.h b/third_party/ffmpeg/chromium/config/Chromium/linux/x64/libavutil/ffversion.h
-index 4139ab7cab..c1cf920d76 100644
+index 4139ab7cab..6cc82c6234 100644
 --- a/third_party/ffmpeg/chromium/config/Chromium/linux/x64/libavutil/ffversion.h
 +++ b/third_party/ffmpeg/chromium/config/Chromium/linux/x64/libavutil/ffversion.h
 @@ -1,5 +1,5 @@
@@ -762,7 +762,7 @@ index 4139ab7cab..c1cf920d76 100644
  #ifndef AVUTIL_FFVERSION_H
  #define AVUTIL_FFVERSION_H
 -#define FFMPEG_VERSION "N-119605-gcae04bf941"
-+#define FFMPEG_VERSION "git-2025-04-02-6bd9b3082e"
++#define FFMPEG_VERSION "git-2025-04-30-de59aafbe7"
  #endif /* AVUTIL_FFVERSION_H */
 diff --git a/third_party/ffmpeg/ffmpeg_generated.gni b/third_party/ffmpeg/ffmpeg_generated.gni
 index b46d316b44..021612d46f 100644
@@ -1090,197 +1090,197 @@ index b46d316b44..021612d46f 100644
 -  ffmpeg_c_sources += [ "compat/strtod.c" ]
 -}
 diff --git a/third_party/ffmpeg/libavcodec/autorename_libavcodec_flacdsp.c b/third_party/ffmpeg/libavcodec/autorename_libavcodec_flacdsp.c
-index d48968aeea..3512e92d71 100644
+index d48968aeea..3f54398239 100644
 --- a/third_party/ffmpeg/libavcodec/autorename_libavcodec_flacdsp.c
 +++ b/third_party/ffmpeg/libavcodec/autorename_libavcodec_flacdsp.c
 @@ -1,2 +1,2 @@
 -// Automatically generated on Mon Jan 13 23:55:35 2025. See crbug.com/495833.
-+// Automatically generated on Wed Apr  2 15:44:02 2025. See crbug.com/495833.
++// Automatically generated on Wed Apr 30 14:59:17 2025. See crbug.com/495833.
  #include "flacdsp.c"
 diff --git a/third_party/ffmpeg/libavcodec/autorename_libavcodec_mpegaudiodsp.c b/third_party/ffmpeg/libavcodec/autorename_libavcodec_mpegaudiodsp.c
-index 3be9f5dad8..ecb949bcc4 100644
+index 3be9f5dad8..3993d048ea 100644
 --- a/third_party/ffmpeg/libavcodec/autorename_libavcodec_mpegaudiodsp.c
 +++ b/third_party/ffmpeg/libavcodec/autorename_libavcodec_mpegaudiodsp.c
 @@ -1,2 +1,2 @@
 -// Automatically generated on Mon Jan 13 23:55:35 2025. See crbug.com/495833.
-+// Automatically generated on Wed Apr  2 15:44:02 2025. See crbug.com/495833.
++// Automatically generated on Wed Apr 30 14:59:17 2025. See crbug.com/495833.
  #include "mpegaudiodsp.c"
 diff --git a/third_party/ffmpeg/libavcodec/autorename_libavcodec_parser.c b/third_party/ffmpeg/libavcodec/autorename_libavcodec_parser.c
-index 6650d6ce3d..9876914db1 100644
+index 6650d6ce3d..455522967a 100644
 --- a/third_party/ffmpeg/libavcodec/autorename_libavcodec_parser.c
 +++ b/third_party/ffmpeg/libavcodec/autorename_libavcodec_parser.c
 @@ -1,2 +1,2 @@
 -// Automatically generated on Mon Jan 13 23:55:35 2025. See crbug.com/495833.
-+// Automatically generated on Wed Apr  2 15:44:02 2025. See crbug.com/495833.
++// Automatically generated on Wed Apr 30 14:59:17 2025. See crbug.com/495833.
  #include "parser.c"
 diff --git a/third_party/ffmpeg/libavcodec/autorename_libavcodec_videodsp.c b/third_party/ffmpeg/libavcodec/autorename_libavcodec_videodsp.c
-index 6fc092b50d..631b47753f 100644
+index 6fc092b50d..bd42e84ae0 100644
 --- a/third_party/ffmpeg/libavcodec/autorename_libavcodec_videodsp.c
 +++ b/third_party/ffmpeg/libavcodec/autorename_libavcodec_videodsp.c
 @@ -1,2 +1,2 @@
 -// Automatically generated on Mon Jan 13 23:55:35 2025. See crbug.com/495833.
-+// Automatically generated on Wed Apr  2 15:44:02 2025. See crbug.com/495833.
++// Automatically generated on Wed Apr 30 14:59:17 2025. See crbug.com/495833.
  #include "videodsp.c"
 diff --git a/third_party/ffmpeg/libavcodec/autorename_libavcodec_vorbisdsp.c b/third_party/ffmpeg/libavcodec/autorename_libavcodec_vorbisdsp.c
-index 8c49c0ef81..c9141b7607 100644
+index 8c49c0ef81..fdc7663684 100644
 --- a/third_party/ffmpeg/libavcodec/autorename_libavcodec_vorbisdsp.c
 +++ b/third_party/ffmpeg/libavcodec/autorename_libavcodec_vorbisdsp.c
 @@ -1,2 +1,2 @@
 -// Automatically generated on Mon Jan 13 23:55:35 2025. See crbug.com/495833.
-+// Automatically generated on Wed Apr  2 15:44:02 2025. See crbug.com/495833.
++// Automatically generated on Wed Apr 30 14:59:17 2025. See crbug.com/495833.
  #include "vorbisdsp.c"
 diff --git a/third_party/ffmpeg/libavcodec/x86/autorename_libavcodec_x86_videodsp.asm b/third_party/ffmpeg/libavcodec/x86/autorename_libavcodec_x86_videodsp.asm
-index 8b021b5282..13d3353292 100644
+index 8b021b5282..e9db3dc21c 100644
 --- a/third_party/ffmpeg/libavcodec/x86/autorename_libavcodec_x86_videodsp.asm
 +++ b/third_party/ffmpeg/libavcodec/x86/autorename_libavcodec_x86_videodsp.asm
 @@ -1,2 +1,2 @@
 -; Automatically generated on Mon Jan 13 23:55:35 2025. See crbug.com/495833.
-+; Automatically generated on Wed Apr  2 15:44:02 2025. See crbug.com/495833.
++; Automatically generated on Wed Apr 30 14:59:17 2025. See crbug.com/495833.
  %include "videodsp.asm"
 diff --git a/third_party/ffmpeg/libavcodec/x86/autorename_libavcodec_x86_videodsp_init.c b/third_party/ffmpeg/libavcodec/x86/autorename_libavcodec_x86_videodsp_init.c
 new file mode 100644
-index 0000000000..6a838d2875
+index 0000000000..2d70b72a89
 --- /dev/null
 +++ b/third_party/ffmpeg/libavcodec/x86/autorename_libavcodec_x86_videodsp_init.c
 @@ -0,0 +1,2 @@
-+// Automatically generated on Wed Apr  2 15:44:02 2025. See crbug.com/495833.
++// Automatically generated on Wed Apr 30 14:59:17 2025. See crbug.com/495833.
 +#include "videodsp_init.c"
 diff --git a/third_party/ffmpeg/libavcodec/x86/autorename_libavcodec_x86_vorbisdsp_init.c b/third_party/ffmpeg/libavcodec/x86/autorename_libavcodec_x86_vorbisdsp_init.c
 new file mode 100644
-index 0000000000..3392d636f5
+index 0000000000..0bd7eb656c
 --- /dev/null
 +++ b/third_party/ffmpeg/libavcodec/x86/autorename_libavcodec_x86_vorbisdsp_init.c
 @@ -0,0 +1,2 @@
-+// Automatically generated on Wed Apr  2 15:44:02 2025. See crbug.com/495833.
++// Automatically generated on Wed Apr 30 14:59:17 2025. See crbug.com/495833.
 +#include "vorbisdsp_init.c"
 diff --git a/third_party/ffmpeg/libavformat/autorename_libavformat_flacdec.c b/third_party/ffmpeg/libavformat/autorename_libavformat_flacdec.c
-index 546b6c14fe..0b8fc5e9ba 100644
+index 546b6c14fe..3cb9610a20 100644
 --- a/third_party/ffmpeg/libavformat/autorename_libavformat_flacdec.c
 +++ b/third_party/ffmpeg/libavformat/autorename_libavformat_flacdec.c
 @@ -1,2 +1,2 @@
 -// Automatically generated on Mon Jan 13 23:55:35 2025. See crbug.com/495833.
-+// Automatically generated on Wed Apr  2 15:44:02 2025. See crbug.com/495833.
++// Automatically generated on Wed Apr 30 14:59:17 2025. See crbug.com/495833.
  #include "flacdec.c"
 diff --git a/third_party/ffmpeg/libavformat/autorename_libavformat_options.c b/third_party/ffmpeg/libavformat/autorename_libavformat_options.c
-index 2a85e60634..6e9bceb6cb 100644
+index 2a85e60634..4321427488 100644
 --- a/third_party/ffmpeg/libavformat/autorename_libavformat_options.c
 +++ b/third_party/ffmpeg/libavformat/autorename_libavformat_options.c
 @@ -1,2 +1,2 @@
 -// Automatically generated on Mon Jan 13 23:55:35 2025. See crbug.com/495833.
-+// Automatically generated on Wed Apr  2 15:44:02 2025. See crbug.com/495833.
++// Automatically generated on Wed Apr 30 14:59:17 2025. See crbug.com/495833.
  #include "options.c"
 diff --git a/third_party/ffmpeg/libavformat/autorename_libavformat_pcm.c b/third_party/ffmpeg/libavformat/autorename_libavformat_pcm.c
-index dbf959f578..ba73a31764 100644
+index dbf959f578..6311811836 100644
 --- a/third_party/ffmpeg/libavformat/autorename_libavformat_pcm.c
 +++ b/third_party/ffmpeg/libavformat/autorename_libavformat_pcm.c
 @@ -1,2 +1,2 @@
 -// Automatically generated on Mon Jan 13 23:55:35 2025. See crbug.com/495833.
-+// Automatically generated on Wed Apr  2 15:44:02 2025. See crbug.com/495833.
++// Automatically generated on Wed Apr 30 14:59:17 2025. See crbug.com/495833.
  #include "pcm.c"
 diff --git a/third_party/ffmpeg/libavformat/autorename_libavformat_utils.c b/third_party/ffmpeg/libavformat/autorename_libavformat_utils.c
-index 7325d29f1d..facd1d29f2 100644
+index 7325d29f1d..0f95a00b6c 100644
 --- a/third_party/ffmpeg/libavformat/autorename_libavformat_utils.c
 +++ b/third_party/ffmpeg/libavformat/autorename_libavformat_utils.c
 @@ -1,2 +1,2 @@
 -// Automatically generated on Mon Jan 13 23:55:35 2025. See crbug.com/495833.
-+// Automatically generated on Wed Apr  2 15:44:02 2025. See crbug.com/495833.
++// Automatically generated on Wed Apr 30 14:59:17 2025. See crbug.com/495833.
  #include "utils.c"
 diff --git a/third_party/ffmpeg/libavformat/autorename_libavformat_version.c b/third_party/ffmpeg/libavformat/autorename_libavformat_version.c
-index 4120a7ce42..532a6a93cf 100644
+index 4120a7ce42..665c0210ab 100644
 --- a/third_party/ffmpeg/libavformat/autorename_libavformat_version.c
 +++ b/third_party/ffmpeg/libavformat/autorename_libavformat_version.c
 @@ -1,2 +1,2 @@
 -// Automatically generated on Mon Jan 13 23:55:35 2025. See crbug.com/495833.
-+// Automatically generated on Wed Apr  2 15:44:02 2025. See crbug.com/495833.
++// Automatically generated on Wed Apr 30 14:59:17 2025. See crbug.com/495833.
  #include "version.c"
 diff --git a/third_party/ffmpeg/libavutil/autorename_libavutil_cpu.c b/third_party/ffmpeg/libavutil/autorename_libavutil_cpu.c
-index bb42faf60b..f4bf11aa30 100644
+index bb42faf60b..681c8acefb 100644
 --- a/third_party/ffmpeg/libavutil/autorename_libavutil_cpu.c
 +++ b/third_party/ffmpeg/libavutil/autorename_libavutil_cpu.c
 @@ -1,2 +1,2 @@
 -// Automatically generated on Mon Jan 13 23:55:35 2025. See crbug.com/495833.
-+// Automatically generated on Wed Apr  2 15:44:02 2025. See crbug.com/495833.
++// Automatically generated on Wed Apr 30 14:59:17 2025. See crbug.com/495833.
  #include "cpu.c"
 diff --git a/third_party/ffmpeg/libavutil/autorename_libavutil_executor.c b/third_party/ffmpeg/libavutil/autorename_libavutil_executor.c
-index fcc3315cd1..dd487abcd4 100644
+index fcc3315cd1..438eb099c7 100644
 --- a/third_party/ffmpeg/libavutil/autorename_libavutil_executor.c
 +++ b/third_party/ffmpeg/libavutil/autorename_libavutil_executor.c
 @@ -1,2 +1,2 @@
 -// Automatically generated on Mon Jan 13 23:55:35 2025. See crbug.com/495833.
-+// Automatically generated on Wed Apr  2 15:44:02 2025. See crbug.com/495833.
++// Automatically generated on Wed Apr 30 14:59:17 2025. See crbug.com/495833.
  #include "executor.c"
 diff --git a/third_party/ffmpeg/libavutil/autorename_libavutil_fixed_dsp.c b/third_party/ffmpeg/libavutil/autorename_libavutil_fixed_dsp.c
-index 525bc27750..506e6a3acd 100644
+index 525bc27750..37d1c29149 100644
 --- a/third_party/ffmpeg/libavutil/autorename_libavutil_fixed_dsp.c
 +++ b/third_party/ffmpeg/libavutil/autorename_libavutil_fixed_dsp.c
 @@ -1,2 +1,2 @@
 -// Automatically generated on Mon Jan 13 23:55:35 2025. See crbug.com/495833.
-+// Automatically generated on Wed Apr  2 15:44:02 2025. See crbug.com/495833.
++// Automatically generated on Wed Apr 30 14:59:17 2025. See crbug.com/495833.
  #include "fixed_dsp.c"
 diff --git a/third_party/ffmpeg/libavutil/autorename_libavutil_float_dsp.c b/third_party/ffmpeg/libavutil/autorename_libavutil_float_dsp.c
-index c2b5642b14..dc7ba2002b 100644
+index c2b5642b14..2539beb8d1 100644
 --- a/third_party/ffmpeg/libavutil/autorename_libavutil_float_dsp.c
 +++ b/third_party/ffmpeg/libavutil/autorename_libavutil_float_dsp.c
 @@ -1,2 +1,2 @@
 -// Automatically generated on Mon Jan 13 23:55:35 2025. See crbug.com/495833.
-+// Automatically generated on Wed Apr  2 15:44:02 2025. See crbug.com/495833.
++// Automatically generated on Wed Apr 30 14:59:17 2025. See crbug.com/495833.
  #include "float_dsp.c"
 diff --git a/third_party/ffmpeg/libavutil/autorename_libavutil_imgutils.c b/third_party/ffmpeg/libavutil/autorename_libavutil_imgutils.c
-index 0d6f679b86..16644d6a5c 100644
+index 0d6f679b86..bd84cde9ba 100644
 --- a/third_party/ffmpeg/libavutil/autorename_libavutil_imgutils.c
 +++ b/third_party/ffmpeg/libavutil/autorename_libavutil_imgutils.c
 @@ -1,2 +1,2 @@
 -// Automatically generated on Mon Jan 13 23:55:35 2025. See crbug.com/495833.
-+// Automatically generated on Wed Apr  2 15:44:02 2025. See crbug.com/495833.
++// Automatically generated on Wed Apr 30 14:59:17 2025. See crbug.com/495833.
  #include "imgutils.c"
 diff --git a/third_party/ffmpeg/libavutil/autorename_libavutil_tx_float.c b/third_party/ffmpeg/libavutil/autorename_libavutil_tx_float.c
-index b9c0de9c11..0066b38e55 100644
+index b9c0de9c11..b33ad85944 100644
 --- a/third_party/ffmpeg/libavutil/autorename_libavutil_tx_float.c
 +++ b/third_party/ffmpeg/libavutil/autorename_libavutil_tx_float.c
 @@ -1,2 +1,2 @@
 -// Automatically generated on Mon Jan 13 23:55:35 2025. See crbug.com/495833.
-+// Automatically generated on Wed Apr  2 15:44:02 2025. See crbug.com/495833.
++// Automatically generated on Wed Apr 30 14:59:17 2025. See crbug.com/495833.
  #include "tx_float.c"
 diff --git a/third_party/ffmpeg/libavutil/autorename_libavutil_utils.c b/third_party/ffmpeg/libavutil/autorename_libavutil_utils.c
-index 7325d29f1d..facd1d29f2 100644
+index 7325d29f1d..0f95a00b6c 100644
 --- a/third_party/ffmpeg/libavutil/autorename_libavutil_utils.c
 +++ b/third_party/ffmpeg/libavutil/autorename_libavutil_utils.c
 @@ -1,2 +1,2 @@
 -// Automatically generated on Mon Jan 13 23:55:35 2025. See crbug.com/495833.
-+// Automatically generated on Wed Apr  2 15:44:02 2025. See crbug.com/495833.
++// Automatically generated on Wed Apr 30 14:59:17 2025. See crbug.com/495833.
  #include "utils.c"
 diff --git a/third_party/ffmpeg/libavutil/autorename_libavutil_version.c b/third_party/ffmpeg/libavutil/autorename_libavutil_version.c
-index 4120a7ce42..532a6a93cf 100644
+index 4120a7ce42..665c0210ab 100644
 --- a/third_party/ffmpeg/libavutil/autorename_libavutil_version.c
 +++ b/third_party/ffmpeg/libavutil/autorename_libavutil_version.c
 @@ -1,2 +1,2 @@
 -// Automatically generated on Mon Jan 13 23:55:35 2025. See crbug.com/495833.
-+// Automatically generated on Wed Apr  2 15:44:02 2025. See crbug.com/495833.
++// Automatically generated on Wed Apr 30 14:59:17 2025. See crbug.com/495833.
  #include "version.c"
 diff --git a/third_party/ffmpeg/libavutil/x86/autorename_libavutil_x86_cpu.c b/third_party/ffmpeg/libavutil/x86/autorename_libavutil_x86_cpu.c
-index bb42faf60b..f4bf11aa30 100644
+index bb42faf60b..681c8acefb 100644
 --- a/third_party/ffmpeg/libavutil/x86/autorename_libavutil_x86_cpu.c
 +++ b/third_party/ffmpeg/libavutil/x86/autorename_libavutil_x86_cpu.c
 @@ -1,2 +1,2 @@
 -// Automatically generated on Mon Jan 13 23:55:35 2025. See crbug.com/495833.
-+// Automatically generated on Wed Apr  2 15:44:02 2025. See crbug.com/495833.
++// Automatically generated on Wed Apr 30 14:59:17 2025. See crbug.com/495833.
  #include "cpu.c"
 diff --git a/third_party/ffmpeg/libavutil/x86/autorename_libavutil_x86_float_dsp_init.c b/third_party/ffmpeg/libavutil/x86/autorename_libavutil_x86_float_dsp_init.c
 new file mode 100644
-index 0000000000..bb90bb023f
+index 0000000000..f3f6969850
 --- /dev/null
 +++ b/third_party/ffmpeg/libavutil/x86/autorename_libavutil_x86_float_dsp_init.c
 @@ -0,0 +1,2 @@
-+// Automatically generated on Wed Apr  2 15:44:02 2025. See crbug.com/495833.
++// Automatically generated on Wed Apr 30 14:59:17 2025. See crbug.com/495833.
 +#include "float_dsp_init.c"
 diff --git a/third_party/ffmpeg/libavutil/x86/autorename_libavutil_x86_tx_float_init.c b/third_party/ffmpeg/libavutil/x86/autorename_libavutil_x86_tx_float_init.c
-index 944a380918..7fb9480bd8 100644
+index 944a380918..d48534eff5 100644
 --- a/third_party/ffmpeg/libavutil/x86/autorename_libavutil_x86_tx_float_init.c
 +++ b/third_party/ffmpeg/libavutil/x86/autorename_libavutil_x86_tx_float_init.c
 @@ -1,2 +1,2 @@
 -// Automatically generated on Mon Jan 13 23:55:35 2025. See crbug.com/495833.
-+// Automatically generated on Wed Apr  2 15:44:02 2025. See crbug.com/495833.
++// Automatically generated on Wed Apr 30 14:59:17 2025. See crbug.com/495833.
  #include "tx_float_init.c"
 -- 
-2.47.1
+2.49.0
 

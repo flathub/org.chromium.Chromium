@@ -22,7 +22,8 @@
       "patches/chromium/media-ffmpeg-Don-t-fail-cross-compilation-on-unsupported-a.patch",
       "patches/chromium/media-ffmpeg-Fix-files-in-libavcodec-bsf-failing-to-find-h.patch",
       "patches/chromium/media-ffmpeg-Skip-formatting-generated-GN-files.patch",
-      "patches/chromium/Don-t-apply-FALLTHROUGH-edit-to-gperf-3.2-output.patch"
+      "patches/chromium/Don-t-apply-FALLTHROUGH-edit-to-gperf-3.2-output.patch",
+      "patches/chromium/Only-check-the-Node-major-version-number.patch"
     ]
   }
 ]

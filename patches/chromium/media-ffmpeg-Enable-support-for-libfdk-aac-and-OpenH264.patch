@@ -1,4 +1,4 @@
-From 9c070515cc46139ffe7868eea3fb43f226178f99 Mon Sep 17 00:00:00 2001
+From b2ac8448adbd6467c2a0777a9531246bc11e1be7 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <git@refi64.dev>
 Date: Thu, 16 May 2024 17:01:07 -0500
 Subject: [PATCH] media/ffmpeg: Enable support for libfdk-aac and OpenH264
@@ -56,5 +56,5 @@ index 12455913ea76f..769131ca5db41 100755
  
  # Files permitted to report an UNKNOWN license. All files mentioned here should
 -- 
-2.48.1
+2.49.0
 
