@@ -1,0 +1,36 @@
+From d0d05b846fb4d0ef4bffaaf6e5a65dd99119e5ae Mon Sep 17 00:00:00 2001
+From: "re:fi.64" <hello@refi64.dev>
+Date: Wed, 30 Apr 2025 10:03:07 -0500
+Subject: [PATCH] Only check the Node major version number
+
+It's not a huge deal for our purposes if the minor version fluctuates,
+which is rather likely when obtaining the Node binaries from another
+source.
+---
+ third_party/node/check_version.js | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/third_party/node/check_version.js b/third_party/node/check_version.js
+index 0a037ab449c3b..999e8950c04b3 100644
+--- a/third_party/node/check_version.js
++++ b/third_party/node/check_version.js
+@@ -26,7 +26,7 @@ async function main() {
+ 
+   let contents =
+       await readFile(args.expected_version_file, {encoding: 'utf-8'});
+-  const expectedVersion = extractExpectedVersion(contents);
++  const expectedVersion = extractExpectedVersion(contents).split('.')[0];
+ 
+   const errorMessage =
+       `Failed NodeJS version check: Expected version '${expectedVersion}', ` +
+@@ -34,6 +34,6 @@ async function main() {
+       `problem persists try running 'gclient sync -f' instead, or deleting ` +
+       `third_party/node/{linux,win,mac} folders and trying again.`;
+ 
+-  assert.equal(expectedVersion, process.version, errorMessage);
++  assert.equal(expectedVersion, process.version.split('.')[0], errorMessage);
+ }
+ main();
+-- 
+2.49.0
+

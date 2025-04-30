@@ -1,4 +1,4 @@
-From b3a9bf24e67e141c846ea1c9747a1fafe1ee4a7f Mon Sep 17 00:00:00 2001
+From 8173d469c01401ac363b604a24f8c57acebb27a9 Mon Sep 17 00:00:00 2001
 From: Jan Schmidt <jan@centricular.com>
 Date: Wed, 1 May 2019 17:49:42 +0200
 Subject: [PATCH] ffmpeg: Handle transient decode errors arising from
@@ -44,5 +44,5 @@ index ac221645f0..4ae8732a6e 100644
                 "aacDecoder_DecodeFrame() failed: %x\n", err);
          ret = AVERROR_UNKNOWN;
 -- 
-2.47.1
+2.49.0
 

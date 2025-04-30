@@ -1,4 +1,4 @@
-From 1915558377f7dc194ff2238c79b70ceacd88f474 Mon Sep 17 00:00:00 2001
+From be62398a5e977fff67d61bb8c43d38bbed66a926 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Tue, 17 Mar 2020 13:18:27 -0500
 Subject: [PATCH] flatpak: Add initial sandbox support
@@ -30,7 +30,7 @@ Subject: [PATCH] flatpak: Add initial sandbox support
  create mode 100644 sandbox/linux/services/flatpak_sandbox.h
 
 diff --git a/.gitignore b/.gitignore
-index 375db3d02ce28..1eee661c2bed4 100644
+index 0a0f0118d5c1a..6d38aedd38051 100644
 --- a/.gitignore
 +++ b/.gitignore
 @@ -75,6 +75,7 @@ vs-chromium-project.txt
@@ -42,7 +42,7 @@ index 375db3d02ce28..1eee661c2bed4 100644
  /.externalToolBuilders/
  /.settings/
 diff --git a/base/threading/thread_restrictions.h b/base/threading/thread_restrictions.h
-index 56ddbc2d4fa33..736a06ab1d673 100644
+index d97240a7b0dcf..e02ba55fcfd5b 100644
 --- a/base/threading/thread_restrictions.h
 +++ b/base/threading/thread_restrictions.h
 @@ -405,6 +405,9 @@ class ScopedAllowThreadJoinForWebRtcTransport;
@@ -55,7 +55,7 @@ index 56ddbc2d4fa33..736a06ab1d673 100644
  namespace service_manager {
  class ServiceProcessLauncher;
  }
-@@ -641,6 +644,7 @@ class BASE_EXPORT ScopedAllowBlocking {
+@@ -640,6 +643,7 @@ class BASE_EXPORT ScopedAllowBlocking {
    friend class remoting::
        ScopedBypassIOThreadRestrictions;  // http://crbug.com/1144161
    friend class remoting::ScopedAllowBlockingForCrashReporting;
@@ -63,7 +63,7 @@ index 56ddbc2d4fa33..736a06ab1d673 100644
    friend class ui::DrmDisplayHostManager;
    friend class ui::ScopedAllowBlockingForGbmSurface;
    friend class ui::SelectFileDialogLinux;
-@@ -783,6 +787,7 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitives {
+@@ -782,6 +786,7 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitives {
    friend class rlz_lib::FinancialPing;
    friend class shell_integration_linux::
        LaunchXdgUtilityScopedAllowBaseSyncPrimitives;
@@ -125,10 +125,10 @@ index 1174a704b8126..e7fd738b705fb 100644
                       status & sandbox::policy::SandboxLinux::kNetNS;
    // A second-layer sandbox is also required to be adequately sandboxed.
 diff --git a/content/browser/child_process_host_impl.cc b/content/browser/child_process_host_impl.cc
-index 583a386414590..c1cf93992da5b 100644
+index 2642f0d10c40f..81e2324e3748e 100644
 --- a/content/browser/child_process_host_impl.cc
 +++ b/content/browser/child_process_host_impl.cc
-@@ -46,6 +46,7 @@
+@@ -41,6 +41,7 @@
  
  #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
  #include "base/linux_util.h"
@@ -136,7 +136,7 @@ index 583a386414590..c1cf93992da5b 100644
  #elif BUILDFLAG(IS_MAC)
  #include "base/apple/foundation_util.h"
  #include "content/browser/mac_helpers.h"
-@@ -72,7 +73,12 @@ base::FilePath ChildProcessHost::GetChildPath(int flags) {
+@@ -67,7 +68,12 @@ base::FilePath ChildProcessHost::GetChildPath(int flags) {
  #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
    // Use /proc/self/exe rather than our known binary path so updates
    // can't swap out the binary from underneath us.
@@ -262,10 +262,10 @@ index 8ef884a7db6f4..f441900dd6343 100644
  
    // This lock protects the |zygote_pids_| set.
 diff --git a/content/zygote/zygote_linux.cc b/content/zygote/zygote_linux.cc
-index f2c3b43281d53..9f3f3f6b1bc12 100644
+index c222c132aa6e4..37260b0c3ba21 100644
 --- a/content/zygote/zygote_linux.cc
 +++ b/content/zygote/zygote_linux.cc
-@@ -126,7 +126,7 @@ bool Zygote::ProcessRequests() {
+@@ -122,7 +122,7 @@ bool Zygote::ProcessRequests() {
    PCHECK(sigaddset(&sigset, SIGCHLD) == 0);
    PCHECK(sigprocmask(SIG_BLOCK, &sigset, &orig_sigmask) == 0);
  
@@ -274,7 +274,7 @@ index f2c3b43281d53..9f3f3f6b1bc12 100644
      // Let the ZygoteHost know we are ready to go.
      // The receiving code is in
      // content/browser/zygote_host/zygote_host_impl_linux.cc.
-@@ -231,6 +231,10 @@ bool Zygote::UsingNSSandbox() const {
+@@ -227,6 +227,10 @@ bool Zygote::UsingNSSandbox() const {
    return sandbox_flags_ & sandbox::policy::SandboxLinux::kUserNS;
  }
  
@@ -362,10 +362,10 @@ index c7ee91878e6dd..9c2c7a04bd968 100644
                  base::GlobalDescriptors::Descriptor(
                      static_cast<uint32_t>(kSandboxIPCChannel), GetSandboxFD()));
 diff --git a/sandbox/linux/BUILD.gn b/sandbox/linux/BUILD.gn
-index 4eac178764a41..8bd0de35f246f 100644
+index d642c7da88e4a..9d58088b3f847 100644
 --- a/sandbox/linux/BUILD.gn
 +++ b/sandbox/linux/BUILD.gn
-@@ -309,6 +309,10 @@ if (is_linux || is_chromeos) {
+@@ -300,6 +300,10 @@ if (is_linux || is_chromeos) {
  
  component("sandbox_services") {
    sources = [
@@ -376,7 +376,7 @@ index 4eac178764a41..8bd0de35f246f 100644
      "services/init_process_reaper.cc",
      "services/init_process_reaper.h",
      "services/proc_util.cc",
-@@ -327,8 +331,10 @@ component("sandbox_services") {
+@@ -318,8 +322,10 @@ component("sandbox_services") {
  
    defines = [ "SANDBOX_IMPLEMENTATION" ]
  
@@ -1321,5 +1321,5 @@ index bb99780fb878d..4dcdee34d2338 100644
  }
  
 -- 
-2.48.1
+2.49.0
 

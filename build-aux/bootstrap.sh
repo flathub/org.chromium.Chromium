@@ -24,6 +24,8 @@ if [[ ! -f tools/gn/build/gen.py ]]; then
 EOF
 fi
 
+ln -sf /usr/bin/ninja third_party/ninja
+
 if [[ -d third_party/llvm-build/Release+Asserts/bin ]]; then
   # The build scripts check that the stamp file is present, so write it out
   # here.
@@ -55,6 +57,7 @@ tools/gn/bootstrap/bootstrap.py -v --no-clean --gn-gen-args='
     use_lld=true
     enable_nacl=false
     blink_symbol_level=0
+    symbol_level=0
     use_gnome_keyring=false
     use_pulseaudio=true
     clang_use_chrome_plugins=false
