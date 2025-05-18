@@ -7,7 +7,7 @@ base-version: '24.08'
 command: chromium
 finish-args:
   - --require-version=1.8.2
-  - --filesystem=home
+  - --filesystem=xdg-download
   - --filesystem=/run/.heim_org.h5l.kcm-socket
   - --device=all
   - --env=LD_LIBRARY_PATH=/app/chromium/nonfree-codecs/lib
