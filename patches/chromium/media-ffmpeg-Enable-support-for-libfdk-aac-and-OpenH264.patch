@@ -1,4 +1,4 @@
-From b2ac8448adbd6467c2a0777a9531246bc11e1be7 Mon Sep 17 00:00:00 2001
+From f1797b54098d4ab96fa173a07d4de49c0c80689d Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <git@refi64.dev>
 Date: Thu, 16 May 2024 17:01:07 -0500
 Subject: [PATCH] media/ffmpeg: Enable support for libfdk-aac and OpenH264
@@ -44,10 +44,10 @@ index 3661b91740ae0..a451f50d9b8c3 100755
  
      configure_flags['ChromeAndroid'].extend([
 diff --git a/media/ffmpeg/scripts/generate_gn.py b/media/ffmpeg/scripts/generate_gn.py
-index 12455913ea76f..769131ca5db41 100755
+index e3740fc371b5d..bf25c6aa3b89e 100755
 --- a/media/ffmpeg/scripts/generate_gn.py
 +++ b/media/ffmpeg/scripts/generate_gn.py
-@@ -697,6 +697,7 @@ ALLOWED_LICENSES = [
+@@ -699,6 +699,7 @@ ALLOWED_LICENSES = [
      'LGPL (v2.1 or later) GENERATED FILE',
      'MIT/X11 (BSD like)',
      'Public domain LGPL (v2.1 or later)',
