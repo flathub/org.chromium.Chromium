@@ -1,4 +1,4 @@
-From 6e154613f145ebdb168728e2a0f53ef091cd93df Mon Sep 17 00:00:00 2001
+From 1dc4d35f9646d14c7729fd5ba24b55eaa05bf252 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Tue, 20 Jul 2021 14:18:31 -0500
 Subject: [PATCH] Enable support for libfdk-aac and OpenH264
@@ -8,10 +8,10 @@ Subject: [PATCH] Enable support for libfdk-aac and OpenH264
  1 file changed, 5 insertions(+)
 
 diff --git a/third_party/ffmpeg/BUILD.gn b/third_party/ffmpeg/BUILD.gn
-index 0ac39bfbd0..309d0ac870 100644
+index 6af67ce26e..5107beb3d6 100644
 --- a/third_party/ffmpeg/BUILD.gn
 +++ b/third_party/ffmpeg/BUILD.gn
-@@ -440,6 +440,11 @@ if (is_component_ffmpeg) {
+@@ -445,6 +445,11 @@ if (is_component_ffmpeg) {
          "-L",
          rebase_path(target_gen_dir, root_build_dir),
        ]

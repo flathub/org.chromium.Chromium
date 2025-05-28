@@ -1,0 +1,26 @@
+From 342184235750d51e43d0699cae8475100a8f6c71 Mon Sep 17 00:00:00 2001
+From: "re:fi.64" <hello@refi64.dev>
+Date: Wed, 28 May 2025 16:41:30 -0500
+Subject: [PATCH] build: Only check rustc_revision when using Chromium's Rust
+ toolchain
+
+---
+ build/config/compiler/BUILD.gn | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/build/config/compiler/BUILD.gn b/build/config/compiler/BUILD.gn
+index e579cc9a9d1fd..8b2db5fde3bfb 100644
+--- a/build/config/compiler/BUILD.gn
++++ b/build/config/compiler/BUILD.gn
+@@ -1680,7 +1680,7 @@ config("clang_revision") {
+           "clang_revision=\"$_clang_revision\" but clang_version=\"$clang_version\". clang_version in build/toolchain/toolchain.gni is likely outdated.")
+     }
+ 
+-    if (toolchain_has_rust && _perform_consistency_checks) {
++    if (toolchain_has_rust && use_chromium_rust_toolchain && _perform_consistency_checks) {
+       # Ensure that the synced rust version matches what's in git.
+       _rust_revision_lines =
+           filter_include(read_file("//tools/rust/update_rust.py", "list lines"),
+-- 
+2.49.0
+
