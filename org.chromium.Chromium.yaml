@@ -94,8 +94,8 @@ modules:
         only-arches:
           - aarch64
         dest: rust
-        url: https://static.rust-lang.org/dist/2025-02-13/rust-nightly-aarch64-unknown-linux-gnu.tar.xz
-        sha256: 3d18407f4c3fd2feca35773021cb31ccd82b016766956e76654752128e29e7d2
+        url: https://static.rust-lang.org/dist/2025-04-21/rust-nightly-aarch64-unknown-linux-gnu.tar.xz
+        sha256: 8853c6793fb22b1d005592f584d986262454de838bddc61cedc14a12442795ec
         # x-checker-data:
         #  type: rust
         #  package: rust
@@ -105,8 +105,8 @@ modules:
         only-arches:
           - x86_64
         dest: rust
-        url: https://static.rust-lang.org/dist/2025-02-13/rust-nightly-x86_64-unknown-linux-gnu.tar.xz
-        sha256: f3fd8670503fe37bb6f6d7b060737075f681194532f90717d4205bb033c716a7
+        url: https://static.rust-lang.org/dist/2025-04-21/rust-nightly-x86_64-unknown-linux-gnu.tar.xz
+        sha256: 633ef7829cbfa55f0465f7a9aa616f550ed24f5c06c3eeb174e9be0e5e4a0505
         # x-checker-data:
         #  type: rust
         #  package: rust
@@ -114,8 +114,8 @@ modules:
         #  target: x86_64-unknown-linux-gnu
       - type: archive
         dest: rust-src
-        url: https://static.rust-lang.org/dist/2025-02-13/rust-src-nightly.tar.xz
-        sha256: 82aaac34649aadf42596e8e4fe5eef7af83bbd6c6e2a8a58e1482b634d95b485
+        url: https://static.rust-lang.org/dist/2025-04-21/rust-src-nightly.tar.xz
+        sha256: 76fbba0a950e707c5172deb9e892e3302bab942b8f60b1b9075b4bab01b61407
         # x-checker-data:
         #  type: rust
         #  package: rust-src
@@ -157,8 +157,8 @@ modules:
       - ./install.sh
     sources:
       - type: archive
-        url: https://commondatastorage.googleapis.com/chromium-browser-official/chromium-136.0.7103.113.tar.xz
-        sha256: 7c765bd13df842a28bb52279b8d711411ac6082151473e07bd70b9a482c0a0ac
+        url: https://commondatastorage.googleapis.com/chromium-browser-official/chromium-137.0.7151.55.tar.xz
+        sha256: b11e76fd82745db5602ce151ae931cc5e56c3ee2b6e08c2fbf788bf4b3ea84cb
         x-checker-data:
           type: chromium
           component: chromium
@@ -168,8 +168,8 @@ modules:
           - rm -rf third_party/llvm-build
           - rm -rf third_party/rust-toolchain
       - type: archive
-        url: https://commondatastorage.googleapis.com/chromium-browser-clang/Linux_x64/clang-llvmorg-21-init-5118-g52cd27e6-5.tar.xz
-        sha256: 790fcc5b04e96882e8227ba7994161ab945c0e096057fc165a0f71e32a7cb061
+        url: https://commondatastorage.googleapis.com/chromium-browser-clang/Linux_x64/clang-llvmorg-21-init-9266-g09006611-1.tar.xz
+        sha256: 2cccd3a5b04461f17a2e78d2f8bd18b448443a9dd4d6dfac50e8e84b4d5176f1
         dest: third_party/llvm-build/Release+Asserts
         strip-components: 0
         only-arches: [x86_64]
@@ -177,8 +177,8 @@ modules:
           type: chromium
           component: llvm-prebuilt
       - type: archive
-        url: https://commondatastorage.googleapis.com/chromium-browser-clang/Linux_x64/rust-toolchain-bca5fdebe0e539d123f33df5f2149d5976392e76-1-llvmorg-20-init-9764-gb81d8e90.tar.xz
-        sha256: 0c4092f5769c5ececd096732b00f2c5c4e1741d4112881a2c83fe7e78271d792
+        url: https://commondatastorage.googleapis.com/chromium-browser-clang/Linux_x64/rust-toolchain-c8f94230282a8e8c1148f3e657f0199aad909228-1-llvmorg-21-init-9266-g09006611.tar.xz
+        sha256: 378c432f7739bb5da11aad7b3a2687f8252565eae5f0dcfc55c39a15382c519c
         dest: third_party/rust-toolchain
         strip-components: 0
         only-arches: [x86_64]
@@ -192,7 +192,7 @@ modules:
         only-arches: [aarch64]
       - type: git
         url: https://chromium.googlesource.com/external/github.com/llvm/llvm-project
-        commit: llvmorg-21-init-5118-g52cd27e6
+        commit: llvmorg-21-init-9266-g09006611
         dest: third_party/llvm
         only-arches: [aarch64]
         x-checker-data:

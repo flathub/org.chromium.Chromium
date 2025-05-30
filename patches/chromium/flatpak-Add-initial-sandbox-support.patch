@@ -1,4 +1,4 @@
-From be62398a5e977fff67d61bb8c43d38bbed66a926 Mon Sep 17 00:00:00 2001
+From 548a5c729c3aba796a8c8ab1fe75f05128fef483 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Tue, 17 Mar 2020 13:18:27 -0500
 Subject: [PATCH] flatpak: Add initial sandbox support
@@ -42,10 +42,10 @@ index 0a0f0118d5c1a..6d38aedd38051 100644
  /.externalToolBuilders/
  /.settings/
 diff --git a/base/threading/thread_restrictions.h b/base/threading/thread_restrictions.h
-index d97240a7b0dcf..e02ba55fcfd5b 100644
+index 59d6e6e4d899f..c412b3aa95ec7 100644
 --- a/base/threading/thread_restrictions.h
 +++ b/base/threading/thread_restrictions.h
-@@ -405,6 +405,9 @@ class ScopedAllowThreadJoinForWebRtcTransport;
+@@ -402,6 +402,9 @@ class ScopedAllowThreadJoinForWebRtcTransport;
  namespace rlz_lib {
  class FinancialPing;
  }
@@ -55,7 +55,7 @@ index d97240a7b0dcf..e02ba55fcfd5b 100644
  namespace service_manager {
  class ServiceProcessLauncher;
  }
-@@ -640,6 +643,7 @@ class BASE_EXPORT ScopedAllowBlocking {
+@@ -636,6 +639,7 @@ class BASE_EXPORT ScopedAllowBlocking {
    friend class remoting::
        ScopedBypassIOThreadRestrictions;  // http://crbug.com/1144161
    friend class remoting::ScopedAllowBlockingForCrashReporting;
@@ -63,7 +63,7 @@ index d97240a7b0dcf..e02ba55fcfd5b 100644
    friend class ui::DrmDisplayHostManager;
    friend class ui::ScopedAllowBlockingForGbmSurface;
    friend class ui::SelectFileDialogLinux;
-@@ -782,6 +786,7 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitives {
+@@ -778,6 +782,7 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitives {
    friend class rlz_lib::FinancialPing;
    friend class shell_integration_linux::
        LaunchXdgUtilityScopedAllowBaseSyncPrimitives;

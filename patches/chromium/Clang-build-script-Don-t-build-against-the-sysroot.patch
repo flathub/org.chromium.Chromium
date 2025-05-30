@@ -1,4 +1,4 @@
-From 51b75da21a8ec448c33c9a7fa90c3d4f667840d1 Mon Sep 17 00:00:00 2001
+From 2a817adff3b66cb7a129db7b7cf1ae389742b300 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Wed, 31 Aug 2022 10:09:01 -0500
 Subject: [PATCH] Clang build script: Don't build against the sysroot

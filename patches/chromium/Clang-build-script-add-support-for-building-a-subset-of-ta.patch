@@ -1,4 +1,4 @@
-From 6da3ebd061233267bcc575b607c447684dbcc625 Mon Sep 17 00:00:00 2001
+From 7f46d917d838eadff520723dcf187f8382d9f250 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <git@refi64.dev>
 Date: Wed, 13 Sep 2023 09:31:07 -0500
 Subject: [PATCH] Clang build script: add support for building a subset of
