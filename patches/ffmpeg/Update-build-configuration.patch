@@ -1,6 +1,6 @@
-From 2cb1f319262b7c88a1d1013671090b4fb0d01abd Mon Sep 17 00:00:00 2001
+From 2b770f07c684d4753cc52b54812e0b565431b074 Mon Sep 17 00:00:00 2001
 From: CroFT <croft@refi64.com>
-Date: Wed, 28 May 2025 15:17:46 -0500
+Date: Wed, 25 Jun 2025 16:37:40 -0500
 Subject: [PATCH] Update build configuration
 
 ---
@@ -29,7 +29,7 @@ Subject: [PATCH] Update build configuration
  .../linux/x64/libavcodec/parser_list.c        |   1 +
  .../linux/x64/libavformat/demuxer_list.c      |   1 +
  .../Chromium/linux/x64/libavutil/ffversion.h  |   2 +-
- ffmpeg_generated.gni                          | 243 ++++--------------
+ ffmpeg_generated.gni                          | 251 ++++--------------
  libavcodec/autorename_libavcodec_flacdsp.c    |   2 +-
  .../autorename_libavcodec_mpegaudiodsp.c      |   2 +-
  libavcodec/autorename_libavcodec_parser.c     |   2 +-
@@ -37,14 +37,14 @@ Subject: [PATCH] Update build configuration
  libavcodec/autorename_libavcodec_vorbisdsp.c  |   2 +-
  .../autorename_libavcodec_x86_videodsp.asm    |   2 +-
  .../autorename_libavcodec_x86_videodsp_init.c |   2 +
- ...autorename_libavcodec_x86_vorbisdsp_init.c |   2 +
+ ...autorename_libavcodec_x86_vorbisdsp_init.c |   2 +-
  libavformat/autorename_libavformat_flacdec.c  |   2 +-
  libavformat/autorename_libavformat_options.c  |   2 +-
  libavformat/autorename_libavformat_pcm.c      |   2 +-
  libavformat/autorename_libavformat_utils.c    |   2 +-
  libavformat/autorename_libavformat_version.c  |   2 +-
+ libavutil/autorename_libavutil_aes.c          |   2 +-
  libavutil/autorename_libavutil_cpu.c          |   2 +-
- libavutil/autorename_libavutil_executor.c     |   2 +-
  libavutil/autorename_libavutil_fixed_dsp.c    |   2 +-
  libavutil/autorename_libavutil_float_dsp.c    |   2 +-
  libavutil/autorename_libavutil_imgutils.c     |   2 +-
@@ -52,12 +52,10 @@ Subject: [PATCH] Update build configuration
  libavutil/autorename_libavutil_utils.c        |   2 +-
  libavutil/autorename_libavutil_version.c      |   2 +-
  libavutil/x86/autorename_libavutil_x86_cpu.c  |   2 +-
- .../autorename_libavutil_x86_float_dsp_init.c |   2 +
+ .../autorename_libavutil_x86_float_dsp_init.c |   2 +-
  .../autorename_libavutil_x86_tx_float_init.c  |   2 +-
- 50 files changed, 171 insertions(+), 270 deletions(-)
+ 50 files changed, 173 insertions(+), 276 deletions(-)
  create mode 100644 libavcodec/x86/autorename_libavcodec_x86_videodsp_init.c
- create mode 100644 libavcodec/x86/autorename_libavcodec_x86_vorbisdsp_init.c
- create mode 100644 libavutil/x86/autorename_libavutil_x86_float_dsp_init.c
 
 diff --git a/third_party/ffmpeg/CREDITS.chromium b/third_party/ffmpeg/CREDITS.chromium
 index ccd7f4afa5..1299675388 100644
@@ -100,7 +98,7 @@ index ccd7f4afa5..1299675388 100644
  Copyright (c) 2012
  MIPS Technologies, Inc., California.
 diff --git a/third_party/ffmpeg/chromium/config/Chrome/linux/arm64/config.h b/third_party/ffmpeg/chromium/config/Chrome/linux/arm64/config.h
-index 7b5f7026ca..f2729c24b0 100644
+index 5073adc08f..136c21c110 100644
 --- a/third_party/ffmpeg/chromium/config/Chrome/linux/arm64/config.h
 +++ b/third_party/ffmpeg/chromium/config/Chrome/linux/arm64/config.h
 @@ -1,12 +1,12 @@
@@ -113,12 +111,12 @@ index 7b5f7026ca..f2729c24b0 100644
  #define CONFIG_THIS_YEAR 2025
  #define FFMPEG_DATADIR "/usr/local/share/ffmpeg"
  #define AVCONV_DATADIR "/usr/local/share/ffmpeg"
--#define CC_IDENT "clang version 21.0.0git (https://chromium.googlesource.com/a/external/github.com/llvm/llvm-project 52cd27e60b2421feeee5afa9269c53fb0cb366a7)"
+-#define CC_IDENT "clang version 21.0.0git (https://chromium.googlesource.com/a/external/github.com/llvm/llvm-project 09006611151c7f85862a9da8da34872c456c2c37)"
 +#define CC_IDENT "clang version 19.0.0git (https://chromium.googlesource.com/external/github.com/llvm/llvm-project ab037c4ff3452a680efb758ccacb6ee210ce333b)"
  #define OS_NAME linux
  #define EXTERN_PREFIX ""
  #define EXTERN_ASM 
-@@ -392,7 +392,7 @@
+@@ -384,7 +384,7 @@
  #define HAVE_INLINE_ASM_LABELS 1
  #define HAVE_INLINE_ASM_NONLOCAL_LABELS 1
  #define HAVE_PRAGMA_DEPRECATED 1
@@ -127,7 +125,7 @@ index 7b5f7026ca..f2729c24b0 100644
  #define HAVE_SYMVER_ASM_LABEL 1
  #define HAVE_SYMVER_GNU_ASM 1
  /* #define HAVE_VFP_ARGS 0 -- softfp/hardfp selection is done by the chrome build */
-@@ -449,7 +449,7 @@
+@@ -441,7 +441,7 @@
  #define HAVE_POD2MAN 1
  #define HAVE_POSIX_IOCTL 0
  #define HAVE_TEXI2HTML 0
@@ -136,7 +134,7 @@ index 7b5f7026ca..f2729c24b0 100644
  #define HAVE_ZLIB_GZIP 0
  #define HAVE_OPENVINO2 0
  #define CONFIG_DOC 0
-@@ -495,7 +495,7 @@
+@@ -487,7 +487,7 @@
  #define CONFIG_LIBXAVS2 0
  #define CONFIG_LIBXVID 0
  #define CONFIG_DECKLINK 0
@@ -145,7 +143,7 @@ index 7b5f7026ca..f2729c24b0 100644
  #define CONFIG_LIBTLS 0
  #define CONFIG_GMP 0
  #define CONFIG_LIBARIBB24 0
-@@ -782,7 +782,7 @@
+@@ -775,7 +775,7 @@
  #define CONFIG_RTPENC_CHAIN 0
  #define CONFIG_RV34DSP 0
  #define CONFIG_SCENE_SAD 0
@@ -155,10 +153,10 @@ index 7b5f7026ca..f2729c24b0 100644
  #define CONFIG_SRTP 0
  #define CONFIG_STARTCODE 1
 diff --git a/third_party/ffmpeg/chromium/config/Chrome/linux/arm64/config_components.h b/third_party/ffmpeg/chromium/config/Chrome/linux/arm64/config_components.h
-index 5f8550abe6..2b10702da3 100644
+index 6275db5d7e..d6429c09b4 100644
 --- a/third_party/ffmpeg/chromium/config/Chrome/linux/arm64/config_components.h
 +++ b/third_party/ffmpeg/chromium/config/Chrome/linux/arm64/config_components.h
-@@ -337,7 +337,7 @@
+@@ -339,7 +339,7 @@
  #define CONFIG_ZEROCODEC_DECODER 0
  #define CONFIG_ZLIB_DECODER 0
  #define CONFIG_ZMBV_DECODER 0
@@ -167,7 +165,7 @@ index 5f8550abe6..2b10702da3 100644
  #define CONFIG_AAC_FIXED_DECODER 0
  #define CONFIG_AAC_LATM_DECODER 0
  #define CONFIG_AC3_DECODER 0
-@@ -582,7 +582,7 @@
+@@ -584,7 +584,7 @@
  #define CONFIG_LIBCODEC2_DECODER 0
  #define CONFIG_LIBDAV1D_DECODER 0
  #define CONFIG_LIBDAVS2_DECODER 0
@@ -195,21 +193,21 @@ index fe5adb0d92..5b981d2ccd 100644
      &ff_libopus_decoder,
      NULL };
 diff --git a/third_party/ffmpeg/chromium/config/Chrome/linux/arm64/libavutil/ffversion.h b/third_party/ffmpeg/chromium/config/Chrome/linux/arm64/libavutil/ffversion.h
-index e818d39cc2..96656b5a17 100644
+index af6c00257c..11e9b017e1 100644
 --- a/third_party/ffmpeg/chromium/config/Chrome/linux/arm64/libavutil/ffversion.h
 +++ b/third_party/ffmpeg/chromium/config/Chrome/linux/arm64/libavutil/ffversion.h
 @@ -1,5 +1,5 @@
  /* Automatically generated by version.sh, do not manually edit! */
  #ifndef AVUTIL_FFVERSION_H
  #define AVUTIL_FFVERSION_H
--#define FFMPEG_VERSION "N-120170-g4578822750"
-+#define FFMPEG_VERSION "git-2025-05-28-5348c116a2"
+-#define FFMPEG_VERSION "N-120726-g21d322f670"
++#define FFMPEG_VERSION "git-2025-06-25-fc400fe2d4"
  #endif /* AVUTIL_FFVERSION_H */
 diff --git a/third_party/ffmpeg/chromium/config/Chrome/linux/x64/config.asm b/third_party/ffmpeg/chromium/config/Chrome/linux/x64/config.asm
-index ece4df2b3d..33f1f2f39a 100644
+index 3a5f2f6569..d37a6d50ad 100644
 --- a/third_party/ffmpeg/chromium/config/Chrome/linux/x64/config.asm
 +++ b/third_party/ffmpeg/chromium/config/Chrome/linux/x64/config.asm
-@@ -342,7 +342,7 @@
+@@ -334,7 +334,7 @@
  %define HAVE_SLEEP 0
  %define HAVE_STRERROR_R 1
  %define HAVE_SYSCONF 1
@@ -218,7 +216,7 @@ index ece4df2b3d..33f1f2f39a 100644
  %define HAVE_SYSCTLBYNAME 0
  %define HAVE_TEMPNAM 1
  %define HAVE_USLEEP 1
-@@ -377,7 +377,7 @@
+@@ -369,7 +369,7 @@
  %define HAVE_INLINE_ASM_LABELS 1
  %define HAVE_INLINE_ASM_NONLOCAL_LABELS 1
  %define HAVE_PRAGMA_DEPRECATED 1
@@ -227,7 +225,7 @@ index ece4df2b3d..33f1f2f39a 100644
  %define HAVE_SYMVER_ASM_LABEL 1
  %define HAVE_SYMVER_GNU_ASM 1
  %define HAVE_VFP_ARGS 0
-@@ -434,7 +434,7 @@
+@@ -426,7 +426,7 @@
  %define HAVE_POD2MAN 1
  %define HAVE_POSIX_IOCTL 0
  %define HAVE_TEXI2HTML 0
@@ -236,7 +234,7 @@ index ece4df2b3d..33f1f2f39a 100644
  %define HAVE_ZLIB_GZIP 0
  %define HAVE_OPENVINO2 0
  %define CONFIG_DOC 0
-@@ -480,7 +480,7 @@
+@@ -472,7 +472,7 @@
  %define CONFIG_LIBXAVS2 0
  %define CONFIG_LIBXVID 0
  %define CONFIG_DECKLINK 0
@@ -245,7 +243,7 @@ index ece4df2b3d..33f1f2f39a 100644
  %define CONFIG_LIBTLS 0
  %define CONFIG_GMP 0
  %define CONFIG_LIBARIBB24 0
-@@ -767,7 +767,7 @@
+@@ -760,7 +760,7 @@
  %define CONFIG_RTPENC_CHAIN 0
  %define CONFIG_RV34DSP 0
  %define CONFIG_SCENE_SAD 0
@@ -255,7 +253,7 @@ index ece4df2b3d..33f1f2f39a 100644
  %define CONFIG_SRTP 0
  %define CONFIG_STARTCODE 1
 diff --git a/third_party/ffmpeg/chromium/config/Chrome/linux/x64/config.h b/third_party/ffmpeg/chromium/config/Chrome/linux/x64/config.h
-index a4c5730cf7..8380814cec 100644
+index 91112045bc..8835c536fc 100644
 --- a/third_party/ffmpeg/chromium/config/Chrome/linux/x64/config.h
 +++ b/third_party/ffmpeg/chromium/config/Chrome/linux/x64/config.h
 @@ -1,12 +1,12 @@
@@ -268,12 +266,12 @@ index a4c5730cf7..8380814cec 100644
  #define CONFIG_THIS_YEAR 2025
  #define FFMPEG_DATADIR "/usr/local/share/ffmpeg"
  #define AVCONV_DATADIR "/usr/local/share/ffmpeg"
--#define CC_IDENT "clang version 21.0.0git (https://chromium.googlesource.com/a/external/github.com/llvm/llvm-project 52cd27e60b2421feeee5afa9269c53fb0cb366a7)"
+-#define CC_IDENT "clang version 21.0.0git (https://chromium.googlesource.com/a/external/github.com/llvm/llvm-project 09006611151c7f85862a9da8da34872c456c2c37)"
 +#define CC_IDENT "clang version 19.0.0git (https://chromium.googlesource.com/external/github.com/llvm/llvm-project ab037c4ff3452a680efb758ccacb6ee210ce333b)"
  #define OS_NAME linux
  #define EXTERN_PREFIX ""
  #define EXTERN_ASM 
-@@ -356,7 +356,7 @@
+@@ -348,7 +348,7 @@
  #define HAVE_SLEEP 0
  #define HAVE_STRERROR_R 1
  #define HAVE_SYSCONF 1
@@ -282,7 +280,7 @@ index a4c5730cf7..8380814cec 100644
  #define HAVE_SYSCTLBYNAME 0
  #define HAVE_TEMPNAM 1
  #define HAVE_USLEEP 1
-@@ -391,7 +391,7 @@
+@@ -383,7 +383,7 @@
  #define HAVE_INLINE_ASM_LABELS 1
  #define HAVE_INLINE_ASM_NONLOCAL_LABELS 1
  #define HAVE_PRAGMA_DEPRECATED 1
@@ -291,7 +289,7 @@ index a4c5730cf7..8380814cec 100644
  #define HAVE_SYMVER_ASM_LABEL 1
  #define HAVE_SYMVER_GNU_ASM 1
  #define HAVE_VFP_ARGS 0
-@@ -448,7 +448,7 @@
+@@ -440,7 +440,7 @@
  #define HAVE_POD2MAN 1
  #define HAVE_POSIX_IOCTL 0
  #define HAVE_TEXI2HTML 0
@@ -300,7 +298,7 @@ index a4c5730cf7..8380814cec 100644
  #define HAVE_ZLIB_GZIP 0
  #define HAVE_OPENVINO2 0
  #define CONFIG_DOC 0
-@@ -494,7 +494,7 @@
+@@ -486,7 +486,7 @@
  #define CONFIG_LIBXAVS2 0
  #define CONFIG_LIBXVID 0
  #define CONFIG_DECKLINK 0
@@ -309,7 +307,7 @@ index a4c5730cf7..8380814cec 100644
  #define CONFIG_LIBTLS 0
  #define CONFIG_GMP 0
  #define CONFIG_LIBARIBB24 0
-@@ -781,7 +781,7 @@
+@@ -774,7 +774,7 @@
  #define CONFIG_RTPENC_CHAIN 0
  #define CONFIG_RV34DSP 0
  #define CONFIG_SCENE_SAD 0
@@ -319,10 +317,10 @@ index a4c5730cf7..8380814cec 100644
  #define CONFIG_SRTP 0
  #define CONFIG_STARTCODE 1
 diff --git a/third_party/ffmpeg/chromium/config/Chrome/linux/x64/config_components.h b/third_party/ffmpeg/chromium/config/Chrome/linux/x64/config_components.h
-index 5f8550abe6..2b10702da3 100644
+index 6275db5d7e..d6429c09b4 100644
 --- a/third_party/ffmpeg/chromium/config/Chrome/linux/x64/config_components.h
 +++ b/third_party/ffmpeg/chromium/config/Chrome/linux/x64/config_components.h
-@@ -337,7 +337,7 @@
+@@ -339,7 +339,7 @@
  #define CONFIG_ZEROCODEC_DECODER 0
  #define CONFIG_ZLIB_DECODER 0
  #define CONFIG_ZMBV_DECODER 0
@@ -331,7 +329,7 @@ index 5f8550abe6..2b10702da3 100644
  #define CONFIG_AAC_FIXED_DECODER 0
  #define CONFIG_AAC_LATM_DECODER 0
  #define CONFIG_AC3_DECODER 0
-@@ -582,7 +582,7 @@
+@@ -584,7 +584,7 @@
  #define CONFIG_LIBCODEC2_DECODER 0
  #define CONFIG_LIBDAV1D_DECODER 0
  #define CONFIG_LIBDAVS2_DECODER 0
@@ -359,18 +357,18 @@ index fe5adb0d92..5b981d2ccd 100644
      &ff_libopus_decoder,
      NULL };
 diff --git a/third_party/ffmpeg/chromium/config/Chrome/linux/x64/libavutil/ffversion.h b/third_party/ffmpeg/chromium/config/Chrome/linux/x64/libavutil/ffversion.h
-index e818d39cc2..96656b5a17 100644
+index af6c00257c..11e9b017e1 100644
 --- a/third_party/ffmpeg/chromium/config/Chrome/linux/x64/libavutil/ffversion.h
 +++ b/third_party/ffmpeg/chromium/config/Chrome/linux/x64/libavutil/ffversion.h
 @@ -1,5 +1,5 @@
  /* Automatically generated by version.sh, do not manually edit! */
  #ifndef AVUTIL_FFVERSION_H
  #define AVUTIL_FFVERSION_H
--#define FFMPEG_VERSION "N-120170-g4578822750"
-+#define FFMPEG_VERSION "git-2025-05-28-5348c116a2"
+-#define FFMPEG_VERSION "N-120726-g21d322f670"
++#define FFMPEG_VERSION "git-2025-06-25-fc400fe2d4"
  #endif /* AVUTIL_FFVERSION_H */
 diff --git a/third_party/ffmpeg/chromium/config/Chromium/linux/arm64/config.h b/third_party/ffmpeg/chromium/config/Chromium/linux/arm64/config.h
-index 4346ba4ff1..ed6f8b645c 100644
+index 8f787ab22e..b680fad053 100644
 --- a/third_party/ffmpeg/chromium/config/Chromium/linux/arm64/config.h
 +++ b/third_party/ffmpeg/chromium/config/Chromium/linux/arm64/config.h
 @@ -1,12 +1,12 @@
@@ -383,12 +381,12 @@ index 4346ba4ff1..ed6f8b645c 100644
  #define CONFIG_THIS_YEAR 2025
  #define FFMPEG_DATADIR "/usr/local/share/ffmpeg"
  #define AVCONV_DATADIR "/usr/local/share/ffmpeg"
--#define CC_IDENT "clang version 21.0.0git (https://chromium.googlesource.com/a/external/github.com/llvm/llvm-project 52cd27e60b2421feeee5afa9269c53fb0cb366a7)"
+-#define CC_IDENT "clang version 21.0.0git (https://chromium.googlesource.com/a/external/github.com/llvm/llvm-project 09006611151c7f85862a9da8da34872c456c2c37)"
 +#define CC_IDENT "clang version 19.0.0git (https://chromium.googlesource.com/external/github.com/llvm/llvm-project ab037c4ff3452a680efb758ccacb6ee210ce333b)"
  #define OS_NAME linux
  #define EXTERN_PREFIX ""
  #define EXTERN_ASM 
-@@ -392,7 +392,7 @@
+@@ -384,7 +384,7 @@
  #define HAVE_INLINE_ASM_LABELS 1
  #define HAVE_INLINE_ASM_NONLOCAL_LABELS 1
  #define HAVE_PRAGMA_DEPRECATED 1
@@ -397,7 +395,7 @@ index 4346ba4ff1..ed6f8b645c 100644
  #define HAVE_SYMVER_ASM_LABEL 1
  #define HAVE_SYMVER_GNU_ASM 1
  /* #define HAVE_VFP_ARGS 0 -- softfp/hardfp selection is done by the chrome build */
-@@ -449,7 +449,7 @@
+@@ -441,7 +441,7 @@
  #define HAVE_POD2MAN 1
  #define HAVE_POSIX_IOCTL 0
  #define HAVE_TEXI2HTML 0
@@ -406,7 +404,7 @@ index 4346ba4ff1..ed6f8b645c 100644
  #define HAVE_ZLIB_GZIP 0
  #define HAVE_OPENVINO2 0
  #define CONFIG_DOC 0
-@@ -495,7 +495,7 @@
+@@ -487,7 +487,7 @@
  #define CONFIG_LIBXAVS2 0
  #define CONFIG_LIBXVID 0
  #define CONFIG_DECKLINK 0
@@ -415,7 +413,7 @@ index 4346ba4ff1..ed6f8b645c 100644
  #define CONFIG_LIBTLS 0
  #define CONFIG_GMP 0
  #define CONFIG_LIBARIBB24 0
-@@ -542,7 +542,7 @@
+@@ -534,7 +534,7 @@
  #define CONFIG_LIBMP3LAME 0
  #define CONFIG_LIBMYSOFA 0
  #define CONFIG_LIBOPENCV 0
@@ -424,7 +422,7 @@ index 4346ba4ff1..ed6f8b645c 100644
  #define CONFIG_LIBOPENJPEG 0
  #define CONFIG_LIBOPENMPT 0
  #define CONFIG_LIBOPENVINO 0
-@@ -693,7 +693,7 @@
+@@ -685,7 +685,7 @@
  #define CONFIG_PROTOCOLS 0
  #define CONFIG_AANDCTTABLES 0
  #define CONFIG_AC3DSP 0
@@ -434,10 +432,10 @@ index 4346ba4ff1..ed6f8b645c 100644
  #define CONFIG_AUDIO_FRAME_QUEUE 0
  #define CONFIG_AUDIODSP 0
 diff --git a/third_party/ffmpeg/chromium/config/Chromium/linux/arm64/config_components.h b/third_party/ffmpeg/chromium/config/Chromium/linux/arm64/config_components.h
-index 0c7bd8eaf6..c42843d260 100644
+index 702273d816..59c83744fb 100644
 --- a/third_party/ffmpeg/chromium/config/Chromium/linux/arm64/config_components.h
 +++ b/third_party/ffmpeg/chromium/config/Chromium/linux/arm64/config_components.h
-@@ -16,7 +16,7 @@
+@@ -17,7 +17,7 @@
  #define CONFIG_EXTRACT_EXTRADATA_BSF 0
  #define CONFIG_FILTER_UNITS_BSF 0
  #define CONFIG_H264_METADATA_BSF 0
@@ -446,7 +444,7 @@ index 0c7bd8eaf6..c42843d260 100644
  #define CONFIG_H264_REDUNDANT_PPS_BSF 0
  #define CONFIG_HAPQA_EXTRACT_BSF 0
  #define CONFIG_HEVC_METADATA_BSF 0
-@@ -582,7 +582,7 @@
+@@ -584,7 +584,7 @@
  #define CONFIG_LIBCODEC2_DECODER 0
  #define CONFIG_LIBDAV1D_DECODER 0
  #define CONFIG_LIBDAVS2_DECODER 0
@@ -455,7 +453,7 @@ index 0c7bd8eaf6..c42843d260 100644
  #define CONFIG_LIBGSM_DECODER 0
  #define CONFIG_LIBGSM_MS_DECODER 0
  #define CONFIG_LIBILBC_DECODER 0
-@@ -612,7 +612,7 @@
+@@ -614,7 +614,7 @@
  #define CONFIG_AV1_MEDIACODEC_DECODER 0
  #define CONFIG_AV1_QSV_DECODER 0
  #define CONFIG_AV1_AMF_DECODER 0
@@ -464,7 +462,7 @@ index 0c7bd8eaf6..c42843d260 100644
  #define CONFIG_H264_AMF_DECODER 0
  #define CONFIG_H264_CUVID_DECODER 0
  #define CONFIG_HEVC_AMF_DECODER 0
-@@ -973,7 +973,7 @@
+@@ -975,7 +975,7 @@
  #define CONFIG_WMV3_NVDEC_HWACCEL 0
  #define CONFIG_WMV3_VAAPI_HWACCEL 0
  #define CONFIG_WMV3_VDPAU_HWACCEL 0
@@ -473,7 +471,7 @@ index 0c7bd8eaf6..c42843d260 100644
  #define CONFIG_AAC_LATM_PARSER 0
  #define CONFIG_AC3_PARSER 0
  #define CONFIG_ADX_PARSER 0
-@@ -1649,7 +1649,7 @@
+@@ -1648,7 +1648,7 @@
  #define CONFIG_AMOVIE_FILTER 0
  #define CONFIG_MOVIE_FILTER 0
  #define CONFIG_AA_DEMUXER 0
@@ -523,21 +521,21 @@ index 570a6441d3..29f1f59381 100644
      &ff_matroska_demuxer,
      &ff_mov_demuxer,
 diff --git a/third_party/ffmpeg/chromium/config/Chromium/linux/arm64/libavutil/ffversion.h b/third_party/ffmpeg/chromium/config/Chromium/linux/arm64/libavutil/ffversion.h
-index e818d39cc2..96656b5a17 100644
+index af6c00257c..11e9b017e1 100644
 --- a/third_party/ffmpeg/chromium/config/Chromium/linux/arm64/libavutil/ffversion.h
 +++ b/third_party/ffmpeg/chromium/config/Chromium/linux/arm64/libavutil/ffversion.h
 @@ -1,5 +1,5 @@
  /* Automatically generated by version.sh, do not manually edit! */
  #ifndef AVUTIL_FFVERSION_H
  #define AVUTIL_FFVERSION_H
--#define FFMPEG_VERSION "N-120170-g4578822750"
-+#define FFMPEG_VERSION "git-2025-05-28-5348c116a2"
+-#define FFMPEG_VERSION "N-120726-g21d322f670"
++#define FFMPEG_VERSION "git-2025-06-25-fc400fe2d4"
  #endif /* AVUTIL_FFVERSION_H */
 diff --git a/third_party/ffmpeg/chromium/config/Chromium/linux/x64/config.asm b/third_party/ffmpeg/chromium/config/Chromium/linux/x64/config.asm
-index 052486cc59..42704a8603 100644
+index c7b458e41a..18795ac081 100644
 --- a/third_party/ffmpeg/chromium/config/Chromium/linux/x64/config.asm
 +++ b/third_party/ffmpeg/chromium/config/Chromium/linux/x64/config.asm
-@@ -342,7 +342,7 @@
+@@ -334,7 +334,7 @@
  %define HAVE_SLEEP 0
  %define HAVE_STRERROR_R 1
  %define HAVE_SYSCONF 1
@@ -546,7 +544,7 @@ index 052486cc59..42704a8603 100644
  %define HAVE_SYSCTLBYNAME 0
  %define HAVE_TEMPNAM 1
  %define HAVE_USLEEP 1
-@@ -377,7 +377,7 @@
+@@ -369,7 +369,7 @@
  %define HAVE_INLINE_ASM_LABELS 1
  %define HAVE_INLINE_ASM_NONLOCAL_LABELS 1
  %define HAVE_PRAGMA_DEPRECATED 1
@@ -555,7 +553,7 @@ index 052486cc59..42704a8603 100644
  %define HAVE_SYMVER_ASM_LABEL 1
  %define HAVE_SYMVER_GNU_ASM 1
  %define HAVE_VFP_ARGS 0
-@@ -434,7 +434,7 @@
+@@ -426,7 +426,7 @@
  %define HAVE_POD2MAN 1
  %define HAVE_POSIX_IOCTL 0
  %define HAVE_TEXI2HTML 0
@@ -564,7 +562,7 @@ index 052486cc59..42704a8603 100644
  %define HAVE_ZLIB_GZIP 0
  %define HAVE_OPENVINO2 0
  %define CONFIG_DOC 0
-@@ -480,7 +480,7 @@
+@@ -472,7 +472,7 @@
  %define CONFIG_LIBXAVS2 0
  %define CONFIG_LIBXVID 0
  %define CONFIG_DECKLINK 0
@@ -573,7 +571,7 @@ index 052486cc59..42704a8603 100644
  %define CONFIG_LIBTLS 0
  %define CONFIG_GMP 0
  %define CONFIG_LIBARIBB24 0
-@@ -527,7 +527,7 @@
+@@ -519,7 +519,7 @@
  %define CONFIG_LIBMP3LAME 0
  %define CONFIG_LIBMYSOFA 0
  %define CONFIG_LIBOPENCV 0
@@ -582,7 +580,7 @@ index 052486cc59..42704a8603 100644
  %define CONFIG_LIBOPENJPEG 0
  %define CONFIG_LIBOPENMPT 0
  %define CONFIG_LIBOPENVINO 0
-@@ -678,7 +678,7 @@
+@@ -670,7 +670,7 @@
  %define CONFIG_PROTOCOLS 0
  %define CONFIG_AANDCTTABLES 0
  %define CONFIG_AC3DSP 0
@@ -592,7 +590,7 @@ index 052486cc59..42704a8603 100644
  %define CONFIG_AUDIO_FRAME_QUEUE 0
  %define CONFIG_AUDIODSP 0
 diff --git a/third_party/ffmpeg/chromium/config/Chromium/linux/x64/config.h b/third_party/ffmpeg/chromium/config/Chromium/linux/x64/config.h
-index ff1fa75c7c..a10c5502d8 100644
+index 7a891bb769..8963ec179e 100644
 --- a/third_party/ffmpeg/chromium/config/Chromium/linux/x64/config.h
 +++ b/third_party/ffmpeg/chromium/config/Chromium/linux/x64/config.h
 @@ -1,12 +1,12 @@
@@ -605,12 +603,12 @@ index ff1fa75c7c..a10c5502d8 100644
  #define CONFIG_THIS_YEAR 2025
  #define FFMPEG_DATADIR "/usr/local/share/ffmpeg"
  #define AVCONV_DATADIR "/usr/local/share/ffmpeg"
--#define CC_IDENT "clang version 21.0.0git (https://chromium.googlesource.com/a/external/github.com/llvm/llvm-project 52cd27e60b2421feeee5afa9269c53fb0cb366a7)"
+-#define CC_IDENT "clang version 21.0.0git (https://chromium.googlesource.com/a/external/github.com/llvm/llvm-project 09006611151c7f85862a9da8da34872c456c2c37)"
 +#define CC_IDENT "clang version 19.0.0git (https://chromium.googlesource.com/external/github.com/llvm/llvm-project ab037c4ff3452a680efb758ccacb6ee210ce333b)"
  #define OS_NAME linux
  #define EXTERN_PREFIX ""
  #define EXTERN_ASM 
-@@ -356,7 +356,7 @@
+@@ -348,7 +348,7 @@
  #define HAVE_SLEEP 0
  #define HAVE_STRERROR_R 1
  #define HAVE_SYSCONF 1
@@ -619,7 +617,7 @@ index ff1fa75c7c..a10c5502d8 100644
  #define HAVE_SYSCTLBYNAME 0
  #define HAVE_TEMPNAM 1
  #define HAVE_USLEEP 1
-@@ -391,7 +391,7 @@
+@@ -383,7 +383,7 @@
  #define HAVE_INLINE_ASM_LABELS 1
  #define HAVE_INLINE_ASM_NONLOCAL_LABELS 1
  #define HAVE_PRAGMA_DEPRECATED 1
@@ -628,7 +626,7 @@ index ff1fa75c7c..a10c5502d8 100644
  #define HAVE_SYMVER_ASM_LABEL 1
  #define HAVE_SYMVER_GNU_ASM 1
  #define HAVE_VFP_ARGS 0
-@@ -448,7 +448,7 @@
+@@ -440,7 +440,7 @@
  #define HAVE_POD2MAN 1
  #define HAVE_POSIX_IOCTL 0
  #define HAVE_TEXI2HTML 0
@@ -637,7 +635,7 @@ index ff1fa75c7c..a10c5502d8 100644
  #define HAVE_ZLIB_GZIP 0
  #define HAVE_OPENVINO2 0
  #define CONFIG_DOC 0
-@@ -494,7 +494,7 @@
+@@ -486,7 +486,7 @@
  #define CONFIG_LIBXAVS2 0
  #define CONFIG_LIBXVID 0
  #define CONFIG_DECKLINK 0
@@ -646,7 +644,7 @@ index ff1fa75c7c..a10c5502d8 100644
  #define CONFIG_LIBTLS 0
  #define CONFIG_GMP 0
  #define CONFIG_LIBARIBB24 0
-@@ -541,7 +541,7 @@
+@@ -533,7 +533,7 @@
  #define CONFIG_LIBMP3LAME 0
  #define CONFIG_LIBMYSOFA 0
  #define CONFIG_LIBOPENCV 0
@@ -655,7 +653,7 @@ index ff1fa75c7c..a10c5502d8 100644
  #define CONFIG_LIBOPENJPEG 0
  #define CONFIG_LIBOPENMPT 0
  #define CONFIG_LIBOPENVINO 0
-@@ -692,7 +692,7 @@
+@@ -684,7 +684,7 @@
  #define CONFIG_PROTOCOLS 0
  #define CONFIG_AANDCTTABLES 0
  #define CONFIG_AC3DSP 0
@@ -665,10 +663,10 @@ index ff1fa75c7c..a10c5502d8 100644
  #define CONFIG_AUDIO_FRAME_QUEUE 0
  #define CONFIG_AUDIODSP 0
 diff --git a/third_party/ffmpeg/chromium/config/Chromium/linux/x64/config_components.h b/third_party/ffmpeg/chromium/config/Chromium/linux/x64/config_components.h
-index 0c7bd8eaf6..c42843d260 100644
+index 702273d816..59c83744fb 100644
 --- a/third_party/ffmpeg/chromium/config/Chromium/linux/x64/config_components.h
 +++ b/third_party/ffmpeg/chromium/config/Chromium/linux/x64/config_components.h
-@@ -16,7 +16,7 @@
+@@ -17,7 +17,7 @@
  #define CONFIG_EXTRACT_EXTRADATA_BSF 0
  #define CONFIG_FILTER_UNITS_BSF 0
  #define CONFIG_H264_METADATA_BSF 0
@@ -677,7 +675,7 @@ index 0c7bd8eaf6..c42843d260 100644
  #define CONFIG_H264_REDUNDANT_PPS_BSF 0
  #define CONFIG_HAPQA_EXTRACT_BSF 0
  #define CONFIG_HEVC_METADATA_BSF 0
-@@ -582,7 +582,7 @@
+@@ -584,7 +584,7 @@
  #define CONFIG_LIBCODEC2_DECODER 0
  #define CONFIG_LIBDAV1D_DECODER 0
  #define CONFIG_LIBDAVS2_DECODER 0
@@ -686,7 +684,7 @@ index 0c7bd8eaf6..c42843d260 100644
  #define CONFIG_LIBGSM_DECODER 0
  #define CONFIG_LIBGSM_MS_DECODER 0
  #define CONFIG_LIBILBC_DECODER 0
-@@ -612,7 +612,7 @@
+@@ -614,7 +614,7 @@
  #define CONFIG_AV1_MEDIACODEC_DECODER 0
  #define CONFIG_AV1_QSV_DECODER 0
  #define CONFIG_AV1_AMF_DECODER 0
@@ -695,7 +693,7 @@ index 0c7bd8eaf6..c42843d260 100644
  #define CONFIG_H264_AMF_DECODER 0
  #define CONFIG_H264_CUVID_DECODER 0
  #define CONFIG_HEVC_AMF_DECODER 0
-@@ -973,7 +973,7 @@
+@@ -975,7 +975,7 @@
  #define CONFIG_WMV3_NVDEC_HWACCEL 0
  #define CONFIG_WMV3_VAAPI_HWACCEL 0
  #define CONFIG_WMV3_VDPAU_HWACCEL 0
@@ -704,7 +702,7 @@ index 0c7bd8eaf6..c42843d260 100644
  #define CONFIG_AAC_LATM_PARSER 0
  #define CONFIG_AC3_PARSER 0
  #define CONFIG_ADX_PARSER 0
-@@ -1649,7 +1649,7 @@
+@@ -1648,7 +1648,7 @@
  #define CONFIG_AMOVIE_FILTER 0
  #define CONFIG_MOVIE_FILTER 0
  #define CONFIG_AA_DEMUXER 0
@@ -754,18 +752,18 @@ index 570a6441d3..29f1f59381 100644
      &ff_matroska_demuxer,
      &ff_mov_demuxer,
 diff --git a/third_party/ffmpeg/chromium/config/Chromium/linux/x64/libavutil/ffversion.h b/third_party/ffmpeg/chromium/config/Chromium/linux/x64/libavutil/ffversion.h
-index e818d39cc2..96656b5a17 100644
+index af6c00257c..11e9b017e1 100644
 --- a/third_party/ffmpeg/chromium/config/Chromium/linux/x64/libavutil/ffversion.h
 +++ b/third_party/ffmpeg/chromium/config/Chromium/linux/x64/libavutil/ffversion.h
 @@ -1,5 +1,5 @@
  /* Automatically generated by version.sh, do not manually edit! */
  #ifndef AVUTIL_FFVERSION_H
  #define AVUTIL_FFVERSION_H
--#define FFMPEG_VERSION "N-120170-g4578822750"
-+#define FFMPEG_VERSION "git-2025-05-28-5348c116a2"
+-#define FFMPEG_VERSION "N-120726-g21d322f670"
++#define FFMPEG_VERSION "git-2025-06-25-fc400fe2d4"
  #endif /* AVUTIL_FFVERSION_H */
 diff --git a/third_party/ffmpeg/ffmpeg_generated.gni b/third_party/ffmpeg/ffmpeg_generated.gni
-index 6c4cc405aa..99514ccba7 100644
+index 651c4fe819..abd2e9ffea 100644
 --- a/third_party/ffmpeg/ffmpeg_generated.gni
 +++ b/third_party/ffmpeg/ffmpeg_generated.gni
 @@ -14,13 +14,13 @@ ffmpeg_asm_sources = []
@@ -786,7 +784,7 @@ index 6c4cc405aa..99514ccba7 100644
      "libavcodec/adts_parser.c",
      "libavcodec/allcodecs.c",
      "libavcodec/autorename_libavcodec_flacdsp.c",
-@@ -52,6 +52,7 @@ if (current_cpu == "arm64" || current_cpu == "arm64e" || current_cpu == "x64" ||
+@@ -50,6 +50,7 @@ if (current_cpu == "arm64" || current_cpu == "arm64e" || current_cpu == "x64" ||
      "libavcodec/imgconvert.c",
      "libavcodec/jni.c",
      "libavcodec/lcevcdec.c",
@@ -794,7 +792,7 @@ index 6c4cc405aa..99514ccba7 100644
      "libavcodec/libopus.c",
      "libavcodec/libopusdec.c",
      "libavcodec/mathtables.c",
-@@ -92,7 +93,9 @@ if (current_cpu == "arm64" || current_cpu == "arm64e" || current_cpu == "x64" ||
+@@ -90,7 +91,9 @@ if (current_cpu == "arm64" || current_cpu == "arm64e" || current_cpu == "x64" ||
      "libavcodec/vorbisdec.c",
      "libavcodec/vp9_parser.c",
      "libavcodec/xiph.c",
@@ -804,7 +802,7 @@ index 6c4cc405aa..99514ccba7 100644
      "libavformat/autorename_libavformat_flacdec.c",
      "libavformat/autorename_libavformat_options.c",
      "libavformat/autorename_libavformat_pcm.c",
-@@ -111,6 +114,7 @@ if (current_cpu == "arm64" || current_cpu == "arm64e" || current_cpu == "x64" ||
+@@ -109,6 +112,7 @@ if (current_cpu == "arm64" || current_cpu == "arm64e" || current_cpu == "x64" ||
      "libavformat/format.c",
      "libavformat/id3v1.c",
      "libavformat/id3v2.c",
@@ -812,7 +810,7 @@ index 6c4cc405aa..99514ccba7 100644
      "libavformat/isom.c",
      "libavformat/isom_tags.c",
      "libavformat/matroska.c",
-@@ -217,13 +221,7 @@ if (current_cpu == "arm64" || current_cpu == "arm64e" || current_cpu == "x64" ||
+@@ -216,13 +220,7 @@ if (current_cpu == "arm64" || current_cpu == "arm64e" || current_cpu == "x64" ||
    ]
  }
  
@@ -827,7 +825,7 @@ index 6c4cc405aa..99514ccba7 100644
    ffmpeg_c_sources += [
      "libavcodec/atsc_a53.c",
      "libavcodec/autorename_libavcodec_videodsp.c",
-@@ -256,45 +254,15 @@ if (((current_cpu == "arm64" || current_cpu == "arm64e") &&
+@@ -255,45 +253,44 @@ if (((current_cpu == "arm64" || current_cpu == "arm64e") &&
    ]
  }
  
@@ -840,7 +838,7 @@ index 6c4cc405aa..99514ccba7 100644
 -    (is_apple && ffmpeg_branding == "Chrome") ||
 -    (is_win && ffmpeg_branding == "Chrome") ||
 -    (use_linux_config && ffmpeg_branding == "Chrome")) {
-+if (use_linux_config && current_cpu == "x64" && ffmpeg_branding == "Chrome") {
++if (use_linux_config && current_cpu == "x64") {
    ffmpeg_c_sources += [
 -    "libavcodec/aac/aacdec.c",
 -    "libavcodec/aac/aacdec_ac.c",
@@ -863,23 +861,50 @@ index 6c4cc405aa..99514ccba7 100644
 -    "libavformat/apetag.c",
 -    "libavformat/autorename_libavformat_aacdec.c",
 -    "libavformat/img2.c",
++    "libavcodec/x86/autorename_libavcodec_x86_vorbisdsp_init.c",
++    "libavcodec/x86/constants.c",
++    "libavcodec/x86/flacdsp_init.c",
++    "libavcodec/x86/mpegaudiodsp.c",
++    "libavutil/x86/aes_init.c",
++    "libavutil/x86/autorename_libavutil_x86_cpu.c",
++    "libavutil/x86/autorename_libavutil_x86_float_dsp_init.c",
++    "libavutil/x86/autorename_libavutil_x86_tx_float_init.c",
++    "libavutil/x86/fixed_dsp_init.c",
++    "libavutil/x86/imgutils_init.c",
++    "libavutil/x86/lls_init.c",
++  ]
++  ffmpeg_asm_sources += [
++    "libavcodec/x86/dct32.asm",
++    "libavcodec/x86/flacdsp.asm",
++    "libavcodec/x86/imdct36.asm",
++    "libavcodec/x86/vorbisdsp.asm",
++    "libavutil/x86/aes.asm",
++    "libavutil/x86/cpuid.asm",
++    "libavutil/x86/fixed_dsp.asm",
++    "libavutil/x86/float_dsp.asm",
++    "libavutil/x86/imgutils.asm",
++    "libavutil/x86/lls.asm",
++    "libavutil/x86/tx_float.asm",
+   ]
+ }
+ 
+-if ((current_cpu == "x64" && ffmpeg_branding == "Chrome") ||
+-    (is_win && current_cpu == "x86" && ffmpeg_branding == "Chrome") ||
+-    (use_linux_config && current_cpu == "x86" && ffmpeg_branding == "Chrome")) {
++if (use_linux_config && current_cpu == "x64" && ffmpeg_branding == "Chrome") {
++  ffmpeg_c_sources += [
 +    "libavcodec/x86/autorename_libavcodec_x86_videodsp_init.c",
 +    "libavcodec/x86/h264_intrapred_init.c",
 +    "libavcodec/x86/h264_qpel.c",
 +    "libavcodec/x86/h264chroma_init.c",
 +    "libavcodec/x86/h264dsp_init.c",
-   ]
--}
--
--if ((current_cpu == "x64" && ffmpeg_branding == "Chrome") ||
--    (is_win && current_cpu == "x86" && ffmpeg_branding == "Chrome") ||
--    (use_linux_config && current_cpu == "x86" && ffmpeg_branding == "Chrome")) {
++  ]
    ffmpeg_asm_sources += [
 -    "libavcodec/x86/aacpsdsp.asm",
      "libavcodec/x86/autorename_libavcodec_x86_videodsp.asm",
      "libavcodec/x86/fpel.asm",
      "libavcodec/x86/h264_chromamc.asm",
-@@ -310,38 +278,22 @@ if ((current_cpu == "x64" && ffmpeg_branding == "Chrome") ||
+@@ -309,182 +306,50 @@ if ((current_cpu == "x64" && ffmpeg_branding == "Chrome") ||
      "libavcodec/x86/h264_weight.asm",
      "libavcodec/x86/h264_weight_10bit.asm",
      "libavcodec/x86/qpel.asm",
@@ -889,17 +914,18 @@ index 6c4cc405aa..99514ccba7 100644
  
 -if ((current_cpu == "arm64" || current_cpu == "arm64e") &&
 -    ffmpeg_branding == "Chrome") {
-+if (use_linux_config && current_cpu == "x64") {
++if (use_linux_config && (current_cpu == "arm64" || current_cpu == "arm64e") && ffmpeg_branding == "Chrome") {
    ffmpeg_c_sources += [
 -    "libavcodec/aarch64/aacpsdsp_init_aarch64.c",
 -    "libavcodec/aarch64/autorename_libavcodec_aarch64_videodsp_init.c",
--    "libavcodec/aarch64/h264chroma_init_aarch64.c",
--    "libavcodec/aarch64/h264dsp_init_aarch64.c",
--    "libavcodec/aarch64/h264pred_init.c",
--    "libavcodec/aarch64/h264qpel_init_aarch64.c",
+     "libavcodec/aarch64/h264chroma_init_aarch64.c",
+     "libavcodec/aarch64/h264dsp_init_aarch64.c",
+     "libavcodec/aarch64/h264pred_init.c",
+     "libavcodec/aarch64/h264qpel_init_aarch64.c",
 -    "libavcodec/aarch64/sbrdsp_init_aarch64.c",
--  ]
--  ffmpeg_gas_sources += [
++    "libavcodec/aarch64/videodsp_init.c",
+   ]
+   ffmpeg_gas_sources += [
 -    "libavcodec/aarch64/autorename_libavcodec_aarch64_aacpsdsp_neon.S",
 -    "libavcodec/aarch64/autorename_libavcodec_aarch64_h264cmc_neon.S",
 -    "libavcodec/aarch64/autorename_libavcodec_aarch64_h264dsp_neon.S",
@@ -908,65 +934,73 @@ index 6c4cc405aa..99514ccba7 100644
 -    "libavcodec/aarch64/autorename_libavcodec_aarch64_h264qpel_neon.S",
 -    "libavcodec/aarch64/autorename_libavcodec_aarch64_hpeldsp_neon.S",
 -    "libavcodec/aarch64/autorename_libavcodec_aarch64_sbrdsp_neon.S",
--    "libavcodec/aarch64/videodsp.S",
-+    "libavcodec/x86/autorename_libavcodec_x86_vorbisdsp_init.c",
-+    "libavcodec/x86/constants.c",
-+    "libavcodec/x86/flacdsp_init.c",
-+    "libavcodec/x86/mpegaudiodsp.c",
-+    "libavutil/x86/autorename_libavutil_x86_cpu.c",
-+    "libavutil/x86/autorename_libavutil_x86_float_dsp_init.c",
-+    "libavutil/x86/autorename_libavutil_x86_tx_float_init.c",
-+    "libavutil/x86/fixed_dsp_init.c",
-+    "libavutil/x86/imgutils_init.c",
-+    "libavutil/x86/lls_init.c",
++    "libavcodec/aarch64/h264cmc_neon.S",
++    "libavcodec/aarch64/h264dsp_neon.S",
++    "libavcodec/aarch64/h264idct_neon.S",
++    "libavcodec/aarch64/h264pred_neon.S",
++    "libavcodec/aarch64/h264qpel_neon.S",
++    "libavcodec/aarch64/hpeldsp_neon.S",
+     "libavcodec/aarch64/videodsp.S",
    ]
--}
--
+ }
+ 
 -if (current_cpu == "x64" || (is_win && current_cpu == "x86") ||
 -    (use_linux_config && current_cpu == "x86")) {
 -  ffmpeg_c_sources +=
 -      [ "libavutil/x86/autorename_libavutil_x86_tx_float_init.c" ]
-   ffmpeg_asm_sources += [
-     "libavcodec/x86/dct32.asm",
-     "libavcodec/x86/flacdsp.asm",
-@@ -356,134 +308,47 @@ if (current_cpu == "x64" || (is_win && current_cpu == "x86") ||
-   ]
- }
- 
--if (current_cpu == "arm64" || current_cpu == "arm64e") {
--  ffmpeg_c_sources += [
--    "libavcodec/aarch64/autorename_libavcodec_aarch64_vorbisdsp_init.c",
--    "libavcodec/aarch64/mpegaudiodsp_init.c",
--    "libavutil/aarch64/autorename_libavutil_aarch64_cpu.c",
--    "libavutil/aarch64/autorename_libavutil_aarch64_float_dsp_init.c",
--    "libavutil/aarch64/tx_float_init.c",
--  ]
--  ffmpeg_gas_sources += [
--    "libavcodec/aarch64/autorename_libavcodec_aarch64_vorbisdsp_neon.S",
--    "libavcodec/aarch64/mpegaudiodsp_neon.S",
--    "libavutil/aarch64/autorename_libavutil_aarch64_float_dsp_neon.S",
--    "libavutil/aarch64/cpu_sve.S",
--    "libavutil/aarch64/tx_float_neon.S",
+-  ffmpeg_asm_sources += [
+-    "libavcodec/x86/dct32.asm",
+-    "libavcodec/x86/flacdsp.asm",
+-    "libavcodec/x86/imdct36.asm",
+-    "libavcodec/x86/vorbisdsp.asm",
+-    "libavutil/x86/aes.asm",
+-    "libavutil/x86/cpuid.asm",
+-    "libavutil/x86/fixed_dsp.asm",
+-    "libavutil/x86/float_dsp.asm",
+-    "libavutil/x86/imgutils.asm",
+-    "libavutil/x86/lls.asm",
+-    "libavutil/x86/tx_float.asm",
 -  ]
 -}
 -
 -if (current_cpu == "x64" || (is_android && current_cpu == "x86") ||
 -    (is_win && current_cpu == "x86") ||
 -    (use_linux_config && current_cpu == "x86")) {
-+if (use_linux_config && (current_cpu == "arm64" || current_cpu == "arm64e") && ffmpeg_branding == "Chrome") {
-   ffmpeg_c_sources += [
+-  ffmpeg_c_sources += [
+-    "libavcodec/x86/autorename_libavcodec_x86_vorbisdsp_init.c",
 -    "libavcodec/x86/constants.c",
 -    "libavcodec/x86/flacdsp_init.c",
 -    "libavcodec/x86/mpegaudiodsp.c",
--    "libavcodec/x86/vorbisdsp_init.c",
+-    "libavutil/x86/aes_init.c",
 -    "libavutil/x86/autorename_libavutil_x86_cpu.c",
+-    "libavutil/x86/autorename_libavutil_x86_float_dsp_init.c",
 -    "libavutil/x86/fixed_dsp_init.c",
--    "libavutil/x86/float_dsp_init.c",
 -    "libavutil/x86/imgutils_init.c",
 -    "libavutil/x86/lls_init.c",
 -  ]
 -}
 -
+-if (current_cpu == "arm64" || current_cpu == "arm64e") {
++if (use_linux_config && (current_cpu == "arm64" || current_cpu == "arm64e")) {
+   ffmpeg_c_sources += [
+     "libavcodec/aarch64/mpegaudiodsp_init.c",
+     "libavcodec/aarch64/vorbisdsp_init.c",
+-    "libavutil/aarch64/autorename_libavutil_aarch64_cpu.c",
++    "libavutil/aarch64/cpu.c",
+     "libavutil/aarch64/float_dsp_init.c",
+     "libavutil/aarch64/tx_float_init.c",
+   ]
+   ffmpeg_gas_sources += [
+-    "libavcodec/aarch64/autorename_libavcodec_aarch64_vorbisdsp_neon.S",
+     "libavcodec/aarch64/mpegaudiodsp_neon.S",
+-    "libavutil/aarch64/autorename_libavutil_aarch64_float_dsp_neon.S",
++    "libavcodec/aarch64/vorbisdsp_neon.S",
+     "libavutil/aarch64/cpu_sve.S",
++    "libavutil/aarch64/float_dsp_neon.S",
+     "libavutil/aarch64/tx_float_neon.S",
+   ]
+ }
+ 
 -if ((is_android && current_cpu == "arm" && arm_use_neon) ||
 -    (use_linux_config && current_cpu == "arm" && arm_use_neon) ||
 -    (use_linux_config && current_cpu == "arm")) {
@@ -995,30 +1029,18 @@ index 6c4cc405aa..99514ccba7 100644
 -    "libavcodec/arm/h264qpel_init_arm.c",
 -    "libavcodec/arm/videodsp_init_arm.c",
 -    "libavcodec/arm/videodsp_init_armv5te.c",
-+    "libavcodec/aarch64/h264chroma_init_aarch64.c",
-+    "libavcodec/aarch64/h264dsp_init_aarch64.c",
-+    "libavcodec/aarch64/h264pred_init.c",
-+    "libavcodec/aarch64/h264qpel_init_aarch64.c",
-+    "libavcodec/aarch64/videodsp_init.c",
-   ]
-   ffmpeg_gas_sources += [
+-  ]
+-  ffmpeg_gas_sources += [
 -    "libavcodec/arm/startcode_armv6.S",
 -    "libavcodec/arm/videodsp_armv5te.S",
-+    "libavcodec/aarch64/h264cmc_neon.S",
-+    "libavcodec/aarch64/h264dsp_neon.S",
-+    "libavcodec/aarch64/h264idct_neon.S",
-+    "libavcodec/aarch64/h264pred_neon.S",
-+    "libavcodec/aarch64/h264qpel_neon.S",
-+    "libavcodec/aarch64/hpeldsp_neon.S",
-+    "libavcodec/aarch64/videodsp.S",
-   ]
- }
- 
+-  ]
+-}
+-
 -if ((current_cpu == "x64" && ffmpeg_branding == "Chrome") ||
 -    (is_android && current_cpu == "x86" && ffmpeg_branding == "Chrome") ||
 -    (is_win && current_cpu == "x86" && ffmpeg_branding == "Chrome") ||
 -    (use_linux_config && current_cpu == "x86" && ffmpeg_branding == "Chrome")) {
-+if (use_linux_config && (current_cpu == "arm64" || current_cpu == "arm64e")) {
++if ((use_linux_config && (current_cpu == "arm64" || current_cpu == "arm64e") && ffmpeg_branding == "Chromium") || (use_linux_config && current_cpu == "x64" && ffmpeg_branding == "Chromium")) {
    ffmpeg_c_sources += [
 -    "libavcodec/x86/aacpsdsp_init.c",
 -    "libavcodec/x86/h264_intrapred_init.c",
@@ -1027,55 +1049,44 @@ index 6c4cc405aa..99514ccba7 100644
 -    "libavcodec/x86/h264dsp_init.c",
 -    "libavcodec/x86/sbrdsp_init.c",
 -    "libavcodec/x86/videodsp_init.c",
-+    "libavcodec/aarch64/mpegaudiodsp_init.c",
-+    "libavcodec/aarch64/vorbisdsp_init.c",
-+    "libavutil/aarch64/cpu.c",
-+    "libavutil/aarch64/float_dsp_init.c",
-+    "libavutil/aarch64/tx_float_init.c",
-   ]
+-  ]
 -}
 -
 -if (use_linux_config && current_cpu == "arm" && arm_use_neon &&
 -    ffmpeg_branding == "Chrome") {
-   ffmpeg_gas_sources += [
+-  ffmpeg_gas_sources += [
 -    "libavcodec/arm/h264cmc_neon.S",
 -    "libavcodec/arm/h264dsp_neon.S",
 -    "libavcodec/arm/h264idct_neon.S",
 -    "libavcodec/arm/h264pred_neon.S",
 -    "libavcodec/arm/h264qpel_neon.S",
 -    "libavcodec/arm/hpeldsp_neon.S",
--  ]
--}
--
--if ((is_android && current_cpu == "arm" && arm_use_neon) ||
--    (use_linux_config && current_cpu == "arm" && arm_use_neon)) {
--  ffmpeg_c_sources += [ "libavutil/arm/float_dsp_init_neon.c" ]
--  ffmpeg_gas_sources += [
--    "libavcodec/arm/vorbisdsp_neon.S",
--    "libavutil/arm/float_dsp_neon.S",
-+    "libavcodec/aarch64/mpegaudiodsp_neon.S",
-+    "libavcodec/aarch64/vorbisdsp_neon.S",
-+    "libavutil/aarch64/cpu_sve.S",
-+    "libavutil/aarch64/float_dsp_neon.S",
-+    "libavutil/aarch64/tx_float_neon.S",
-   ]
- }
- 
--if ((is_android && current_cpu == "arm" && arm_use_neon &&
--     ffmpeg_branding == "Chrome") ||
--    (use_linux_config && current_cpu == "arm" && arm_use_neon &&
--     ffmpeg_branding == "Chrome") ||
--    (use_linux_config && current_cpu == "arm" && ffmpeg_branding == "Chrome")) {
-+if ((use_linux_config && (current_cpu == "arm64" || current_cpu == "arm64e") && ffmpeg_branding == "Chromium") || (use_linux_config && current_cpu == "x64" && ffmpeg_branding == "Chromium")) {
-   ffmpeg_c_sources += [
--    "libavcodec/arm/aacpsdsp_init_arm.c",
--    "libavcodec/arm/sbrdsp_init_arm.c",
 +    "libavcodec/bsf/h264_mp4toannexb.c",
 +    "libavcodec/libopenh264.c",
 +    "libavcodec/libopenh264dec.c",
    ]
  }
  
+-if ((is_android && current_cpu == "arm" && arm_use_neon) ||
+-    (use_linux_config && current_cpu == "arm" && arm_use_neon)) {
+-  ffmpeg_c_sources += [ "libavutil/arm/float_dsp_init_neon.c" ]
+-  ffmpeg_gas_sources += [
+-    "libavcodec/arm/vorbisdsp_neon.S",
+-    "libavutil/arm/float_dsp_neon.S",
+-  ]
+-}
+-
+-if ((is_android && current_cpu == "arm" && arm_use_neon &&
+-     ffmpeg_branding == "Chrome") ||
+-    (use_linux_config && current_cpu == "arm" && arm_use_neon &&
+-     ffmpeg_branding == "Chrome") ||
+-    (use_linux_config && current_cpu == "arm" && ffmpeg_branding == "Chrome")) {
+-  ffmpeg_c_sources += [
+-    "libavcodec/arm/aacpsdsp_init_arm.c",
+-    "libavcodec/arm/sbrdsp_init_arm.c",
+-  ]
+-}
+-
 -if ((is_android && current_cpu == "arm" && arm_use_neon &&
 -     ffmpeg_branding == "Chrome") ||
 -    (use_linux_config && current_cpu == "arm" && arm_use_neon &&
@@ -1093,196 +1104,196 @@ index 6c4cc405aa..99514ccba7 100644
 -  ffmpeg_c_sources += [ "compat/strtod.c" ]
 -}
 diff --git a/third_party/ffmpeg/libavcodec/autorename_libavcodec_flacdsp.c b/third_party/ffmpeg/libavcodec/autorename_libavcodec_flacdsp.c
-index c772b7ada1..8e007f7d81 100644
+index 1af61590b3..d133f9c958 100644
 --- a/third_party/ffmpeg/libavcodec/autorename_libavcodec_flacdsp.c
 +++ b/third_party/ffmpeg/libavcodec/autorename_libavcodec_flacdsp.c
 @@ -1,2 +1,2 @@
--// Automatically generated on Mon Mar 17 21:37:20 2025. See crbug.com/495833.
-+// Automatically generated on Wed May 28 20:17:45 2025. See crbug.com/495833.
+-// Automatically generated on Thu May  1 06:11:29 2025. See crbug.com/495833.
++// Automatically generated on Wed Jun 25 21:37:38 2025. See crbug.com/495833.
  #include "flacdsp.c"
 diff --git a/third_party/ffmpeg/libavcodec/autorename_libavcodec_mpegaudiodsp.c b/third_party/ffmpeg/libavcodec/autorename_libavcodec_mpegaudiodsp.c
-index 70a7e03b08..19ee5e7987 100644
+index b582d386ec..d7be7080dc 100644
 --- a/third_party/ffmpeg/libavcodec/autorename_libavcodec_mpegaudiodsp.c
 +++ b/third_party/ffmpeg/libavcodec/autorename_libavcodec_mpegaudiodsp.c
 @@ -1,2 +1,2 @@
--// Automatically generated on Mon Mar 17 21:37:20 2025. See crbug.com/495833.
-+// Automatically generated on Wed May 28 20:17:45 2025. See crbug.com/495833.
+-// Automatically generated on Thu May  1 06:11:29 2025. See crbug.com/495833.
++// Automatically generated on Wed Jun 25 21:37:38 2025. See crbug.com/495833.
  #include "mpegaudiodsp.c"
 diff --git a/third_party/ffmpeg/libavcodec/autorename_libavcodec_parser.c b/third_party/ffmpeg/libavcodec/autorename_libavcodec_parser.c
-index 628a3a1576..1258ad783f 100644
+index cda7268c03..f2bddda654 100644
 --- a/third_party/ffmpeg/libavcodec/autorename_libavcodec_parser.c
 +++ b/third_party/ffmpeg/libavcodec/autorename_libavcodec_parser.c
 @@ -1,2 +1,2 @@
--// Automatically generated on Mon Mar 17 21:37:20 2025. See crbug.com/495833.
-+// Automatically generated on Wed May 28 20:17:45 2025. See crbug.com/495833.
+-// Automatically generated on Thu May  1 06:11:29 2025. See crbug.com/495833.
++// Automatically generated on Wed Jun 25 21:37:38 2025. See crbug.com/495833.
  #include "parser.c"
 diff --git a/third_party/ffmpeg/libavcodec/autorename_libavcodec_videodsp.c b/third_party/ffmpeg/libavcodec/autorename_libavcodec_videodsp.c
-index 26289c77f7..4cc22df022 100644
+index 8be0ede9d7..c86bd78d49 100644
 --- a/third_party/ffmpeg/libavcodec/autorename_libavcodec_videodsp.c
 +++ b/third_party/ffmpeg/libavcodec/autorename_libavcodec_videodsp.c
 @@ -1,2 +1,2 @@
--// Automatically generated on Mon Mar 17 21:37:20 2025. See crbug.com/495833.
-+// Automatically generated on Wed May 28 20:17:45 2025. See crbug.com/495833.
+-// Automatically generated on Thu May  1 06:11:29 2025. See crbug.com/495833.
++// Automatically generated on Wed Jun 25 21:37:38 2025. See crbug.com/495833.
  #include "videodsp.c"
 diff --git a/third_party/ffmpeg/libavcodec/autorename_libavcodec_vorbisdsp.c b/third_party/ffmpeg/libavcodec/autorename_libavcodec_vorbisdsp.c
-index 16c8c4af47..7c7bd880c8 100644
+index e3167ce767..fc9a3b22d5 100644
 --- a/third_party/ffmpeg/libavcodec/autorename_libavcodec_vorbisdsp.c
 +++ b/third_party/ffmpeg/libavcodec/autorename_libavcodec_vorbisdsp.c
 @@ -1,2 +1,2 @@
--// Automatically generated on Mon Mar 17 21:37:20 2025. See crbug.com/495833.
-+// Automatically generated on Wed May 28 20:17:45 2025. See crbug.com/495833.
+-// Automatically generated on Thu May  1 06:11:29 2025. See crbug.com/495833.
++// Automatically generated on Wed Jun 25 21:37:38 2025. See crbug.com/495833.
  #include "vorbisdsp.c"
 diff --git a/third_party/ffmpeg/libavcodec/x86/autorename_libavcodec_x86_videodsp.asm b/third_party/ffmpeg/libavcodec/x86/autorename_libavcodec_x86_videodsp.asm
-index b8bee1243d..2c89cf0d97 100644
+index b0e575fce8..d157f5fee1 100644
 --- a/third_party/ffmpeg/libavcodec/x86/autorename_libavcodec_x86_videodsp.asm
 +++ b/third_party/ffmpeg/libavcodec/x86/autorename_libavcodec_x86_videodsp.asm
 @@ -1,2 +1,2 @@
--; Automatically generated on Mon Mar 17 21:37:20 2025. See crbug.com/495833.
-+; Automatically generated on Wed May 28 20:17:45 2025. See crbug.com/495833.
+-; Automatically generated on Thu May  1 06:11:29 2025. See crbug.com/495833.
++; Automatically generated on Wed Jun 25 21:37:38 2025. See crbug.com/495833.
  %include "videodsp.asm"
 diff --git a/third_party/ffmpeg/libavcodec/x86/autorename_libavcodec_x86_videodsp_init.c b/third_party/ffmpeg/libavcodec/x86/autorename_libavcodec_x86_videodsp_init.c
 new file mode 100644
-index 0000000000..58ee62a2b0
+index 0000000000..91e321e7ff
 --- /dev/null
 +++ b/third_party/ffmpeg/libavcodec/x86/autorename_libavcodec_x86_videodsp_init.c
 @@ -0,0 +1,2 @@
-+// Automatically generated on Wed May 28 20:17:45 2025. See crbug.com/495833.
++// Automatically generated on Wed Jun 25 21:37:38 2025. See crbug.com/495833.
 +#include "videodsp_init.c"
 diff --git a/third_party/ffmpeg/libavcodec/x86/autorename_libavcodec_x86_vorbisdsp_init.c b/third_party/ffmpeg/libavcodec/x86/autorename_libavcodec_x86_vorbisdsp_init.c
-new file mode 100644
-index 0000000000..70db311fb0
---- /dev/null
+index df64561b83..b50e252974 100644
+--- a/third_party/ffmpeg/libavcodec/x86/autorename_libavcodec_x86_vorbisdsp_init.c
 +++ b/third_party/ffmpeg/libavcodec/x86/autorename_libavcodec_x86_vorbisdsp_init.c
-@@ -0,0 +1,2 @@
-+// Automatically generated on Wed May 28 20:17:45 2025. See crbug.com/495833.
-+#include "vorbisdsp_init.c"
+@@ -1,2 +1,2 @@
+-// Automatically generated on Thu May  1 06:11:29 2025. See crbug.com/495833.
++// Automatically generated on Wed Jun 25 21:37:38 2025. See crbug.com/495833.
+ #include "vorbisdsp_init.c"
 diff --git a/third_party/ffmpeg/libavformat/autorename_libavformat_flacdec.c b/third_party/ffmpeg/libavformat/autorename_libavformat_flacdec.c
-index a08d9ed5d2..0fa52d8b88 100644
+index 465bfd7f00..ab19a24ff8 100644
 --- a/third_party/ffmpeg/libavformat/autorename_libavformat_flacdec.c
 +++ b/third_party/ffmpeg/libavformat/autorename_libavformat_flacdec.c
 @@ -1,2 +1,2 @@
--// Automatically generated on Mon Mar 17 21:37:20 2025. See crbug.com/495833.
-+// Automatically generated on Wed May 28 20:17:45 2025. See crbug.com/495833.
+-// Automatically generated on Thu May  1 06:11:29 2025. See crbug.com/495833.
++// Automatically generated on Wed Jun 25 21:37:38 2025. See crbug.com/495833.
  #include "flacdec.c"
 diff --git a/third_party/ffmpeg/libavformat/autorename_libavformat_options.c b/third_party/ffmpeg/libavformat/autorename_libavformat_options.c
-index 86a666aa33..e3bf430003 100644
+index 7d5f9cbf21..6a5b6b1874 100644
 --- a/third_party/ffmpeg/libavformat/autorename_libavformat_options.c
 +++ b/third_party/ffmpeg/libavformat/autorename_libavformat_options.c
 @@ -1,2 +1,2 @@
--// Automatically generated on Mon Mar 17 21:37:20 2025. See crbug.com/495833.
-+// Automatically generated on Wed May 28 20:17:45 2025. See crbug.com/495833.
+-// Automatically generated on Thu May  1 06:11:29 2025. See crbug.com/495833.
++// Automatically generated on Wed Jun 25 21:37:38 2025. See crbug.com/495833.
  #include "options.c"
 diff --git a/third_party/ffmpeg/libavformat/autorename_libavformat_pcm.c b/third_party/ffmpeg/libavformat/autorename_libavformat_pcm.c
-index 469c31e070..a7b010af1e 100644
+index 4d6a956334..16e4f78899 100644
 --- a/third_party/ffmpeg/libavformat/autorename_libavformat_pcm.c
 +++ b/third_party/ffmpeg/libavformat/autorename_libavformat_pcm.c
 @@ -1,2 +1,2 @@
--// Automatically generated on Mon Mar 17 21:37:20 2025. See crbug.com/495833.
-+// Automatically generated on Wed May 28 20:17:45 2025. See crbug.com/495833.
+-// Automatically generated on Thu May  1 06:11:29 2025. See crbug.com/495833.
++// Automatically generated on Wed Jun 25 21:37:38 2025. See crbug.com/495833.
  #include "pcm.c"
 diff --git a/third_party/ffmpeg/libavformat/autorename_libavformat_utils.c b/third_party/ffmpeg/libavformat/autorename_libavformat_utils.c
-index 8c8102cb36..3607878dd1 100644
+index 9d7ab87ff0..0b2580f966 100644
 --- a/third_party/ffmpeg/libavformat/autorename_libavformat_utils.c
 +++ b/third_party/ffmpeg/libavformat/autorename_libavformat_utils.c
 @@ -1,2 +1,2 @@
--// Automatically generated on Mon Mar 17 21:37:20 2025. See crbug.com/495833.
-+// Automatically generated on Wed May 28 20:17:45 2025. See crbug.com/495833.
+-// Automatically generated on Thu May  1 06:11:29 2025. See crbug.com/495833.
++// Automatically generated on Wed Jun 25 21:37:38 2025. See crbug.com/495833.
  #include "utils.c"
 diff --git a/third_party/ffmpeg/libavformat/autorename_libavformat_version.c b/third_party/ffmpeg/libavformat/autorename_libavformat_version.c
-index f6b2d9f67f..3caec3ee46 100644
+index eba53181c0..a1fcec8c1a 100644
 --- a/third_party/ffmpeg/libavformat/autorename_libavformat_version.c
 +++ b/third_party/ffmpeg/libavformat/autorename_libavformat_version.c
 @@ -1,2 +1,2 @@
--// Automatically generated on Mon Mar 17 21:37:20 2025. See crbug.com/495833.
-+// Automatically generated on Wed May 28 20:17:45 2025. See crbug.com/495833.
+-// Automatically generated on Thu May  1 06:11:29 2025. See crbug.com/495833.
++// Automatically generated on Wed Jun 25 21:37:38 2025. See crbug.com/495833.
  #include "version.c"
+diff --git a/third_party/ffmpeg/libavutil/autorename_libavutil_aes.c b/third_party/ffmpeg/libavutil/autorename_libavutil_aes.c
+index 1a744899e6..0807cdffb3 100644
+--- a/third_party/ffmpeg/libavutil/autorename_libavutil_aes.c
++++ b/third_party/ffmpeg/libavutil/autorename_libavutil_aes.c
+@@ -1,2 +1,2 @@
+-// Automatically generated on Thu May  1 06:11:29 2025. See crbug.com/495833.
++// Automatically generated on Wed Jun 25 21:37:38 2025. See crbug.com/495833.
+ #include "aes.c"
 diff --git a/third_party/ffmpeg/libavutil/autorename_libavutil_cpu.c b/third_party/ffmpeg/libavutil/autorename_libavutil_cpu.c
-index e810dd6d3c..d33d9e352b 100644
+index eeb0e03292..7073eaf2f7 100644
 --- a/third_party/ffmpeg/libavutil/autorename_libavutil_cpu.c
 +++ b/third_party/ffmpeg/libavutil/autorename_libavutil_cpu.c
 @@ -1,2 +1,2 @@
--// Automatically generated on Mon Mar 17 21:37:20 2025. See crbug.com/495833.
-+// Automatically generated on Wed May 28 20:17:45 2025. See crbug.com/495833.
+-// Automatically generated on Thu May  1 06:11:29 2025. See crbug.com/495833.
++// Automatically generated on Wed Jun 25 21:37:38 2025. See crbug.com/495833.
  #include "cpu.c"
-diff --git a/third_party/ffmpeg/libavutil/autorename_libavutil_executor.c b/third_party/ffmpeg/libavutil/autorename_libavutil_executor.c
-index c2b4a15e8a..7077f66427 100644
---- a/third_party/ffmpeg/libavutil/autorename_libavutil_executor.c
-+++ b/third_party/ffmpeg/libavutil/autorename_libavutil_executor.c
-@@ -1,2 +1,2 @@
--// Automatically generated on Mon Mar 17 21:37:20 2025. See crbug.com/495833.
-+// Automatically generated on Wed May 28 20:17:45 2025. See crbug.com/495833.
- #include "executor.c"
 diff --git a/third_party/ffmpeg/libavutil/autorename_libavutil_fixed_dsp.c b/third_party/ffmpeg/libavutil/autorename_libavutil_fixed_dsp.c
-index 5bd49c073e..6ab51b6717 100644
+index 519de61b8b..9a7a7e5f1c 100644
 --- a/third_party/ffmpeg/libavutil/autorename_libavutil_fixed_dsp.c
 +++ b/third_party/ffmpeg/libavutil/autorename_libavutil_fixed_dsp.c
 @@ -1,2 +1,2 @@
--// Automatically generated on Mon Mar 17 21:37:20 2025. See crbug.com/495833.
-+// Automatically generated on Wed May 28 20:17:45 2025. See crbug.com/495833.
+-// Automatically generated on Thu May  1 06:11:29 2025. See crbug.com/495833.
++// Automatically generated on Wed Jun 25 21:37:38 2025. See crbug.com/495833.
  #include "fixed_dsp.c"
 diff --git a/third_party/ffmpeg/libavutil/autorename_libavutil_float_dsp.c b/third_party/ffmpeg/libavutil/autorename_libavutil_float_dsp.c
-index c65c002999..16166fc9a0 100644
+index 6d5ab7ed0e..512adf0aa5 100644
 --- a/third_party/ffmpeg/libavutil/autorename_libavutil_float_dsp.c
 +++ b/third_party/ffmpeg/libavutil/autorename_libavutil_float_dsp.c
 @@ -1,2 +1,2 @@
--// Automatically generated on Mon Mar 17 21:37:20 2025. See crbug.com/495833.
-+// Automatically generated on Wed May 28 20:17:45 2025. See crbug.com/495833.
+-// Automatically generated on Thu May  1 06:11:29 2025. See crbug.com/495833.
++// Automatically generated on Wed Jun 25 21:37:38 2025. See crbug.com/495833.
  #include "float_dsp.c"
 diff --git a/third_party/ffmpeg/libavutil/autorename_libavutil_imgutils.c b/third_party/ffmpeg/libavutil/autorename_libavutil_imgutils.c
-index 738bf4a3fc..d43cc0b563 100644
+index 48e6feebe9..15c6e47947 100644
 --- a/third_party/ffmpeg/libavutil/autorename_libavutil_imgutils.c
 +++ b/third_party/ffmpeg/libavutil/autorename_libavutil_imgutils.c
 @@ -1,2 +1,2 @@
--// Automatically generated on Mon Mar 17 21:37:20 2025. See crbug.com/495833.
-+// Automatically generated on Wed May 28 20:17:45 2025. See crbug.com/495833.
+-// Automatically generated on Thu May  1 06:11:29 2025. See crbug.com/495833.
++// Automatically generated on Wed Jun 25 21:37:38 2025. See crbug.com/495833.
  #include "imgutils.c"
 diff --git a/third_party/ffmpeg/libavutil/autorename_libavutil_tx_float.c b/third_party/ffmpeg/libavutil/autorename_libavutil_tx_float.c
-index eb4b3f90f8..16659a41b7 100644
+index 7e31eb4f79..b3492b52d2 100644
 --- a/third_party/ffmpeg/libavutil/autorename_libavutil_tx_float.c
 +++ b/third_party/ffmpeg/libavutil/autorename_libavutil_tx_float.c
 @@ -1,2 +1,2 @@
--// Automatically generated on Mon Mar 17 21:37:20 2025. See crbug.com/495833.
-+// Automatically generated on Wed May 28 20:17:45 2025. See crbug.com/495833.
+-// Automatically generated on Thu May  1 06:11:29 2025. See crbug.com/495833.
++// Automatically generated on Wed Jun 25 21:37:38 2025. See crbug.com/495833.
  #include "tx_float.c"
 diff --git a/third_party/ffmpeg/libavutil/autorename_libavutil_utils.c b/third_party/ffmpeg/libavutil/autorename_libavutil_utils.c
-index 8c8102cb36..3607878dd1 100644
+index 9d7ab87ff0..0b2580f966 100644
 --- a/third_party/ffmpeg/libavutil/autorename_libavutil_utils.c
 +++ b/third_party/ffmpeg/libavutil/autorename_libavutil_utils.c
 @@ -1,2 +1,2 @@
--// Automatically generated on Mon Mar 17 21:37:20 2025. See crbug.com/495833.
-+// Automatically generated on Wed May 28 20:17:45 2025. See crbug.com/495833.
+-// Automatically generated on Thu May  1 06:11:29 2025. See crbug.com/495833.
++// Automatically generated on Wed Jun 25 21:37:38 2025. See crbug.com/495833.
  #include "utils.c"
 diff --git a/third_party/ffmpeg/libavutil/autorename_libavutil_version.c b/third_party/ffmpeg/libavutil/autorename_libavutil_version.c
-index f6b2d9f67f..3caec3ee46 100644
+index eba53181c0..a1fcec8c1a 100644
 --- a/third_party/ffmpeg/libavutil/autorename_libavutil_version.c
 +++ b/third_party/ffmpeg/libavutil/autorename_libavutil_version.c
 @@ -1,2 +1,2 @@
--// Automatically generated on Mon Mar 17 21:37:20 2025. See crbug.com/495833.
-+// Automatically generated on Wed May 28 20:17:45 2025. See crbug.com/495833.
+-// Automatically generated on Thu May  1 06:11:29 2025. See crbug.com/495833.
++// Automatically generated on Wed Jun 25 21:37:38 2025. See crbug.com/495833.
  #include "version.c"
 diff --git a/third_party/ffmpeg/libavutil/x86/autorename_libavutil_x86_cpu.c b/third_party/ffmpeg/libavutil/x86/autorename_libavutil_x86_cpu.c
-index e810dd6d3c..d33d9e352b 100644
+index eeb0e03292..7073eaf2f7 100644
 --- a/third_party/ffmpeg/libavutil/x86/autorename_libavutil_x86_cpu.c
 +++ b/third_party/ffmpeg/libavutil/x86/autorename_libavutil_x86_cpu.c
 @@ -1,2 +1,2 @@
--// Automatically generated on Mon Mar 17 21:37:20 2025. See crbug.com/495833.
-+// Automatically generated on Wed May 28 20:17:45 2025. See crbug.com/495833.
+-// Automatically generated on Thu May  1 06:11:29 2025. See crbug.com/495833.
++// Automatically generated on Wed Jun 25 21:37:38 2025. See crbug.com/495833.
  #include "cpu.c"
 diff --git a/third_party/ffmpeg/libavutil/x86/autorename_libavutil_x86_float_dsp_init.c b/third_party/ffmpeg/libavutil/x86/autorename_libavutil_x86_float_dsp_init.c
-new file mode 100644
-index 0000000000..5ef88a7c31
---- /dev/null
+index afd4877ba4..90e5bfb261 100644
+--- a/third_party/ffmpeg/libavutil/x86/autorename_libavutil_x86_float_dsp_init.c
 +++ b/third_party/ffmpeg/libavutil/x86/autorename_libavutil_x86_float_dsp_init.c
-@@ -0,0 +1,2 @@
-+// Automatically generated on Wed May 28 20:17:45 2025. See crbug.com/495833.
-+#include "float_dsp_init.c"
+@@ -1,2 +1,2 @@
+-// Automatically generated on Thu May  1 06:11:29 2025. See crbug.com/495833.
++// Automatically generated on Wed Jun 25 21:37:38 2025. See crbug.com/495833.
+ #include "float_dsp_init.c"
 diff --git a/third_party/ffmpeg/libavutil/x86/autorename_libavutil_x86_tx_float_init.c b/third_party/ffmpeg/libavutil/x86/autorename_libavutil_x86_tx_float_init.c
-index 8fecd67bc6..24cad8a12c 100644
+index 6373593f65..d655fd9965 100644
 --- a/third_party/ffmpeg/libavutil/x86/autorename_libavutil_x86_tx_float_init.c
 +++ b/third_party/ffmpeg/libavutil/x86/autorename_libavutil_x86_tx_float_init.c
 @@ -1,2 +1,2 @@
--// Automatically generated on Mon Mar 17 21:37:20 2025. See crbug.com/495833.
-+// Automatically generated on Wed May 28 20:17:45 2025. See crbug.com/495833.
+-// Automatically generated on Thu May  1 06:11:29 2025. See crbug.com/495833.
++// Automatically generated on Wed Jun 25 21:37:38 2025. See crbug.com/495833.
  #include "tx_float_init.c"
 -- 
 2.49.0

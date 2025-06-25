@@ -1,4 +1,4 @@
-From 1dc4d35f9646d14c7729fd5ba24b55eaa05bf252 Mon Sep 17 00:00:00 2001
+From f331d10c6a822a1d519e821695404866ecd77619 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Tue, 20 Jul 2021 14:18:31 -0500
 Subject: [PATCH] Enable support for libfdk-aac and OpenH264
