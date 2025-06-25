@@ -1,4 +1,4 @@
-From 2a817adff3b66cb7a129db7b7cf1ae389742b300 Mon Sep 17 00:00:00 2001
+From 3de88d34dcf1facad06fdf44491f02cff16e8a0a Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Wed, 31 Aug 2022 10:09:01 -0500
 Subject: [PATCH] Clang build script: Don't build against the sysroot
@@ -8,7 +8,7 @@ Subject: [PATCH] Clang build script: Don't build against the sysroot
  1 file changed, 6 insertions(+), 6 deletions(-)
 
 diff --git a/tools/clang/scripts/build.py b/tools/clang/scripts/build.py
-index b96a8bd0bab3a..f40a692f35533 100755
+index 7547aa3d102ba..cfea7aa0ab1d6 100755
 --- a/tools/clang/scripts/build.py
 +++ b/tools/clang/scripts/build.py
 @@ -814,7 +814,7 @@ def main():

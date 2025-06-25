@@ -1,4 +1,4 @@
-From f1797b54098d4ab96fa173a07d4de49c0c80689d Mon Sep 17 00:00:00 2001
+From 5ed2e52c3d8893d1e080e46b7e86383f32d3311b Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <git@refi64.dev>
 Date: Thu, 16 May 2024 17:01:07 -0500
 Subject: [PATCH] media/ffmpeg: Enable support for libfdk-aac and OpenH264
@@ -9,10 +9,10 @@ Subject: [PATCH] media/ffmpeg: Enable support for libfdk-aac and OpenH264
  2 files changed, 20 insertions(+), 3 deletions(-)
 
 diff --git a/media/ffmpeg/scripts/build_ffmpeg.py b/media/ffmpeg/scripts/build_ffmpeg.py
-index 3661b91740ae0..a451f50d9b8c3 100755
+index 6a0d5f51ba64e..e6116d65839c1 100755
 --- a/media/ffmpeg/scripts/build_ffmpeg.py
 +++ b/media/ffmpeg/scripts/build_ffmpeg.py
-@@ -985,11 +985,27 @@ def ConfigureAndBuild(target_arch, target_os, host_os, host_arch,
+@@ -983,11 +983,27 @@ def ConfigureAndBuild(target_arch, target_os, host_os, host_arch,
                  '--ar=cygwin-wrapper lib',
              ])
  

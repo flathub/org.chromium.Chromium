@@ -1,4 +1,4 @@
-From 4998ce6a24800e0bab5aae64c17c613240f685fc Mon Sep 17 00:00:00 2001
+From b89b93ae82136b8c76cc738be6c80782dec0a72c Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Tue, 19 Jan 2021 15:41:16 -0600
 Subject: [PATCH] Enable accelerated mjpeg decode on Linux
@@ -11,10 +11,10 @@ Subject: [PATCH] Enable accelerated mjpeg decode on Linux
  4 files changed, 17 insertions(+), 9 deletions(-)
 
 diff --git a/chrome/browser/about_flags.cc b/chrome/browser/about_flags.cc
-index f70ad7d822c4a..7e8f140d8e44f 100644
+index 54314781f24a3..0a114ba44d67f 100644
 --- a/chrome/browser/about_flags.cc
 +++ b/chrome/browser/about_flags.cc
-@@ -5773,10 +5773,10 @@ const FeatureEntry kFeatureEntries[] = {
+@@ -5864,10 +5864,10 @@ const FeatureEntry kFeatureEntries[] = {
  #endif
  #endif  // BUILDFLAG(IS_ANDROID)
  #endif  // ENABLE_VR
@@ -28,10 +28,10 @@ index f70ad7d822c4a..7e8f140d8e44f 100644
  #endif  // BUILDFLAG(IS_CHROMEOS)
      {"system-keyboard-lock", flag_descriptions::kSystemKeyboardLockName,
 diff --git a/chrome/browser/flag_descriptions.cc b/chrome/browser/flag_descriptions.cc
-index bf606395029fc..f66f8a2281f5d 100644
+index e5ce52737c7f7..f137b116bb6ab 100644
 --- a/chrome/browser/flag_descriptions.cc
 +++ b/chrome/browser/flag_descriptions.cc
-@@ -5973,9 +5973,7 @@ const char kUseAngleDefault[] = "Default";
+@@ -6184,9 +6184,7 @@ const char kUseAngleDefault[] = "Default";
  
  #endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_ANDROID)
  
@@ -42,7 +42,7 @@ index bf606395029fc..f66f8a2281f5d 100644
  
  const char kAcceleratedMjpegDecodeName[] =
      "Hardware-accelerated mjpeg decode for captured frame";
-@@ -5983,6 +5981,12 @@ const char kAcceleratedMjpegDecodeDescription[] =
+@@ -6194,6 +6192,12 @@ const char kAcceleratedMjpegDecodeDescription[] =
      "Enable hardware-accelerated MJPEG decode for captured frame where "
      "available.";
  
@@ -56,10 +56,10 @@ index bf606395029fc..f66f8a2281f5d 100644
  const char kAccessibilityBounceKeysDescription[] =
      "Enables accessibility settings for bounce keys, which ignores quickly "
 diff --git a/chrome/browser/flag_descriptions.h b/chrome/browser/flag_descriptions.h
-index 96cecef7d6c7c..0a7865f6c7152 100644
+index 9afb760cb9e85..de7f3a508e3d5 100644
 --- a/chrome/browser/flag_descriptions.h
 +++ b/chrome/browser/flag_descriptions.h
-@@ -3514,13 +3514,17 @@ extern const char kUseAngleDefault[];
+@@ -3637,13 +3637,17 @@ extern const char kUseAngleDefault[];
  
  #endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_ANDROID)
  
@@ -81,10 +81,10 @@ index 96cecef7d6c7c..0a7865f6c7152 100644
  extern const char kAccessibilityBounceKeysDescription[];
  
 diff --git a/media/base/media_switches.cc b/media/base/media_switches.cc
-index c3a25d502d938..0cd0f1b893264 100644
+index 7974b208eec76..ff85e187cafad 100644
 --- a/media/base/media_switches.cc
 +++ b/media/base/media_switches.cc
-@@ -1783,7 +1783,7 @@ bool IsVideoCaptureAcceleratedJpegDecodingEnabled() {
+@@ -1796,7 +1796,7 @@ bool IsVideoCaptureAcceleratedJpegDecodingEnabled() {
            switches::kUseFakeMjpegDecodeAccelerator)) {
      return true;
    }
