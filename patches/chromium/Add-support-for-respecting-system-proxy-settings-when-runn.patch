@@ -1,4 +1,4 @@
-From 25f67d8b1cc7780a0a889e1453ec93da5bbc35a8 Mon Sep 17 00:00:00 2001
+From 74bafb7c2b27c6c6f1437d449f9eeb57bafbcd6d Mon Sep 17 00:00:00 2001
 From: Andre Moreira Magalhaes <andre.magalhaes@endlessos.org>
 Date: Thu, 17 Dec 2020 19:05:10 -0300
 Subject: [PATCH] Add support for respecting system proxy settings when running
