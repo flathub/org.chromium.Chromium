@@ -1,4 +1,4 @@
-From eba36db8e88fc449eb9f290a107376cb295f2490 Mon Sep 17 00:00:00 2001
+From 23a1dfe7f088754ccc9f12b95b4c6be0f6ba8f01 Mon Sep 17 00:00:00 2001
 From: "re:fi.64" <hello@refi64.dev>
 Date: Wed, 28 May 2025 16:41:30 -0500
 Subject: [PATCH] build: Only check rustc_revision when using Chromium's Rust

@@ -1,4 +1,4 @@
-From 5ddffa0f9c66990dcf48d18680fef284a1e86466 Mon Sep 17 00:00:00 2001
+From f817510963ad30e81152764175756f836f4272d6 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <git@refi64.dev>
 Date: Thu, 16 May 2024 17:02:06 -0500
 Subject: [PATCH] media/ffmpeg: Don't fail cross-compilation on unsupported
@@ -9,7 +9,7 @@ Subject: [PATCH] media/ffmpeg: Don't fail cross-compilation on unsupported
  1 file changed, 4 insertions(+), 4 deletions(-)
 
 diff --git a/media/ffmpeg/scripts/build_ffmpeg.py b/media/ffmpeg/scripts/build_ffmpeg.py
-index e6116d65839c1..4fe71546bbd11 100755
+index 6a0d5f51ba64e..04ecf3a87e737 100755
 --- a/media/ffmpeg/scripts/build_ffmpeg.py
 +++ b/media/ffmpeg/scripts/build_ffmpeg.py
 @@ -604,10 +604,10 @@ def main(argv):

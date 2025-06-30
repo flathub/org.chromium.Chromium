@@ -199,7 +199,6 @@ modules:
           type: chromium
           component: llvm-git
       - patches/chromium/_sources.json
-      - patches/ffmpeg/_sources.json
       # XXX: this patch file is standalone because it's not integrated with the
       # patch set tooling used for main Chromium & FFmpeg.
       - type: patch
