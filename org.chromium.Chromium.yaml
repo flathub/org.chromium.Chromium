@@ -28,6 +28,10 @@ finish-args:
   - --talk-name=org.kde.kwalletd5
   - --talk-name=org.kde.kwalletd6
   - --talk-name=org.gnome.SessionManager
+  - --talk-name=org.gnome.ScreenSaver
+  - --talk-name=org.cinnamon.ScreenSaver
+  - --talk-name=org.mate.ScreenSaver
+  - --talk-name=org.xfce.ScreenSaver
   - --own-name=org.mpris.MediaPlayer2.chromium.*
 
 add-extensions:
