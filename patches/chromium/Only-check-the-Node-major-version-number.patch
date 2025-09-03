@@ -1,4 +1,4 @@
-From c49091671881dbeb9663951d6027d6ad86c3155a Mon Sep 17 00:00:00 2001
+From 863dadda52cf61a9369391c4f9d80ee7e0bb59f1 Mon Sep 17 00:00:00 2001
 From: "re:fi.64" <hello@refi64.dev>
 Date: Wed, 30 Apr 2025 10:03:07 -0500
 Subject: [PATCH] Only check the Node major version number

@@ -1,4 +1,4 @@
-From 1bdd0f943cd7b0bf246020683cdab5851bf19374 Mon Sep 17 00:00:00 2001
+From 0cf253bc64fef0f664d2f5bf7f8f5348f1359526 Mon Sep 17 00:00:00 2001
 From: Mario Sanchez Prada <mario@endlessm.com>
 Date: Tue, 25 Oct 2016 16:57:00 +0000
 Subject: [PATCH] ffmpeg: Don't lie about AAC and H264 decoders when not
