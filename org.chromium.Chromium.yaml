@@ -68,28 +68,28 @@ sdk-extensions:
 
 modules:
   - name: pcsc-lite
+    buildsystem: meson
     config-opts:
-      - --disable-libudev
-      - --disable-libsystemd
-      - --without-systemdsystemunitdir
-      - --disable-serial
-      - --disable-usb
-      - --disable-documentation
+      - -Dlibudev=false
+      - -Dlibsystemd=false
+      - -Dserial=false
+      - -Dusb=false
+      - -Dpolkit=false
     post-install:
       - rm /app/sbin/pcscd
       - rmdir /app/sbin || true
     sources:
       - type: archive
-        url: https://github.com/LudovicRousseau/PCSC/archive/refs/tags/1.9.9.tar.gz
-        sha256: 856a1daed9a5ae1ac265c75ce9f81743e66a972e5be5a1d3a2196ed23f75ea26
-
+        url: https://pcsclite.apdu.fr/files/pcsc-lite-2.3.2.tar.xz
+        sha256: 5ac5091d444653c5f63add9c6c39a777c11c5f3513491639c0f3385ccb41496d
+  
   - name: opensc
     cleanup:
       - /share/applications/org.opensc.notify.desktop
     sources:
       - type: archive
-        url: https://github.com/OpenSC/OpenSC/releases/download/0.23.0/opensc-0.23.0.tar.gz
-        sha256: a4844a6ea03a522ecf35e49659716dacb6be03f7c010a1a583aaf3eb915ed2e0
+        url: https://github.com/OpenSC/OpenSC/releases/download/0.26.1/opensc-0.26.1.tar.gz
+        sha256: f16291a031d86e570394762e9f35eaf2fcbc2337a49910f3feae42d54e1688cb
 
   - name: readelf-symlink
     only-arches: [aarch64]
