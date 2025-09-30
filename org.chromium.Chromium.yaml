@@ -168,8 +168,8 @@ modules:
           - rm -rf third_party/llvm-build
           - rm -rf third_party/rust-toolchain
       - type: archive
-        url: https://commondatastorage.googleapis.com/chromium-browser-clang/Linux_x64/clang-llvmorg-21-init-16348-gbd809ffb-15.tar.xz
-        sha256: b448a78b42740352a37b458115a9482f213097bbf28f1f839e72cab829bdfa6d
+        url: https://commondatastorage.googleapis.com/chromium-browser-clang/Linux_x64/clang-llvmorg-21-init-16348-gbd809ffb-17.tar.xz
+        sha256: a9f5af449672a239366199c17441427c2c4433a120cace9ffd32397e15224c64
         dest: third_party/llvm-build/Release+Asserts
         strip-components: 0
         only-arches: [x86_64]
