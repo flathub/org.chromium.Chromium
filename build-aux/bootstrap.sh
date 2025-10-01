@@ -81,6 +81,7 @@ tools/gn/bootstrap/bootstrap.py -v --no-clean --gn-gen-args='
     rustc_version="'"$(/app/lib/sdk/rust-nightly/bin/rustc -V)"'"
     rust_bindgen_root="'$PWD/bindgen'"
     chrome_pgo_phase='$chrome_pgo_phase'
+    use_clang_modules=false
 '
 mkdir -p out/ReleaseFree
 cp out/Release{,Free}/args.gn
