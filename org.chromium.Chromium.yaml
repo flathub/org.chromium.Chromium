@@ -168,8 +168,8 @@ modules:
           - rm -rf third_party/llvm-build
           - rm -rf third_party/rust-toolchain
       - type: archive
-        url: https://commondatastorage.googleapis.com/chromium-browser-clang/Linux_x64/clang-llvmorg-21-init-16348-gbd809ffb-18.tar.xz
-        sha256: 8a9d29696aa764728d0527eb069154c6d3e69a25b86cdea87a653c44987c56b1
+        url: https://commondatastorage.googleapis.com/chromium-browser-clang/Linux_x64/clang-llvmorg-22-init-8940-g4d4cb757-4.tar.xz
+        sha256: 0198b53300f4438777ff17b69aaa6489f44d004881cf0e998d37a77b3895751b
         dest: third_party/llvm-build/Release+Asserts
         strip-components: 0
         only-arches: [x86_64]
@@ -192,7 +192,7 @@ modules:
         only-arches: [aarch64]
       - type: git
         url: https://chromium.googlesource.com/external/github.com/llvm/llvm-project
-        commit: llvmorg-21-init-16348-gbd809ffb
+        commit: llvmorg-22-init-8940-g4d4cb757
         dest: third_party/llvm
         only-arches: [aarch64]
         x-checker-data:
