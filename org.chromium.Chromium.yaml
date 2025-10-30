@@ -94,8 +94,8 @@ modules:
         only-arches:
           - aarch64
         dest: rust
-        url: https://static.rust-lang.org/dist/2025-06-23/rust-nightly-aarch64-unknown-linux-gnu.tar.xz
-        sha256: 5749da11e45d7c492ac1a13d1463388af4153529c0ba3b81a244dcc7bd5b9d3d
+        url: https://static.rust-lang.org/dist/2025-10-01/rust-nightly-aarch64-unknown-linux-gnu.tar.xz
+        sha256: 8d36ba12661ad0db2bec3ccda25013f24b62f248b77d13950b9fcd8359e64540
         # x-checker-data:
         #  type: rust
         #  package: rust
@@ -105,8 +105,8 @@ modules:
         only-arches:
           - x86_64
         dest: rust
-        url: https://static.rust-lang.org/dist/2025-06-23/rust-nightly-x86_64-unknown-linux-gnu.tar.xz
-        sha256: bf3491847e1d999160ae8b169438d248e889a2c8a7e849cd00e7d306b9065ba3
+        url: https://static.rust-lang.org/dist/2025-10-01/rust-nightly-x86_64-unknown-linux-gnu.tar.xz
+        sha256: 642586a63c049b5d268abc76bb638953dfedae0c9cfe806188316a038ccb5f47
         # x-checker-data:
         #  type: rust
         #  package: rust
@@ -114,8 +114,8 @@ modules:
         #  target: x86_64-unknown-linux-gnu
       - type: archive
         dest: rust-src
-        url: https://static.rust-lang.org/dist/2025-06-23/rust-src-nightly.tar.xz
-        sha256: 5d4a078bfbca10cb74b6116c7c2382d9672784b9e99c0efb56c4860b8af3575f
+        url: https://static.rust-lang.org/dist/2025-10-01/rust-src-nightly.tar.xz
+        sha256: 97803be59f1a0b828ac62ff1f526229e645bc08ae2e2e7f87461faf9ff28fabc
         # x-checker-data:
         #  type: rust
         #  package: rust-src
@@ -157,8 +157,8 @@ modules:
       - ./install.sh
     sources:
       - type: archive
-        url: https://commondatastorage.googleapis.com/chromium-browser-official/chromium-142.0.7444.59.tar.xz
-        sha256: eaf6a4941d117b0ce0baaae0ad0111b2ad456be4e3abcdd05ec31d7046cdc192
+        url: https://github.com/chromium-linux-tarballs/chromium-tarballs/releases/download/142.0.7444.59/chromium-142.0.7444.59-linux.tar.xz
+        sha256: 6663d346462a1785721c8358eb5c3c952ae8273e4e95835d0a567285d1cab494
         x-checker-data:
           type: chromium
           component: chromium
