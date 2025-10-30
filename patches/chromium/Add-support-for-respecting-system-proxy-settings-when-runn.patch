@@ -1,4 +1,4 @@
-From 4ee698e275bd63fd84f00a55db8a66c19e05fd78 Mon Sep 17 00:00:00 2001
+From caa9bb36cbdd5a21d6bebad78b9cdb8860e6bc71 Mon Sep 17 00:00:00 2001
 From: Andre Moreira Magalhaes <andre.magalhaes@endlessos.org>
 Date: Thu, 17 Dec 2020 19:05:10 -0300
 Subject: [PATCH] Add support for respecting system proxy settings when running
@@ -54,10 +54,10 @@ Closes https://github.com/flathub/org.chromium.Chromium/issues/36
  create mode 100644 net/proxy_resolution/proxy_resolver_linux.h
 
 diff --git a/chrome/app/generated_resources.grd b/chrome/app/generated_resources.grd
-index e7ad59edf72f6..14042b2886e59 100644
+index 873f67b36de4d..95e10835256e0 100644
 --- a/chrome/app/generated_resources.grd
 +++ b/chrome/app/generated_resources.grd
-@@ -15824,6 +15824,12 @@ Please help our engineers fix this problem. Tell us what happened right before y
+@@ -16033,6 +16033,12 @@ Please help our engineers fix this problem. Tell us what happened right before y
  
            &lt;p&gt;But you can still configure via the command line.  Please see &lt;code&gt;man <ph name="PRODUCT_BINARY_NAME">$2<ex>google-chrome</ex></ph>&lt;/code&gt; for more information on flags and environment variables.&lt;/p&gt;
          </message>
@@ -71,10 +71,10 @@ index e7ad59edf72f6..14042b2886e59 100644
  
        <message name="IDS_IMAGE_FILES" desc="The description of the image file extensions in the select file dialog.">
 diff --git a/chrome/browser/net/system_network_context_manager.cc b/chrome/browser/net/system_network_context_manager.cc
-index 7a8dbf6366429..584a5b339dc33 100644
+index 80adf3f7b5f11..8a2ecb154b069 100644
 --- a/chrome/browser/net/system_network_context_manager.cc
 +++ b/chrome/browser/net/system_network_context_manager.cc
-@@ -101,6 +101,10 @@
+@@ -97,6 +97,10 @@
  #include "chrome/browser/browser_process_platform_part.h"
  #endif  // BUILDFLAG(IS_CHROMEOS)
  
@@ -85,7 +85,7 @@ index 7a8dbf6366429..584a5b339dc33 100644
  #if BUILDFLAG(ENABLE_EXTENSIONS)
  #include "extensions/common/constants.h"
  #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
-@@ -954,7 +958,13 @@ void SystemNetworkContextManager::ConfigureDefaultNetworkContextParams(
+@@ -948,7 +952,13 @@ void SystemNetworkContextManager::ConfigureDefaultNetworkContextParams(
    // or if it does work, now.
    // Should be possible now that a private isolate is used.
    // http://crbug.com/474654
@@ -134,10 +134,10 @@ index 10b1c4997f5d7..59c08c77e3b99 100644
                                  base::ASCIIToUTF16(binary.BaseName().value())));
    AppendFooter(&data);
 diff --git a/net/BUILD.gn b/net/BUILD.gn
-index 5af55015bd1aa..3284cf1f3cfa4 100644
+index 6975ed49b24ce..c4ae19c42ed58 100644
 --- a/net/BUILD.gn
 +++ b/net/BUILD.gn
-@@ -1353,6 +1353,8 @@ component("net") {
+@@ -1373,6 +1373,8 @@ component("net") {
      sources += [
        "base/address_map_cache_linux.cc",
        "base/address_map_cache_linux.h",
@@ -146,7 +146,7 @@ index 5af55015bd1aa..3284cf1f3cfa4 100644
      ]
    }
  
-@@ -1856,6 +1858,7 @@ source_set("net_deps") {
+@@ -1881,6 +1883,7 @@ source_set("net_deps") {
  
    if (use_gio) {
      public_configs += [ "//build/linux:gio_config" ]
@@ -155,7 +155,7 @@ index 5af55015bd1aa..3284cf1f3cfa4 100644
  
    if (is_android) {
 diff --git a/net/proxy_resolution/configured_proxy_resolution_service.cc b/net/proxy_resolution/configured_proxy_resolution_service.cc
-index 82c6860602355..b21e100d6674a 100644
+index ab075a96d87e9..b3b7fb223e6a9 100644
 --- a/net/proxy_resolution/configured_proxy_resolution_service.cc
 +++ b/net/proxy_resolution/configured_proxy_resolution_service.cc
 @@ -46,6 +46,8 @@
@@ -185,7 +185,7 @@ index 82c6860602355..b21e100d6674a 100644
  #else
      return false;
 diff --git a/net/proxy_resolution/proxy_config_service_linux.cc b/net/proxy_resolution/proxy_config_service_linux.cc
-index 6fb562a1e11e8..3c4091137339d 100644
+index 5d9b53b38afc7..6243c448f1289 100644
 --- a/net/proxy_resolution/proxy_config_service_linux.cc
 +++ b/net/proxy_resolution/proxy_config_service_linux.cc
 @@ -41,6 +41,7 @@
@@ -381,5 +381,5 @@ index 0000000000000..7ae45eeae1a43
 +
 +#endif  // NET_PROXY_RESOLUTION_PROXY_RESOLVER_LINUX_H_
 -- 
-2.49.0
+2.51.0
 
