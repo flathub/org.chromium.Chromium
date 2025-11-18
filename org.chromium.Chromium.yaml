@@ -157,8 +157,8 @@ modules:
       - ./install.sh
     sources:
       - type: archive
-        url: https://github.com/chromium-linux-tarballs/chromium-tarballs/releases/download/142.0.7444.162/chromium-142.0.7444.162-linux.tar.xz
-        sha256: 84ea88b8f90bafbcc7516279510608e781e04096ebec8b978c3b968709484d16
+        url: https://github.com/chromium-linux-tarballs/chromium-tarballs/releases/download/142.0.7444.175/chromium-142.0.7444.175-linux.tar.xz
+        sha256: d1d2e4a0b8c6fcd824efd02cca2e9dc2da425418291299dbc0e06ef5ae878a60
         x-checker-data:
           type: chromium
           component: chromium
