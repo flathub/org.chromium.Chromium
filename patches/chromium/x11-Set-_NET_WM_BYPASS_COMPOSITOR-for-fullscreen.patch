@@ -1,4 +1,4 @@
-From 45e155f8c7555f4b851eca1a289765831a281461 Mon Sep 17 00:00:00 2001
+From 076b1276c5bac61f581c70e85da4c85dbbb3d9e9 Mon Sep 17 00:00:00 2001
 From: Daniel Drake <drake@endlessm.com>
 Date: Fri, 3 Jul 2015 14:59:24 -0600
 Subject: [PATCH] x11: Set _NET_WM_BYPASS_COMPOSITOR for fullscreen
@@ -48,5 +48,5 @@ index 654d43efef1dc..26339d0c470dc 100644
    bool IsTargetedBy(const x11::Event& xev) const;
    void HandleEvent(const x11::Event& xev);
 -- 
-2.51.0
+2.51.2
 

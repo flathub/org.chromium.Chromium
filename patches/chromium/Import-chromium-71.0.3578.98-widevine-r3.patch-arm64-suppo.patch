@@ -1,4 +1,4 @@
-From 610e5c24f24141c5d9e25756f382a9bfdffb1088 Mon Sep 17 00:00:00 2001
+From dfec7222b7e313f504abc5a2d540dc98128e3927 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Tue, 17 Nov 2020 22:57:29 -0600
 Subject: [PATCH] Import chromium-71.0.3578.98-widevine-r3.patch + arm64
@@ -24,5 +24,5 @@ index e31de0a5528cf..0b8a00a63f55a 100644
      (target_os == "win" &&
       (target_cpu == "x86" || target_cpu == "x64" || target_cpu == "arm64"))
 -- 
-2.51.0
+2.51.2
 

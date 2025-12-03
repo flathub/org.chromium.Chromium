@@ -1,4 +1,4 @@
-From 477d5bdcd01dea7265abed17987a54c35cbdcd42 Mon Sep 17 00:00:00 2001
+From c82dcae326090d3b7e31694a7e229f536ead56b7 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Tue, 17 Mar 2020 13:18:27 -0500
 Subject: [PATCH] flatpak: Add initial sandbox support
@@ -42,10 +42,10 @@ index 22985d0edf211..62631942103f0 100644
  /.externalToolBuilders/
  /.settings/
 diff --git a/base/threading/thread_restrictions.h b/base/threading/thread_restrictions.h
-index 71850795591e1..0bf1b7e23976c 100644
+index 7739b7379ba67..01d99a3ac5772 100644
 --- a/base/threading/thread_restrictions.h
 +++ b/base/threading/thread_restrictions.h
-@@ -409,6 +409,9 @@ class ScopedAllowThreadJoinForWebRtcTransport;
+@@ -410,6 +410,9 @@ class ScopedAllowThreadJoinForWebRtcTransport;
  namespace rlz_lib {
  class FinancialPing;
  }
@@ -55,7 +55,7 @@ index 71850795591e1..0bf1b7e23976c 100644
  namespace service_manager {
  class ServiceProcessLauncher;
  }
-@@ -640,6 +643,7 @@ class BASE_EXPORT ScopedAllowBlocking {
+@@ -641,6 +644,7 @@ class BASE_EXPORT ScopedAllowBlocking {
    friend class remoting::
        ScopedBypassIOThreadRestrictions;  // http://crbug.com/1144161
    friend class remoting::ScopedAllowBlockingForCrashReporting;
@@ -63,7 +63,7 @@ index 71850795591e1..0bf1b7e23976c 100644
    friend class ui::DrmDisplayHostManager;
    friend class ui::ScopedAllowBlockingForGbmSurface;
    friend class ui::SelectFileDialogLinux;
-@@ -779,6 +783,7 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitives {
+@@ -780,6 +784,7 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitives {
    friend class rlz_lib::FinancialPing;
    friend class shell_integration_linux::
        LaunchXdgUtilityScopedAllowBaseSyncPrimitives;
@@ -125,7 +125,7 @@ index 1174a704b8126..e7fd738b705fb 100644
                       status & sandbox::policy::SandboxLinux::kNetNS;
    // A second-layer sandbox is also required to be adequately sandboxed.
 diff --git a/content/browser/child_process_host_impl.cc b/content/browser/child_process_host_impl.cc
-index 945d5f5b77c3f..52b93d13acce0 100644
+index 685af654e0832..cb2d7fb0966d1 100644
 --- a/content/browser/child_process_host_impl.cc
 +++ b/content/browser/child_process_host_impl.cc
 @@ -37,6 +37,7 @@
@@ -362,10 +362,10 @@ index c7ee91878e6dd..9c2c7a04bd968 100644
                  base::GlobalDescriptors::Descriptor(
                      static_cast<uint32_t>(kSandboxIPCChannel), GetSandboxFD()));
 diff --git a/sandbox/linux/BUILD.gn b/sandbox/linux/BUILD.gn
-index 9ffc44d2ff138..bbc327f01c051 100644
+index 478194aaf43a8..c97710907565e 100644
 --- a/sandbox/linux/BUILD.gn
 +++ b/sandbox/linux/BUILD.gn
-@@ -304,6 +304,10 @@ if (is_linux || is_chromeos) {
+@@ -303,6 +303,10 @@ if (is_linux || is_chromeos) {
  
  component("sandbox_services") {
    sources = [
@@ -376,7 +376,7 @@ index 9ffc44d2ff138..bbc327f01c051 100644
      "services/init_process_reaper.cc",
      "services/init_process_reaper.h",
      "services/proc_util.cc",
-@@ -322,8 +326,10 @@ component("sandbox_services") {
+@@ -321,8 +325,10 @@ component("sandbox_services") {
  
    defines = [ "SANDBOX_IMPLEMENTATION" ]
  
@@ -506,7 +506,7 @@ index 0000000000000..22799eb42f782
 +#endif
 diff --git a/sandbox/linux/services/flatpak_sandbox.cc b/sandbox/linux/services/flatpak_sandbox.cc
 new file mode 100644
-index 0000000000000..b5da5a5801fde
+index 0000000000000..c854f32b185a3
 --- /dev/null
 +++ b/sandbox/linux/services/flatpak_sandbox.cc
 @@ -0,0 +1,576 @@
@@ -756,7 +756,7 @@ index 0000000000000..b5da5a5801fde
 +    options.connection_type = dbus::Bus::PRIVATE;
 +    options.dbus_task_runner = base::SequencedTaskRunner::GetCurrentDefault();
 +
-+    return base::MakeRefCounted<dbus::Bus>(options);
++    return base::MakeRefCounted<dbus::Bus>(std::move(options));
 +  }());
 +
 +  return bus->get();
@@ -1211,10 +1211,10 @@ index 0000000000000..167bbc85945ad
 +
 +#endif  // SANDBOX_LINUX_SERVICES_FLATPAK_SANDBOX_H_
 diff --git a/sandbox/policy/BUILD.gn b/sandbox/policy/BUILD.gn
-index f3434c6215eba..55f8444823a9c 100644
+index 1a3c7c6cf8b15..4c1b121160df6 100644
 --- a/sandbox/policy/BUILD.gn
 +++ b/sandbox/policy/BUILD.gn
-@@ -119,6 +119,9 @@ component("policy") {
+@@ -118,6 +118,9 @@ component("policy") {
        "//sandbox/linux:suid_sandbox_client",
      ]
    }
@@ -1321,5 +1321,5 @@ index 60484255e653b..797f3b9ad6cd8 100644
  }
  
 -- 
-2.51.0
+2.51.2
 

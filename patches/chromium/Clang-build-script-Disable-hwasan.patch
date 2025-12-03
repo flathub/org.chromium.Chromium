@@ -1,4 +1,4 @@
-From ed82497ad2ace7ea5dc85a5b6f92f366e9f58849 Mon Sep 17 00:00:00 2001
+From 21a7d7fa17186b66c85e207a4b3ac58f99cd5540 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Thu, 30 Sep 2021 11:27:43 -0500
 Subject: [PATCH] Clang build script: Disable hwasan
@@ -23,5 +23,5 @@ index 302f8707d11d0..b74703e889fe1 100755
        # targets.
        'COMPILER_RT_DEFAULT_TARGET_ONLY=ON',
 -- 
-2.51.0
+2.51.2
 
