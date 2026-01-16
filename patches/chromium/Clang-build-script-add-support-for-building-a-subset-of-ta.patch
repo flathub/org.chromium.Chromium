@@ -1,4 +1,4 @@
-From e121facc2b000e8e4b7d6e2b26c49a7fd7c172d8 Mon Sep 17 00:00:00 2001
+From 372fcdaceff8dfe64a60d338e7da0f35472fcf56 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <git@refi64.dev>
 Date: Wed, 13 Sep 2023 09:31:07 -0500
 Subject: [PATCH] Clang build script: add support for building a subset of
@@ -9,7 +9,7 @@ Subject: [PATCH] Clang build script: add support for building a subset of
  1 file changed, 4 insertions(+)
 
 diff --git a/tools/clang/scripts/build.py b/tools/clang/scripts/build.py
-index a84b9faefcf7c..37512e42cc48f 100755
+index 7cf8d01da92fc..b641865ffdb44 100755
 --- a/tools/clang/scripts/build.py
 +++ b/tools/clang/scripts/build.py
 @@ -695,6 +695,8 @@ def main():

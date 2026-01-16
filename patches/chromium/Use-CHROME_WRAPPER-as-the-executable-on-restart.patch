@@ -1,4 +1,4 @@
-From 997b437a1ebac129dd541963f72ba475aad76330 Mon Sep 17 00:00:00 2001
+From d34cf74e56ea68dd61d03abad8e7ff4ee30f0bcf Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Wed, 11 Nov 2020 17:13:38 -0600
 Subject: [PATCH] Use CHROME_WRAPPER as the executable on restart

@@ -63,7 +63,7 @@ add-extensions:
 
 sdk-extensions:
   - org.freedesktop.Sdk.Extension.llvm18
-  - org.freedesktop.Sdk.Extension.node22
+  - org.freedesktop.Sdk.Extension.node24
   - org.freedesktop.Sdk.Extension.openjdk21
 
 modules:
@@ -94,8 +94,8 @@ modules:
         only-arches:
           - aarch64
         dest: rust
-        url: https://static.rust-lang.org/dist/2025-10-01/rust-nightly-aarch64-unknown-linux-gnu.tar.xz
-        sha256: 8d36ba12661ad0db2bec3ccda25013f24b62f248b77d13950b9fcd8359e64540
+        url: https://static.rust-lang.org/dist/2025-11-12/rust-nightly-aarch64-unknown-linux-gnu.tar.xz
+        sha256: 8fe829bc73eeb5d70195bb29ce603b865db2fe8ea9e3c1ad6ffb9992831d7418
         # x-checker-data:
         #  type: rust
         #  package: rust
@@ -105,8 +105,8 @@ modules:
         only-arches:
           - x86_64
         dest: rust
-        url: https://static.rust-lang.org/dist/2025-10-01/rust-nightly-x86_64-unknown-linux-gnu.tar.xz
-        sha256: 642586a63c049b5d268abc76bb638953dfedae0c9cfe806188316a038ccb5f47
+        url: https://static.rust-lang.org/dist/2025-11-12/rust-nightly-x86_64-unknown-linux-gnu.tar.xz
+        sha256: 8d780ddd84c5b6f865f0a97b41a02b80969900a556173e84f6d7cfdb2009946b
         # x-checker-data:
         #  type: rust
         #  package: rust
@@ -114,8 +114,8 @@ modules:
         #  target: x86_64-unknown-linux-gnu
       - type: archive
         dest: rust-src
-        url: https://static.rust-lang.org/dist/2025-10-01/rust-src-nightly.tar.xz
-        sha256: 97803be59f1a0b828ac62ff1f526229e645bc08ae2e2e7f87461faf9ff28fabc
+        url: https://static.rust-lang.org/dist/2025-11-12/rust-src-nightly.tar.xz
+        sha256: 85ed07e3cb08fb9be742b4e608215e829608f8392dce454497804dd0d113915b
         # x-checker-data:
         #  type: rust
         #  package: rust-src
@@ -139,10 +139,11 @@ modules:
       - cargo --offline fetch --manifest-path Cargo.toml --verbose
       - cargo --offline build --release --verbose
       - install -Dm 755 target/release/bindgen -t /app/lib/sdk/bindgen/bin
+      - ln -s /app/lib/sdk/rust-nightly/bin/rustfmt /app/lib/sdk/bindgen/bin
     sources:
       - type: git
         url: https://chromium.googlesource.com/external/github.com/rust-lang/rust-bindgen
-        commit: d0e7d6b5b763e93dd38f9ece05230979ede95a0a
+        commit: 2426dd68cd12e0ac022bca18efb9c7d0acd27e12
       - ./generated-sources.bindgen.json
     cleanup:
       - '*'
@@ -177,8 +178,8 @@ modules:
           type: chromium
           component: llvm-prebuilt
       - type: archive
-        url: https://commondatastorage.googleapis.com/chromium-browser-clang/Linux_x64/rust-toolchain-c8f94230282a8e8c1148f3e657f0199aad909228-1-llvmorg-21-init-9266-g09006611.tar.xz
-        sha256: 378c432f7739bb5da11aad7b3a2687f8252565eae5f0dcfc55c39a15382c519c
+        url: https://commondatastorage.googleapis.com/chromium-browser-clang/Linux_x64/rust-toolchain-11339a0ef5ed586bb7ea4f85a9b7287880caac3a-1-llvmorg-22-init-14273-gea10026b.tar.xz
+        sha256: 15cf3019dd864ea64d63e5cf33de1ded76ace4f70cbb224812fccbf03b342096
         dest: third_party/rust-toolchain
         strip-components: 0
         only-arches: [x86_64]
