@@ -1,4 +1,4 @@
-From ae6e7c73c7d9950112f1fcb3201b0d51a15e3286 Mon Sep 17 00:00:00 2001
+From 43421e5bb5f04b2c17cf0ef343b52dc671263501 Mon Sep 17 00:00:00 2001
 From: "re:fi.64" <hello@refi64.dev>
 Date: Wed, 28 May 2025 16:41:30 -0500
 Subject: [PATCH] build: Only check rustc_revision when using Chromium's Rust
@@ -9,10 +9,10 @@ Subject: [PATCH] build: Only check rustc_revision when using Chromium's Rust
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/build/config/compiler/BUILD.gn b/build/config/compiler/BUILD.gn
-index 7f709b518a91a..ec9ad90d5744f 100644
+index c09c9677bd56d..2269ebc60c8af 100644
 --- a/build/config/compiler/BUILD.gn
 +++ b/build/config/compiler/BUILD.gn
-@@ -1789,7 +1789,7 @@ config("clang_revision") {
+@@ -1783,7 +1783,7 @@ config("clang_revision") {
      }
  
      if (toolchain_has_rust && _perform_consistency_checks &&
