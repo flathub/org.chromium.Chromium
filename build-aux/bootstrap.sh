@@ -34,7 +34,7 @@ if [[ -d third_party/llvm-build/Release+Asserts/bin ]]; then
     > third_party/llvm-build/Release+Asserts/cr_build_revision
 else
   python3 tools/clang/scripts/build.py --disable-asserts --pic \
-      --skip-checkout --use-system-cmake --use-system-libxml \
+      --skip-checkout --use-system-libxml \
       --host-cc=/usr/lib/sdk/llvm21/bin/clang \
       --host-cxx=/usr/lib/sdk/llvm21/bin/clang++ \
       --target-triple=$(clang -dumpmachine) \
