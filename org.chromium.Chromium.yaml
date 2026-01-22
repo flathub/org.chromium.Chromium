@@ -1,9 +1,9 @@
 app-id: org.chromium.Chromium
 runtime: org.freedesktop.Platform
-runtime-version: '24.08'
+runtime-version: '25.08'
 sdk: org.freedesktop.Sdk
 base: org.chromium.Chromium.BaseApp
-base-version: '24.08'
+base-version: '25.08'
 command: chromium
 finish-args:
   - --require-version=1.8.2
@@ -62,7 +62,7 @@ add-extensions:
     autodelete: true
 
 sdk-extensions:
-  - org.freedesktop.Sdk.Extension.llvm18
+  - org.freedesktop.Sdk.Extension.llvm21
   - org.freedesktop.Sdk.Extension.node24
   - org.freedesktop.Sdk.Extension.openjdk21
 
