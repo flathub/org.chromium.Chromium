@@ -1,4 +1,4 @@
-From 8c750c2f3649de85adc9dfce87fc9fdc77c1730a Mon Sep 17 00:00:00 2001
+From 1566ec56cab3c5bb4db0f72c62acde4b21dfe63c Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Tue, 19 Jan 2021 15:41:16 -0600
 Subject: [PATCH] Enable accelerated mjpeg decode on Linux
@@ -9,10 +9,10 @@ Subject: [PATCH] Enable accelerated mjpeg decode on Linux
  2 files changed, 3 insertions(+), 3 deletions(-)
 
 diff --git a/chrome/browser/about_flags.cc b/chrome/browser/about_flags.cc
-index 683307e285640..912482c1f30d2 100644
+index 74b1c0a630f63..7c225dc458eaa 100644
 --- a/chrome/browser/about_flags.cc
 +++ b/chrome/browser/about_flags.cc
-@@ -6349,10 +6349,10 @@ const FeatureEntry kFeatureEntries[] = {
+@@ -6398,10 +6398,10 @@ const FeatureEntry kFeatureEntries[] = {
       FEATURE_VALUE_TYPE(device::features::kOpenXrExtendedFeatureSupport)},
  #endif  // BUILDFLAG(IS_ANDROID) && BUILDFLAG(ENABLE_OPENXR)
  #endif  // ENABLE_VR
@@ -39,5 +39,5 @@ index b5962932b87c0..67336d1200401 100644
  #else
    return false;
 -- 
-2.51.2
+2.52.0
 

@@ -1,4 +1,4 @@
-From 531e853ea22f8b2fc58bf46c1d0c11129457e494 Mon Sep 17 00:00:00 2001
+From b1f3776e693afc42a7906bfe09fde63986f883b0 Mon Sep 17 00:00:00 2001
 From: Daniel Drake <drake@endlessm.com>
 Date: Fri, 3 Jul 2015 14:59:24 -0600
 Subject: [PATCH] x11: Set _NET_WM_BYPASS_COMPOSITOR for fullscreen
@@ -10,20 +10,20 @@ This improves performance at full screen.
  2 files changed, 9 insertions(+)
 
 diff --git a/ui/ozone/platform/x11/x11_window.cc b/ui/ozone/platform/x11/x11_window.cc
-index d2a547590a82c..4c2b27212802f 100644
+index 7af34829238f6..37ed1d418f56e 100644
 --- a/ui/ozone/platform/x11/x11_window.cc
 +++ b/ui/ozone/platform/x11/x11_window.cc
 @@ -690,6 +690,8 @@ void X11Window::SetFullscreen(bool fullscreen, int64_t target_display_id) {
    state_ = new_state;
-   SetFullscreen(fullscreen);
+   SetWMStateFullscreen(fullscreen);
  
 +  SetBypassCompositor(fullscreen);
 +
    if (unmaximize_and_remaximize) {
-     Maximize();
-   }
-@@ -1969,6 +1971,12 @@ void X11Window::SetFullscreen(bool fullscreen) {
-                  x11::Atom::None);
+     // Setting the should_maximize_after_map_ same way as it is done in
+     // X11Window::Maximize().
+@@ -1975,6 +1977,12 @@ void X11Window::SetWMStateMaximize(bool maximize) {
+                  x11::GetAtom("_NET_WM_STATE_MAXIMIZED_HORZ"));
  }
  
 +void X11Window::SetBypassCompositor(bool bypass) {
@@ -36,17 +36,17 @@ index d2a547590a82c..4c2b27212802f 100644
    // Focus and stacking order are independent in X11.  Since we cannot guarantee
    // a window is topmost iff it has focus, just use the focus state to determine
 diff --git a/ui/ozone/platform/x11/x11_window.h b/ui/ozone/platform/x11/x11_window.h
-index 654d43efef1dc..26339d0c470dc 100644
+index f744189f0aa26..56bbc86980d5a 100644
 --- a/ui/ozone/platform/x11/x11_window.h
 +++ b/ui/ozone/platform/x11/x11_window.h
-@@ -243,6 +243,7 @@ class X11Window : public PlatformWindow,
-   void CloseXWindow();
+@@ -244,6 +244,7 @@ class X11Window : public PlatformWindow,
    void Map(bool inactive = false);
-   void SetFullscreen(bool fullscreen);
+   void SetWMStateFullscreen(bool fullscreen);
+   void SetWMStateMaximize(bool maximize);
 +  void SetBypassCompositor(bool bypass);
    bool IsActive() const;
    bool IsTargetedBy(const x11::Event& xev) const;
    void HandleEvent(const x11::Event& xev);
 -- 
-2.51.2
+2.52.0
 

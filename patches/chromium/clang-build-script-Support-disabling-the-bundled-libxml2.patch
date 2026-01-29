@@ -1,4 +1,4 @@
-From d03ad9ee88a05edca83c79bb9fcf03ac936a3941 Mon Sep 17 00:00:00 2001
+From e1fd66e156b7a17671e0f3ed35956926c54ff801 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Tue, 1 Mar 2022 19:29:12 -0600
 Subject: [PATCH] clang build script: Support disabling the bundled libxml2
@@ -62,5 +62,5 @@ index 6c4401131d5e6..ce938adf320d9 100755
    if args.with_zstd:
      # Statically link zstd to make lld support zstd compression for debug info.
 -- 
-2.51.2
+2.52.0
 
