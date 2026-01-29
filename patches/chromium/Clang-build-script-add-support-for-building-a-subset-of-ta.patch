@@ -1,4 +1,4 @@
-From 372fcdaceff8dfe64a60d338e7da0f35472fcf56 Mon Sep 17 00:00:00 2001
+From dccce4adcb0ce154664be7a84a4f4ede2ea6cb6a Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <git@refi64.dev>
 Date: Wed, 13 Sep 2023 09:31:07 -0500
 Subject: [PATCH] Clang build script: add support for building a subset of
@@ -31,5 +31,5 @@ index 7cf8d01da92fc..b641865ffdb44 100755
      for arg in runtimes_triples_args[triple]["args"]:
        assert not arg.startswith('-')
 -- 
-2.51.2
+2.52.0
 

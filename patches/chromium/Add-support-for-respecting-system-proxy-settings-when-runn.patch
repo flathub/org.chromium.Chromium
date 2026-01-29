@@ -1,4 +1,4 @@
-From 413c2173e5b99c6e7e6dc51fdb61d46e64b9d783 Mon Sep 17 00:00:00 2001
+From 682c6410637559ecbf1bc07fdd4c91f3e931bf71 Mon Sep 17 00:00:00 2001
 From: Andre Moreira Magalhaes <andre.magalhaes@endlessos.org>
 Date: Thu, 17 Dec 2020 19:05:10 -0300
 Subject: [PATCH] Add support for respecting system proxy settings when running
@@ -381,5 +381,5 @@ index 0000000000000..7ae45eeae1a43
 +
 +#endif  // NET_PROXY_RESOLUTION_PROXY_RESOLVER_LINUX_H_
 -- 
-2.51.2
+2.52.0
 

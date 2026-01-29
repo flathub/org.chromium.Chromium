@@ -1,4 +1,4 @@
-From 54ccee5089721f5d8af9019702f006ac3ff9ab81 Mon Sep 17 00:00:00 2001
+From 6d23e5697c4ad6eb434553d87823854a6db8a2ea Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Tue, 25 Aug 2020 19:26:07 -0500
 Subject: [PATCH] flatpak: Adjust paths for the sandbox
@@ -82,5 +82,5 @@ index 9c4d73b730baa..318d3eef58979 100644
        cur = base::FilePath(
            FILE_PATH_LITERAL("/etc/opt/chrome/native-messaging-hosts"));
 -- 
-2.51.2
+2.52.0
 

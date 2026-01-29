@@ -1,4 +1,4 @@
-From 69ef7f5637c7e75c2055540ce9ecc6544134837f Mon Sep 17 00:00:00 2001
+From 13fe01c5580d0847dc0f4a6d3bc6617c6bdc243d Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Wed, 31 Aug 2022 10:09:01 -0500
 Subject: [PATCH] Clang build script: Don't build against the sysroot
@@ -75,5 +75,5 @@ index ce938adf320d9..7cf8d01da92fc 100755
              'LLVM_INCLUDE_TESTS=OFF',
          ],
 -- 
-2.51.2
+2.52.0
 
