@@ -1,4 +1,4 @@
-From ec2114a3b5378bf8cb27db161aad01006f9e9fa2 Mon Sep 17 00:00:00 2001
+From 3b2cb18e67a1e71a045c90d99a3764969ac484f7 Mon Sep 17 00:00:00 2001
 From: Mario Sanchez Prada <mario@endlessm.com>
 Date: Tue, 25 Oct 2016 16:57:00 +0000
 Subject: [PATCH] ffmpeg: Don't lie about AAC and H264 decoders when not
@@ -148,5 +148,5 @@ index b741b4c2e7885..3f0b8d92b97ed 100644
    CodecSet video_3gpp_codecs(aac);
    video_3gpp_codecs.emplace(H264);
 -- 
-2.51.2
+2.52.0
 
