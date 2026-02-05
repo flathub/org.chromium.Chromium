@@ -82,6 +82,26 @@ modules:
         done
       - touch /app/chromium/extensions/no-mount-stamp
 
+  - name: esbuild
+    buildsystem: simple
+    build-options:
+      strip: false
+      no-debuginfo: true
+    cleanup:
+      - '*'
+    build-commands:
+      - mkdir -p /app/lib/sdk/esbuild
+      - mv bin /app/lib/sdk/esbuild
+    sources:
+      - type: archive
+        url: https://registry.npmjs.org/@esbuild/linux-x64/-/linux-x64-0.25.1.tgz
+        sha256: a3972c20d19545792ba6c6abe564b61c91f66cfa242ff9bffd9e5d59c65452e5
+        only-arches: [x86_64]
+      - type: archive
+        url: https://registry.npmjs.org/@esbuild/linux-arm64/-/linux-arm64-0.25.1.tgz
+        sha256: 70771c9212585cfd1b190465f92dae98d1d3fc4a4fab5cacbef71457ee08e254
+        only-arches: [aarch64]
+
   - name: rust-nightly
     buildsystem: simple
     build-options:
