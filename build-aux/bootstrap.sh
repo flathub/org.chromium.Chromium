@@ -25,6 +25,8 @@ EOF
 fi
 
 ln -sf /usr/bin/ninja third_party/ninja
+ln -sf /app/lib/sdk/esbuild/bin/esbuild \
+  third_party/devtools-frontend/src/third_party/esbuild/esbuild
 
 if [[ -d third_party/llvm-build/Release+Asserts/bin ]]; then
   # The build scripts check that the stamp file is present, so write it out
