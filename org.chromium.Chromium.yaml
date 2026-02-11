@@ -219,11 +219,11 @@ modules:
         x-checker-data:
           type: chromium
           component: llvm-git
+      - type: archive
+        url: https://npm.skia.org/chrome-devtools/@rollup%2frollup-linux-arm64-gnu/-/rollup-linux-arm64-gnu-4.22.4.tgz
+        sha256: 15dacc4a625c90f790c199ebb06e3327baee2f4a2163e1ee13643b0d8c29ac37
+        dest: third_party/devtools-frontend/src/node_modules/@rollup/rollup-linux-arm64-gnu
       - patches/chromium/_sources.json
-      # XXX: this patch file is standalone because it's not integrated with the
-      # patch set tooling used for main Chromium & FFmpeg.
-      - type: patch
-        path: patches/Revert-cppgc-Decommit-pooled-pages-by-default.patch
       - type: file
         path: org.chromium.Chromium.desktop
       - type: file
