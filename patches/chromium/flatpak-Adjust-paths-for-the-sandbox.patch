@@ -1,4 +1,4 @@
-From 6d23e5697c4ad6eb434553d87823854a6db8a2ea Mon Sep 17 00:00:00 2001
+From 8ff8446a6a74d2b73f3a35ed604d6f489c907557 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Tue, 25 Aug 2020 19:26:07 -0500
 Subject: [PATCH] flatpak: Adjust paths for the sandbox
@@ -9,10 +9,10 @@ Subject: [PATCH] flatpak: Adjust paths for the sandbox
  2 files changed, 29 insertions(+), 1 deletion(-)
 
 diff --git a/chrome/common/BUILD.gn b/chrome/common/BUILD.gn
-index 001b9d536abf8..d399dc46a56f2 100644
+index fe0b00acf2dc5..4326a08d7854a 100644
 --- a/chrome/common/BUILD.gn
 +++ b/chrome/common/BUILD.gn
-@@ -611,6 +611,10 @@ static_library("constants") {
+@@ -610,6 +610,10 @@ static_library("constants") {
        "//third_party/widevine/cdm:headers",
      ]
    }
