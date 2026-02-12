@@ -82,6 +82,19 @@ modules:
         done
       - touch /app/chromium/extensions/no-mount-stamp
 
+  - name: cmake
+    buildsystem: cmake-ninja
+    build-options:
+      strip: false
+      no-debuginfo: true
+    sources:
+      - type: archive
+        # https://source.chromium.org/chromium/chromium/src/+/main:tools/clang/scripts/build.py;l=295-305;drc=5bb67b4c751b8750bdef29fccbdebc388bf837b5
+        url: https://github.com/Kitware/CMake/releases/download/v3.26.4/cmake-3.26.4.tar.gz
+        sha256: 313b6880c291bd4fe31c0aa51d6e62659282a521e695f30d5cc0d25abbd5c208
+    cleanup:
+      - '*'
+
   - name: esbuild
     buildsystem: simple
     build-options:
