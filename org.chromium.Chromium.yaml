@@ -168,6 +168,16 @@ modules:
     cleanup:
       - '*'
 
+  - name: cmake
+    buildsystem: cmake-ninja
+    sources:
+      - type: archive
+      # https://chromium.googlesource.com/chromium/src/+/master/tools/clang/scripts/build.py#269
+        url: https://github.com/Kitware/CMake/releases/download/v3.26.4/cmake-3.26.4.tar.gz
+        sha256: 313b6880c291bd4fe31c0aa51d6e62659282a521e695f30d5cc0d25abbd5c208
+    cleanup:
+      - '*'
+
   - name: chromium
     buildsystem: simple
     build-options:
