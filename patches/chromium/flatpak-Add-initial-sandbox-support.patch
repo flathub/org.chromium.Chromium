@@ -1,4 +1,4 @@
-From 73646c8d237c6addebe260b91a313955b9790933 Mon Sep 17 00:00:00 2001
+From 8faa0c39b891b07c24ee5f24fe37338e5d22ec3e Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Tue, 17 Mar 2020 13:18:27 -0500
 Subject: [PATCH] flatpak: Add initial sandbox support
@@ -30,11 +30,11 @@ Subject: [PATCH] flatpak: Add initial sandbox support
  create mode 100644 sandbox/linux/services/flatpak_sandbox.h
 
 diff --git a/.gitignore b/.gitignore
-index 4c61af331b827..b0674d61d7e34 100644
+index 00a75bed03526..6f6edaa214cb7 100644
 --- a/.gitignore
 +++ b/.gitignore
-@@ -76,6 +76,7 @@ vs-chromium-project.txt
- /.android_emulator/
+@@ -78,6 +78,7 @@ vs-chromium-project.txt
+ /.android_emulator_cipd_cache/
  /.clangd/
  /.clangd-index/
 +/.flatpak-builder/
@@ -42,10 +42,10 @@ index 4c61af331b827..b0674d61d7e34 100644
  /.externalToolBuilders/
  /.settings/
 diff --git a/base/threading/thread_restrictions.h b/base/threading/thread_restrictions.h
-index 6f000c21239c8..89a4455b48633 100644
+index b53745dd0a401..ad6fe018f1239 100644
 --- a/base/threading/thread_restrictions.h
 +++ b/base/threading/thread_restrictions.h
-@@ -414,6 +414,9 @@ class ScopedAllowThreadJoinForWebRtcTransport;
+@@ -417,6 +417,9 @@ class ScopedAllowThreadJoinForWebRtcTransport;
  namespace rlz_lib {
  class FinancialPing;
  }
@@ -55,7 +55,7 @@ index 6f000c21239c8..89a4455b48633 100644
  namespace service_manager {
  class ServiceProcessLauncher;
  }
-@@ -649,6 +652,7 @@ class BASE_EXPORT ScopedAllowBlocking {
+@@ -652,6 +655,7 @@ class BASE_EXPORT ScopedAllowBlocking {
    friend class remoting::
        ScopedBypassIOThreadRestrictions;  // http://crbug.com/1144161
    friend class remoting::ScopedAllowBlockingForCrashReporting;
@@ -63,7 +63,7 @@ index 6f000c21239c8..89a4455b48633 100644
    friend class ui::DrmDisplayHostManager;
    friend class ui::ScopedAllowBlockingForGbmSurface;
    friend class ui::SelectFileDialogLinux;
-@@ -791,6 +795,7 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitives {
+@@ -794,6 +798,7 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitives {
    friend class rlz_lib::FinancialPing;
    friend class shell_integration_linux::
        LaunchXdgUtilityScopedAllowBaseSyncPrimitives;
@@ -125,10 +125,10 @@ index 1174a704b8126..e7fd738b705fb 100644
                       status & sandbox::policy::SandboxLinux::kNetNS;
    // A second-layer sandbox is also required to be adequately sandboxed.
 diff --git a/content/browser/child_process_host_impl.cc b/content/browser/child_process_host_impl.cc
-index f539b9a4de3c0..e09770a964ce4 100644
+index 9c2219f03b1af..0cad5118a067d 100644
 --- a/content/browser/child_process_host_impl.cc
 +++ b/content/browser/child_process_host_impl.cc
-@@ -38,6 +38,7 @@
+@@ -37,6 +37,7 @@
  
  #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
  #include "base/linux_util.h"
@@ -136,7 +136,7 @@ index f539b9a4de3c0..e09770a964ce4 100644
  #elif BUILDFLAG(IS_MAC)
  #include "base/apple/foundation_util.h"
  #include "base/feature_list.h"
-@@ -65,7 +66,12 @@ base::FilePath ChildProcessHost::GetChildPath(int flags) {
+@@ -64,7 +65,12 @@ base::FilePath ChildProcessHost::GetChildPath(int flags) {
  #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
    // Use /proc/self/exe rather than our known binary path so updates
    // can't swap out the binary from underneath us.
@@ -151,7 +151,7 @@ index f539b9a4de3c0..e09770a964ce4 100644
    }
  #endif
 diff --git a/content/browser/zygote_host/zygote_host_impl_linux.cc b/content/browser/zygote_host/zygote_host_impl_linux.cc
-index 5707dd93fd5e9..c87e1248171cf 100644
+index e87329429b283..c611f34a2fca7 100644
 --- a/content/browser/zygote_host/zygote_host_impl_linux.cc
 +++ b/content/browser/zygote_host/zygote_host_impl_linux.cc
 @@ -13,6 +13,7 @@
@@ -262,7 +262,7 @@ index 8ef884a7db6f4..f441900dd6343 100644
  
    // This lock protects the |zygote_pids_| set.
 diff --git a/content/zygote/zygote_linux.cc b/content/zygote/zygote_linux.cc
-index 4f0627673cdd6..0cf0417679cc1 100644
+index f157fa1359963..2caede0c7fb06 100644
 --- a/content/zygote/zygote_linux.cc
 +++ b/content/zygote/zygote_linux.cc
 @@ -122,7 +122,7 @@ bool Zygote::ProcessRequests() {
@@ -299,7 +299,7 @@ index 165b758efc899..961afa73f66f5 100644
    // ---------------------------------------------------------------------------
    // Requests from the browser...
 diff --git a/content/zygote/zygote_main_linux.cc b/content/zygote/zygote_main_linux.cc
-index 1e888f424c363..6fd3d5d979923 100644
+index 7565fb0641dc4..d99a94618b72d 100644
 --- a/content/zygote/zygote_main_linux.cc
 +++ b/content/zygote/zygote_main_linux.cc
 @@ -36,6 +36,7 @@
@@ -362,7 +362,7 @@ index 1e888f424c363..6fd3d5d979923 100644
                  base::GlobalDescriptors::Descriptor(
                      static_cast<uint32_t>(kSandboxIPCChannel), GetSandboxFD()));
 diff --git a/sandbox/linux/BUILD.gn b/sandbox/linux/BUILD.gn
-index 478194aaf43a8..c97710907565e 100644
+index 1fe96111cefaa..9b381d90e4e43 100644
 --- a/sandbox/linux/BUILD.gn
 +++ b/sandbox/linux/BUILD.gn
 @@ -303,6 +303,10 @@ if (is_linux || is_chromeos) {
