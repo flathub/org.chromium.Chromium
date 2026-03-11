@@ -51,6 +51,14 @@ else
   ln -s "$PWD/third_party/llvm-build/Release+Asserts/lib" -t bindgen
 fi
 
+rustc_version=$(/app/lib/sdk/rust-nightly/bin/rustc -V \
+    | perl -ne '/rustc (\S+) \((\S+) (\S+)\)/ and print "$1-$2-$3"')
+if [[ -z "$rustc_version" ]]; then
+  echo 'failed to match rustc version'
+  /app/lib/sdk/rust-nightly/bin/rustc -V
+  exit 1
+fi
+
 # (TODO: enable use_qt in the future?)
 # DO NOT REUSE THE BELOW API KEY; it is for Flathub only.
 # http://lists.debian.org/debian-legal/2013/11/msg00006.html
@@ -80,7 +88,7 @@ tools/gn/bootstrap/bootstrap.py -v --no-clean --gn-gen-args='
     use_qt=false
     enable_remoting=false
     rust_sysroot_absolute="/app/lib/sdk/rust-nightly"
-    rustc_version="'"$(/app/lib/sdk/rust-nightly/bin/rustc -V)"'"
+    rustc_version="'"$rustc_version"'"
     rust_bindgen_root="'$PWD/bindgen'"
     chrome_pgo_phase='$chrome_pgo_phase'
     use_clang_modules=false
