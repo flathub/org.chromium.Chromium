@@ -178,8 +178,8 @@ modules:
       - ./install.sh
     sources:
       - type: archive
-        url: https://commondatastorage.googleapis.com/chromium-browser-official/chromium-146.0.7680.71.tar.xz
-        sha256: cb13c0940efcea4403d50de4e3818f7b17856569189ac864ac0e1cf2862558d5
+        url: https://commondatastorage.googleapis.com/chromium-browser-official/chromium-146.0.7680.80.tar.xz
+        sha256: 8ea2d13bd9fdeec218e34774812cb7b4d965a26b2eafb383315c134e28d74422
         x-checker-data:
           type: chromium
           component: chromium
