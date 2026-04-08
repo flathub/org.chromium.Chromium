@@ -178,8 +178,8 @@ modules:
       - ./install.sh
     sources:
       - type: archive
-        url: https://commondatastorage.googleapis.com/chromium-browser-official/chromium-146.0.7680.177.tar.xz
-        sha256: 32e3a58aa7c3963f4c835cecf77762478dd04152f1d0b578440fd00152f13b29
+        url: https://commondatastorage.googleapis.com/chromium-browser-official/chromium-147.0.7727.55.tar.xz
+        sha256: b259ece316d73053a3d62ecc20326b6d12f1aa520ce60aaedcdc89d318fa32b7
         x-checker-data:
           type: chromium
           component: chromium
@@ -189,8 +189,8 @@ modules:
           - rm -rf third_party/llvm-build
           - rm -rf third_party/rust-toolchain
       - type: archive
-        url: https://commondatastorage.googleapis.com/chromium-browser-clang/Linux_x64/clang-llvmorg-23-init-2224-g5bd8dadb-3.tar.xz
-        sha256: bab27d04b9740f772fb6f50461ba4c2cf96c57231eb83943f785775c0bc274a6
+        url: https://commondatastorage.googleapis.com/chromium-browser-clang/Linux_x64/clang-llvmorg-23-init-5669-g8a0be0bc-1.tar.xz
+        sha256: 750b331006635281d7d90696629f67db748ba62004c46675eccb8af144141847
         dest: third_party/llvm-build/Release+Asserts
         strip-components: 0
         only-arches: [x86_64]
@@ -213,7 +213,7 @@ modules:
         only-arches: [aarch64]
       - type: git
         url: https://chromium.googlesource.com/external/github.com/llvm/llvm-project
-        commit: llvmorg-23-init-2224-g5bd8dadb
+        commit: llvmorg-23-init-5669-g8a0be0bc
         dest: third_party/llvm
         only-arches: [aarch64]
         x-checker-data:
