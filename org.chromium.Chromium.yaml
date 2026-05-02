@@ -1,9 +1,9 @@
 app-id: org.chromium.Chromium
 runtime: org.freedesktop.Platform
-runtime-version: '24.08'
+runtime-version: '25.08'
 sdk: org.freedesktop.Sdk
 base: org.chromium.Chromium.BaseApp
-base-version: '24.08'
+base-version: '25.08'
 command: chromium
 finish-args:
   - --require-version=1.8.2
@@ -62,7 +62,7 @@ add-extensions:
     autodelete: true
 
 sdk-extensions:
-  - org.freedesktop.Sdk.Extension.llvm18
+  - org.freedesktop.Sdk.Extension.llvm22
   - org.freedesktop.Sdk.Extension.node24
   - org.freedesktop.Sdk.Extension.openjdk21
 
@@ -165,6 +165,16 @@ modules:
         url: https://chromium.googlesource.com/external/github.com/rust-lang/rust-bindgen
         commit: 2426dd68cd12e0ac022bca18efb9c7d0acd27e12
       - ./generated-sources.bindgen.json
+    cleanup:
+      - '*'
+
+  - name: cmake
+    buildsystem: cmake-ninja
+    sources:
+      - type: archive
+      # https://chromium.googlesource.com/chromium/src/+/master/tools/clang/scripts/build.py#269
+        url: https://github.com/Kitware/CMake/releases/download/v3.26.4/cmake-3.26.4.tar.gz
+        sha256: 313b6880c291bd4fe31c0aa51d6e62659282a521e695f30d5cc0d25abbd5c208
     cleanup:
       - '*'
 
