@@ -1,4 +1,4 @@
-From eab2407ce73814749de603ba252629d87216a448 Mon Sep 17 00:00:00 2001
+From 017f88472379dc992f6b27eeac7fbcee6d46d0fc Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Tue, 19 Jan 2021 15:41:16 -0600
 Subject: [PATCH] Enable accelerated mjpeg decode on Linux
@@ -9,11 +9,11 @@ Subject: [PATCH] Enable accelerated mjpeg decode on Linux
  2 files changed, 3 insertions(+), 3 deletions(-)
 
 diff --git a/chrome/browser/about_flags.cc b/chrome/browser/about_flags.cc
-index 6f414a3dd8a19..4792617c44015 100644
+index 659379c7d74a1..1cb111be8a408 100644
 --- a/chrome/browser/about_flags.cc
 +++ b/chrome/browser/about_flags.cc
 @@ -5702,10 +5702,10 @@ const FeatureEntry kFeatureEntries[] = {
-      FEATURE_VALUE_TYPE(device::features::kOpenXrExtendedFeatureSupport)},
+      FEATURE_VALUE_TYPE(device::features::kOpenXR)},
  #endif  // BUILDFLAG(IS_ANDROID) && BUILDFLAG(ENABLE_OPENXR)
  #endif  // ENABLE_VR
 -#if BUILDFLAG(IS_CHROMEOS)
@@ -26,10 +26,10 @@ index 6f414a3dd8a19..4792617c44015 100644
  #endif  // BUILDFLAG(IS_CHROMEOS)
      {"system-keyboard-lock", flag_descriptions::kSystemKeyboardLockName,
 diff --git a/media/base/media_switches.cc b/media/base/media_switches.cc
-index d6cf0fcbe2bf4..fa1b5e9f590ad 100644
+index 1cdacae4522fe..0566164cfa475 100644
 --- a/media/base/media_switches.cc
 +++ b/media/base/media_switches.cc
-@@ -1769,7 +1769,7 @@ bool IsVideoCaptureAcceleratedJpegDecodingEnabled() {
+@@ -1839,7 +1839,7 @@ bool IsVideoCaptureAcceleratedJpegDecodingEnabled() {
            switches::kUseFakeMjpegDecodeAccelerator)) {
      return true;
    }
@@ -39,5 +39,5 @@ index d6cf0fcbe2bf4..fa1b5e9f590ad 100644
  #else
    return false;
 -- 
-2.52.0
+2.53.0
 
