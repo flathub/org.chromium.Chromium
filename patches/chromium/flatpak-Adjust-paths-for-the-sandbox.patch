@@ -1,4 +1,4 @@
-From 2da243d7aff519ed1d755eaeed4c0ba0d8978ec0 Mon Sep 17 00:00:00 2001
+From e771da626c4992eeb693389329ff0b52b8d052df Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Tue, 25 Aug 2020 19:26:07 -0500
 Subject: [PATCH] flatpak: Adjust paths for the sandbox
@@ -9,10 +9,10 @@ Subject: [PATCH] flatpak: Adjust paths for the sandbox
  2 files changed, 29 insertions(+), 1 deletion(-)
 
 diff --git a/chrome/common/BUILD.gn b/chrome/common/BUILD.gn
-index c64007c87236e..5504f72e3b992 100644
+index 1a692fe440945..dccf37e1d568e 100644
 --- a/chrome/common/BUILD.gn
 +++ b/chrome/common/BUILD.gn
-@@ -611,6 +611,10 @@ static_library("constants") {
+@@ -612,6 +612,10 @@ static_library("constants") {
        "//third_party/widevine/cdm:headers",
      ]
    }
@@ -82,5 +82,5 @@ index eae95c5f35740..2e0778545c711 100644
        cur = base::FilePath(
            FILE_PATH_LITERAL("/etc/opt/chrome/native-messaging-hosts"));
 -- 
-2.52.0
+2.53.0
 

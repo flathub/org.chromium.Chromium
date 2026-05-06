@@ -1,4 +1,4 @@
-From 91bf2411b5e82add68c8fd16f263a41cdb233fc9 Mon Sep 17 00:00:00 2001
+From a8be91ef453f7abd8198263add0301f270e33e5f Mon Sep 17 00:00:00 2001
 From: "re:fi.64" <hello@refi64.dev>
 Date: Fri, 16 Jan 2026 15:49:49 -0600
 Subject: [PATCH] build: Always set rustc_nightly_capability
@@ -21,5 +21,5 @@ index a55e7c58b9c33..03ed9e517e95b 100644
  # Platform support for the Rust toolchain.
  chromium_toolchain_supports_platform = !is_wasm
 -- 
-2.52.0
+2.53.0
 
