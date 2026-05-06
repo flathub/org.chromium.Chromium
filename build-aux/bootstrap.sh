@@ -51,6 +51,12 @@ else
   ln -s "$PWD/third_party/llvm-build/Release+Asserts/lib" -t bindgen
 fi
 
+if [[ ! -e third_party/rust-toolchain ]]; then
+  ln -s /app/lib/sdk/rust-nightly third_party/rust-toolchain
+fi
+
+ln -sf /usr/bin/gperf third_party/gperf/cipd/bin/
+
 rustc_version=$(/app/lib/sdk/rust-nightly/bin/rustc -V \
     | perl -ne '/rustc (\S+) \((\S+) (\S+)\)/ and print "$1-$2-$3"')
 if [[ -z "$rustc_version" ]]; then
