@@ -1,4 +1,4 @@
-From 8eb17b876489bc1809ac902d0e75ebd2cea72e9f Mon Sep 17 00:00:00 2001
+From 7b554fb9aae32b623de48336e3cc564507cae492 Mon Sep 17 00:00:00 2001
 From: Andre Moreira Magalhaes <andre.magalhaes@endlessos.org>
 Date: Thu, 17 Dec 2020 19:05:10 -0300
 Subject: [PATCH] Add support for respecting system proxy settings when running
@@ -42,19 +42,19 @@ Some general notes on implementation:
 Closes https://github.com/flathub/org.chromium.Chromium/issues/36
 ---
  chrome/app/generated_resources.grd            |   6 +
- .../net/system_network_context_manager.cc     |  12 +-
+ .../net/system_network_context_manager.cc     |  18 ++-
  chrome/browser/ui/webui/about/about_ui.cc     |  14 +-
  net/BUILD.gn                                  |   3 +
  .../configured_proxy_resolution_service.cc    |   6 +-
  .../proxy_config_service_linux.cc             |  10 +-
  net/proxy_resolution/proxy_resolver_linux.cc  | 123 ++++++++++++++++++
  net/proxy_resolution/proxy_resolver_linux.h   |  29 +++++
- 8 files changed, 199 insertions(+), 4 deletions(-)
+ 8 files changed, 205 insertions(+), 4 deletions(-)
  create mode 100644 net/proxy_resolution/proxy_resolver_linux.cc
  create mode 100644 net/proxy_resolution/proxy_resolver_linux.h
 
 diff --git a/chrome/app/generated_resources.grd b/chrome/app/generated_resources.grd
-index 33c0b42d826b5..e051e70d0f4d7 100644
+index 33c0b42d826b5..09c0776864f0b 100644
 --- a/chrome/app/generated_resources.grd
 +++ b/chrome/app/generated_resources.grd
 @@ -16435,6 +16435,12 @@ Please help our engineers fix this problem. Tell us what happened right before y
@@ -62,7 +62,7 @@ index 33c0b42d826b5..e051e70d0f4d7 100644
            &lt;p&gt;But you can still configure via the command line.  Please see &lt;code&gt;man <ph name="PRODUCT_BINARY_NAME">$2<ex>google-chrome</ex></ph>&lt;/code&gt; for more information on flags and environment variables.&lt;/p&gt;
          </message>
 +        <message name="IDS_ABOUT_LINUX_PROXY_CONFIG_FLATPAK_BODY" desc="HTML body of page shown on systems running with flatpak where system proxy configuration is unsupported.">
-+          &lt;p&gt;The flatpak version of <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> does not support changing the system proxy settings. However, it does respect those settings.&lt;/p&gt;
++          &lt;p&gt;The flatpak version of <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> does not support changing the system proxy settings. However, it does respect those settings when run with --use-system-proxy-resolver.&lt;/p&gt;
 +          &lt;p&gt;If you need to adjust the proxy settings, please do so through the configuration system of your desktop environment.&lt;/p&gt;
 +
 +          &lt;p&gt;You can also override your system proxy settings via the command line. Please see &lt;code&gt;man <ph name="PRODUCT_BINARY_NAME">$2<ex>google-chrome</ex></ph>&lt;/code&gt; for more information on flags and environment variables.&lt;/p&gt;
@@ -71,7 +71,7 @@ index 33c0b42d826b5..e051e70d0f4d7 100644
  
        <message name="IDS_IMAGE_FILES" desc="The description of the image file extensions in the select file dialog.">
 diff --git a/chrome/browser/net/system_network_context_manager.cc b/chrome/browser/net/system_network_context_manager.cc
-index d69e5334e67a4..1e598a0d0b59f 100644
+index d69e5334e67a4..1b264db869a39 100644
 --- a/chrome/browser/net/system_network_context_manager.cc
 +++ b/chrome/browser/net/system_network_context_manager.cc
 @@ -101,6 +101,10 @@
@@ -85,16 +85,22 @@ index d69e5334e67a4..1e598a0d0b59f 100644
  #if BUILDFLAG(IS_WIN)
  #include "chrome/browser/net/chrome_mojo_proxy_resolver_win.h"
  #endif  // BUILDFLAG(IS_WIN)
-@@ -977,7 +981,13 @@ void SystemNetworkContextManager::ConfigureDefaultNetworkContextParams(
+@@ -977,7 +981,19 @@ void SystemNetworkContextManager::ConfigureDefaultNetworkContextParams(
    // or if it does work, now.
    // Should be possible now that a private isolate is used.
    // http://crbug.com/41166927
 -  if (!command_line.HasSwitch(switches::kWinHttpProxyResolver)) {
-+  bool use_system_proxy_resolver = command_line.HasSwitch(switches::kWinHttpProxyResolver);
++  bool use_system_proxy_resolver =
++      command_line.HasSwitch(switches::kWinHttpProxyResolver);
 +#if defined(OS_LINUX)
-+  bool use_flatpak_sandbox = (sandbox::FlatpakSandbox::GetInstance()->GetSandboxLevel() >
-+                              sandbox::FlatpakSandbox::SandboxLevel::kNone);
-+  use_system_proxy_resolver |= use_flatpak_sandbox;
++  if (!use_system_proxy_resolver) {
++    bool use_flatpak_sandbox =
++        (sandbox::FlatpakSandbox::GetInstance()->GetSandboxLevel() >
++         sandbox::FlatpakSandbox::SandboxLevel::kNone);
++    use_system_proxy_resolver =
++        use_flatpak_sandbox &&
++        command_line.HasSwitch(switches::kUseSystemProxyResolver);
++  }
 +#endif
 +  if (!use_system_proxy_resolver) {
      if (command_line.HasSwitch(switches::kSingleProcess)) {
