@@ -1,4 +1,4 @@
-From c868019c51f21f1eb5966fd2c0b83ddfb8ae9ff6 Mon Sep 17 00:00:00 2001
+From 84ff00ef7e2ad592f7030181826f42f88b848db7 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Tue, 17 Mar 2020 13:18:27 -0500
 Subject: [PATCH] flatpak: Add initial sandbox support
@@ -42,10 +42,10 @@ index 870c721e8048f..1433cbb2c3da9 100644
  /.externalToolBuilders/
  /.settings/
 diff --git a/base/threading/thread_restrictions.h b/base/threading/thread_restrictions.h
-index a1bb1a4602902..eb81195f9fcbe 100644
+index 71f651ae10d84..e90a98a7e0eff 100644
 --- a/base/threading/thread_restrictions.h
 +++ b/base/threading/thread_restrictions.h
-@@ -419,6 +419,9 @@ class ScopedAllowThreadJoinForWebRtcTransport;
+@@ -418,6 +418,9 @@ class ScopedAllowThreadJoinForWebRtcTransport;
  namespace rlz_lib {
  class FinancialPing;
  }
@@ -1211,7 +1211,7 @@ index 0000000000000..167bbc85945ad
 +
 +#endif  // SANDBOX_LINUX_SERVICES_FLATPAK_SANDBOX_H_
 diff --git a/sandbox/policy/BUILD.gn b/sandbox/policy/BUILD.gn
-index 1a3c7c6cf8b15..4c1b121160df6 100644
+index b883ef37d4c1c..af03ba4c6c828 100644
 --- a/sandbox/policy/BUILD.gn
 +++ b/sandbox/policy/BUILD.gn
 @@ -118,6 +118,9 @@ component("policy") {
