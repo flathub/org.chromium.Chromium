@@ -1,4 +1,4 @@
-From a8be91ef453f7abd8198263add0301f270e33e5f Mon Sep 17 00:00:00 2001
+From a7294e17a9e6cd31c64b95c73140834ba5cd2883 Mon Sep 17 00:00:00 2001
 From: "re:fi.64" <hello@refi64.dev>
 Date: Fri, 16 Jan 2026 15:49:49 -0600
 Subject: [PATCH] build: Always set rustc_nightly_capability
@@ -8,7 +8,7 @@ Subject: [PATCH] build: Always set rustc_nightly_capability
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/build/config/rust.gni b/build/config/rust.gni
-index a55e7c58b9c33..03ed9e517e95b 100644
+index af3dfac4574f9..498780a45904f 100644
 --- a/build/config/rust.gni
 +++ b/build/config/rust.gni
 @@ -140,7 +140,7 @@ use_chromium_rust_toolchain = rust_sysroot_absolute == ""
