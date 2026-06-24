@@ -38,6 +38,13 @@ This could be done for example by creating an extension point under
 being a symlink to `/etc/chromium-browser`. Note that `<version>` must match the
 extension point version.
 
+##### Complete examples:
+
+- Unmanaged extension for adding enterprise policies on an x86_64 system
+    - Policy path: `/var/lib/flatpak/extension/org.chromium.Chromium.Extension.system-policies/x86_64/1/policies/managed/policy.json`
+- Unmanaged extension in home directory for adding enterprise policies on an x86_64 system
+    - Policy path: `~/.local/share/flatpak/extension/org.chromium.Chromium.Extension.system-policies/x86_64/1/policies/managed/policy.json`
+
 Also important to note that in the example above one would not be able to symlink the
 actual policy file directly, as otherwise flatpak would not be able to resolve the
 symlink when bind mounting the extension point.
