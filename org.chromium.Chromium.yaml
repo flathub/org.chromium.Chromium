@@ -67,6 +67,30 @@ sdk-extensions:
   - org.freedesktop.Sdk.Extension.openjdk21
 
 modules:
+  - name: pcsc-lite
+    buildsystem: meson
+    config-opts:
+      - -Dlibudev=false
+      - -Dlibsystemd=false
+      - -Dserial=false
+      - -Dusb=false
+      - -Dpolkit=false
+    post-install:
+      - rm /app/sbin/pcscd
+      - rmdir /app/sbin || true
+    sources:
+      - type: archive
+        url: https://pcsclite.apdu.fr/files/pcsc-lite-2.3.2.tar.xz
+        sha256: 5ac5091d444653c5f63add9c6c39a777c11c5f3513491639c0f3385ccb41496d
+  
+  - name: opensc
+    cleanup:
+      - /share/applications/org.opensc.notify.desktop
+    sources:
+      - type: archive
+        url: https://github.com/OpenSC/OpenSC/releases/download/0.26.1/opensc-0.26.1.tar.gz
+        sha256: f16291a031d86e570394762e9f35eaf2fcbc2337a49910f3feae42d54e1688cb
+
   - name: readelf-symlink
     only-arches: [aarch64]
     buildsystem: simple
