@@ -178,8 +178,8 @@ modules:
       - ./install.sh
     sources:
       - type: archive
-        url: https://commondatastorage.googleapis.com/chromium-browser-official/chromium-149.0.7827.200.tar.xz
-        sha256: f22da99962e0766c060226eac3430eae1bd87b3d449e3740fc3eae3a3bccd084
+        url: https://commondatastorage.googleapis.com/chromium-browser-official/chromium-150.0.7871.46.tar.xz
+        sha256: 0eee078c707ef5793fb5af4c89bba673917b884fbc2345c6295921d4e746e106
         x-checker-data:
           type: chromium
           component: chromium
@@ -189,8 +189,8 @@ modules:
           - rm -rf third_party/llvm-build
           - rm -rf third_party/rust-toolchain
       - type: archive
-        url: https://commondatastorage.googleapis.com/chromium-browser-clang/Linux_x64/clang-llvmorg-23-init-10931-g20b6ec66-8.tar.xz
-        sha256: 6aa45b7398e915919ce07a5e1e15e8710327957f61c1d97d18e77e5f167e9d14
+        url: https://commondatastorage.googleapis.com/chromium-browser-clang/Linux_x64/clang-llvmorg-23-init-10931-g20b6ec66-11.tar.xz
+        sha256: de584381536aa5ba2403033c4f8b70f3c39c2e5d7fa87c953b7fd8bfbba0ee2a
         dest: third_party/llvm-build/Release+Asserts
         strip-components: 0
         only-arches: [x86_64]
