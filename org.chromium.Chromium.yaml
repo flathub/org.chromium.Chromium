@@ -220,8 +220,8 @@ modules:
           type: chromium
           component: llvm-git
       - type: archive
-        url: https://npm.skia.org/chrome-devtools/@rollup%2frollup-linux-arm64-gnu/-/rollup-linux-arm64-gnu-4.22.4.tgz
-        sha256: 15dacc4a625c90f790c199ebb06e3327baee2f4a2163e1ee13643b0d8c29ac37
+        url: https://npm.skia.org/chrome-devtools/@rollup%2frollup-linux-arm64-gnu/-/rollup-linux-arm64-gnu-4.60.4.tgz
+        sha256: 7b98541552d3d679d4a92a04d590b34d1b44a6ec582483be9a66e8bdc31a06f6
         dest: third_party/devtools-frontend/src/node_modules/@rollup/rollup-linux-arm64-gnu
       - patches/chromium/_sources.json
       - type: file
