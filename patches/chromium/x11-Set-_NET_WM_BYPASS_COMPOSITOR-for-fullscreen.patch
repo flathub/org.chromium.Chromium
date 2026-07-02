@@ -1,4 +1,4 @@
-From ccdb918401ea5bfd7abab8233d83b2bb3d2f09f6 Mon Sep 17 00:00:00 2001
+From e82df0f641587aa5b28a0a0e726c0bdfb0db2dd8 Mon Sep 17 00:00:00 2001
 From: Daniel Drake <drake@endlessm.com>
 Date: Fri, 3 Jul 2015 14:59:24 -0600
 Subject: [PATCH] x11: Set _NET_WM_BYPASS_COMPOSITOR for fullscreen
@@ -10,10 +10,10 @@ This improves performance at full screen.
  2 files changed, 9 insertions(+)
 
 diff --git a/ui/ozone/platform/x11/x11_window.cc b/ui/ozone/platform/x11/x11_window.cc
-index 2459a05b3caad..7e340125ae38d 100644
+index 4920a1907337e..2441a7e2c0ec4 100644
 --- a/ui/ozone/platform/x11/x11_window.cc
 +++ b/ui/ozone/platform/x11/x11_window.cc
-@@ -705,6 +705,8 @@ void X11Window::SetFullscreen(bool fullscreen, int64_t target_display_id) {
+@@ -709,6 +709,8 @@ void X11Window::SetFullscreen(bool fullscreen, int64_t target_display_id) {
    state_ = new_state;
    SetWMStateFullscreen(fullscreen);
  
@@ -22,7 +22,7 @@ index 2459a05b3caad..7e340125ae38d 100644
    if (unmaximize_and_remaximize) {
      // Setting the should_maximize_after_map_ same way as it is done in
      // X11Window::Maximize().
-@@ -2043,6 +2045,12 @@ void X11Window::SetWMStateMaximize(bool maximize) {
+@@ -2063,6 +2065,12 @@ void X11Window::SetWMStateMaximize(bool maximize) {
                   x11::GetAtom("_NET_WM_STATE_MAXIMIZED_HORZ"));
  }
  
@@ -36,10 +36,10 @@ index 2459a05b3caad..7e340125ae38d 100644
    // Focus and stacking order are independent in X11.  Since we cannot guarantee
    // a window is topmost iff it has focus, just use the focus state to determine
 diff --git a/ui/ozone/platform/x11/x11_window.h b/ui/ozone/platform/x11/x11_window.h
-index de5b2fe63f537..c7deefb09b5fa 100644
+index 9908509df2858..214585ac28f13 100644
 --- a/ui/ozone/platform/x11/x11_window.h
 +++ b/ui/ozone/platform/x11/x11_window.h
-@@ -246,6 +246,7 @@ class X11Window : public PlatformWindow,
+@@ -249,6 +249,7 @@ class X11Window : public PlatformWindow,
    void Map(bool inactive = false);
    void SetWMStateFullscreen(bool fullscreen);
    void SetWMStateMaximize(bool maximize);
@@ -48,5 +48,5 @@ index de5b2fe63f537..c7deefb09b5fa 100644
    bool IsTargetedBy(const x11::Event& xev) const;
    void HandleEvent(const x11::Event& xev);
 -- 
-2.53.0
+2.54.0
 

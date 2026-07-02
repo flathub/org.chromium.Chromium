@@ -1,4 +1,4 @@
-From 1aea81d25a7a0d2787991c63c63b7cd4afd74035 Mon Sep 17 00:00:00 2001
+From 12add50fd39e361cf70acf5e7d68fb05967ce483 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Wed, 11 Nov 2020 16:51:49 -0600
 Subject: [PATCH] Remove the ability to create desktop shortcuts
@@ -64,5 +64,5 @@ index 1283cb6358927..554a6d7c53baf 100644
    raw_ptr<views::Checkbox> quick_launch_check_box_ = nullptr;
  
 -- 
-2.53.0
+2.54.0
 
