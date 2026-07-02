@@ -1,4 +1,4 @@
-From 84ff00ef7e2ad592f7030181826f42f88b848db7 Mon Sep 17 00:00:00 2001
+From eef0842781efd5945d4766873f1aa71aad04d9be Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Tue, 17 Mar 2020 13:18:27 -0500
 Subject: [PATCH] flatpak: Add initial sandbox support
@@ -30,10 +30,10 @@ Subject: [PATCH] flatpak: Add initial sandbox support
  create mode 100644 sandbox/linux/services/flatpak_sandbox.h
 
 diff --git a/.gitignore b/.gitignore
-index 870c721e8048f..1433cbb2c3da9 100644
+index 8ef6e8a38aa51..1ea2cf3fdc110 100644
 --- a/.gitignore
 +++ b/.gitignore
-@@ -74,6 +74,7 @@ vs-chromium-project.txt
+@@ -75,6 +75,7 @@ vs-chromium-project.txt
  /.android_emulator_cipd_cache/
  /.clangd/
  /.clangd-index/
@@ -262,10 +262,10 @@ index 8ef884a7db6f4..f441900dd6343 100644
  
    // This lock protects the |zygote_pids_| set.
 diff --git a/content/zygote/zygote_linux.cc b/content/zygote/zygote_linux.cc
-index f157fa1359963..2caede0c7fb06 100644
+index da555a1907755..495559675b911 100644
 --- a/content/zygote/zygote_linux.cc
 +++ b/content/zygote/zygote_linux.cc
-@@ -122,7 +122,7 @@ bool Zygote::ProcessRequests() {
+@@ -120,7 +120,7 @@ bool Zygote::ProcessRequests() {
    PCHECK(sigaddset(&sigset, SIGCHLD) == 0);
    PCHECK(sigprocmask(SIG_BLOCK, &sigset, &orig_sigmask) == 0);
  
@@ -274,7 +274,7 @@ index f157fa1359963..2caede0c7fb06 100644
      // Let the ZygoteHost know we are ready to go.
      // The receiving code is in
      // content/browser/zygote_host/zygote_host_impl_linux.cc.
-@@ -227,6 +227,10 @@ bool Zygote::UsingNSSandbox() const {
+@@ -225,6 +225,10 @@ bool Zygote::UsingNSSandbox() const {
    return sandbox_flags_ & sandbox::policy::SandboxLinux::kUserNS;
  }
  
@@ -1211,7 +1211,7 @@ index 0000000000000..167bbc85945ad
 +
 +#endif  // SANDBOX_LINUX_SERVICES_FLATPAK_SANDBOX_H_
 diff --git a/sandbox/policy/BUILD.gn b/sandbox/policy/BUILD.gn
-index b883ef37d4c1c..af03ba4c6c828 100644
+index 86637095300f4..8538322c94a0f 100644
 --- a/sandbox/policy/BUILD.gn
 +++ b/sandbox/policy/BUILD.gn
 @@ -118,6 +118,9 @@ component("policy") {
@@ -1225,10 +1225,10 @@ index b883ef37d4c1c..af03ba4c6c828 100644
      sources += [
        "linux/bpf_ime_policy_linux.cc",
 diff --git a/sandbox/policy/linux/sandbox_linux.cc b/sandbox/policy/linux/sandbox_linux.cc
-index 1d3a854bb9aa9..09c75c2ee04ce 100644
+index 7e1dfcd1732a7..2e8f59fc8ae52 100644
 --- a/sandbox/policy/linux/sandbox_linux.cc
 +++ b/sandbox/policy/linux/sandbox_linux.cc
-@@ -35,6 +35,7 @@
+@@ -36,6 +36,7 @@
  #include "sandbox/constants.h"
  #include "sandbox/linux/seccomp-bpf-helpers/sigsys_handlers.h"
  #include "sandbox/linux/services/credentials.h"
@@ -1236,7 +1236,7 @@ index 1d3a854bb9aa9..09c75c2ee04ce 100644
  #include "sandbox/linux/services/libc_interceptor.h"
  #include "sandbox/linux/services/namespace_sandbox.h"
  #include "sandbox/linux/services/proc_util.h"
-@@ -220,6 +221,9 @@ void SandboxLinux::PreinitializeSandbox() {
+@@ -221,6 +222,9 @@ void SandboxLinux::PreinitializeSandbox() {
    const int yama_status = Yama::GetStatus();
    yama_is_enforcing_ = (yama_status & Yama::STATUS_PRESENT) &&
                         (yama_status & Yama::STATUS_ENFORCING);
@@ -1246,7 +1246,7 @@ index 1d3a854bb9aa9..09c75c2ee04ce 100644
    pre_initialized_ = true;
  }
  
-@@ -258,6 +262,10 @@ int SandboxLinux::GetStatus() {
+@@ -259,6 +263,10 @@ int SandboxLinux::GetStatus() {
          sandbox_status_flags_ |= kPIDNS;
        if (NamespaceSandbox::InNewNetNamespace())
          sandbox_status_flags_ |= kNetNS;
@@ -1321,5 +1321,5 @@ index 60484255e653b..797f3b9ad6cd8 100644
  }
  
 -- 
-2.53.0
+2.54.0
 

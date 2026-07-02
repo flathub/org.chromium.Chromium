@@ -1,4 +1,4 @@
-From a9771498cebb5cb33eb5ce3cd31d62b010d022aa Mon Sep 17 00:00:00 2001
+From 2a4e5066f2e1889c494f6e857bfd7c3d80040dc4 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Wed, 31 Aug 2022 10:09:01 -0500
 Subject: [PATCH] Clang build script: Don't build against the sysroot
@@ -8,7 +8,7 @@ Subject: [PATCH] Clang build script: Don't build against the sysroot
  1 file changed, 7 insertions(+), 7 deletions(-)
 
 diff --git a/tools/clang/scripts/build.py b/tools/clang/scripts/build.py
-index 35289f4875897..e36e11b23e9b8 100755
+index 2c4b431dd8769..f9cd4336e176b 100755
 --- a/tools/clang/scripts/build.py
 +++ b/tools/clang/scripts/build.py
 @@ -896,7 +896,7 @@ def main():
@@ -44,10 +44,10 @@ index 35289f4875897..e36e11b23e9b8 100755
          "args": [
 -            'CMAKE_SYSROOT=%s' % sysroot_amd64,
 +            # 'CMAKE_SYSROOT=%s' % sysroot_amd64,
-         ],
-         "profile": True,
-         "sanitizers": True,
-@@ -1372,7 +1372,7 @@ def main():
+             # Enable CET IBT so that binaries compiled with
+             # -fcf-protection=branch can enable kernel IBT enforcement.
+             'CMAKE_C_FLAGS=-fcf-protection=branch',
+@@ -1377,7 +1377,7 @@ def main():
      # Maybe it should work for builtins too?
      runtimes_triples_args['armv7-unknown-linux-gnueabihf'] = {
          "args": [
@@ -56,7 +56,7 @@ index 35289f4875897..e36e11b23e9b8 100755
              # Can't run tests on x86 host.
              'LLVM_INCLUDE_TESTS=OFF',
          ],
-@@ -1383,7 +1383,7 @@ def main():
+@@ -1388,7 +1388,7 @@ def main():
      }
      runtimes_triples_args['aarch64-unknown-linux-gnu'] = {
          "args": [
@@ -65,7 +65,7 @@ index 35289f4875897..e36e11b23e9b8 100755
              # Can't run tests on x86 host.
              'LLVM_INCLUDE_TESTS=OFF',
  
-@@ -1399,7 +1399,7 @@ def main():
+@@ -1404,7 +1404,7 @@ def main():
      }
      runtimes_triples_args['riscv64-unknown-linux-gnu'] = {
          "args": [
@@ -75,5 +75,5 @@ index 35289f4875897..e36e11b23e9b8 100755
              'LLVM_INCLUDE_TESTS=OFF',
          ],
 -- 
-2.53.0
+2.54.0
 

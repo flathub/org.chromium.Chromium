@@ -1,4 +1,4 @@
-From efb387c6af0f7d84db047a66f847fa3c54ceeec6 Mon Sep 17 00:00:00 2001
+From b6b857cf762168bcb316a168c78b70e19fb4b66a Mon Sep 17 00:00:00 2001
 From: Andre Moreira Magalhaes <andre.magalhaes@endlessos.org>
 Date: Thu, 17 Dec 2020 19:05:10 -0300
 Subject: [PATCH] Add support for respecting system proxy settings when running
@@ -54,10 +54,10 @@ Closes https://github.com/flathub/org.chromium.Chromium/issues/36
  create mode 100644 net/proxy_resolution/proxy_resolver_linux.h
 
 diff --git a/chrome/app/generated_resources.grd b/chrome/app/generated_resources.grd
-index b3263e1207486..69d8fff7fbaec 100644
+index 779262fae00af..4117aba801167 100644
 --- a/chrome/app/generated_resources.grd
 +++ b/chrome/app/generated_resources.grd
-@@ -16502,6 +16502,12 @@ Please help our engineers fix this problem. Tell us what happened right before y
+@@ -16298,6 +16298,12 @@ Please help our engineers fix this problem. Tell us what happened right before y
  
            &lt;p&gt;But you can still configure via the command line.  Please see &lt;code&gt;man <ph name="PRODUCT_BINARY_NAME">$2<ex>google-chrome</ex></ph>&lt;/code&gt; for more information on flags and environment variables.&lt;/p&gt;
          </message>
@@ -71,7 +71,7 @@ index b3263e1207486..69d8fff7fbaec 100644
  
        <message name="IDS_IMAGE_FILES" desc="The description of the image file extensions in the select file dialog.">
 diff --git a/chrome/browser/net/system_network_context_manager.cc b/chrome/browser/net/system_network_context_manager.cc
-index 089a0078f0606..9e91cfddd5d8c 100644
+index c91cce0f0a87f..dbb5dc8f8a45c 100644
 --- a/chrome/browser/net/system_network_context_manager.cc
 +++ b/chrome/browser/net/system_network_context_manager.cc
 @@ -101,6 +101,10 @@
@@ -85,7 +85,7 @@ index 089a0078f0606..9e91cfddd5d8c 100644
  #if BUILDFLAG(IS_WIN)
  #include "chrome/browser/net/chrome_mojo_proxy_resolver_win.h"
  #endif  // BUILDFLAG(IS_WIN)
-@@ -971,7 +975,19 @@ void SystemNetworkContextManager::ConfigureDefaultNetworkContextParams(
+@@ -974,7 +978,19 @@ void SystemNetworkContextManager::ConfigureDefaultNetworkContextParams(
    // or if it does work, now.
    // Should be possible now that a private isolate is used.
    // http://crbug.com/41166927
@@ -140,7 +140,7 @@ index 8ffe8ed687fe8..165081bb74e92 100644
                                  base::ASCIIToUTF16(binary.BaseName().value())));
    AppendFooter(&data);
 diff --git a/net/BUILD.gn b/net/BUILD.gn
-index 945bef7d9271a..c938c328abf86 100644
+index 06f2c841805eb..81feb363b9c97 100644
 --- a/net/BUILD.gn
 +++ b/net/BUILD.gn
 @@ -1413,6 +1413,8 @@ component("net") {
@@ -152,7 +152,7 @@ index 945bef7d9271a..c938c328abf86 100644
      ]
    }
  
-@@ -1956,6 +1958,7 @@ source_set("net_deps") {
+@@ -1951,6 +1953,7 @@ source_set("net_deps") {
  
    if (use_gio) {
      public_configs += [ "//build/linux:gio_config" ]
@@ -161,10 +161,10 @@ index 945bef7d9271a..c938c328abf86 100644
  
    if (is_android) {
 diff --git a/net/proxy_resolution/configured_proxy_resolution_service.cc b/net/proxy_resolution/configured_proxy_resolution_service.cc
-index d26744b0678af..ddf2293f37a9f 100644
+index b2451fa810f67..a0dfaf078de3b 100644
 --- a/net/proxy_resolution/configured_proxy_resolution_service.cc
 +++ b/net/proxy_resolution/configured_proxy_resolution_service.cc
-@@ -47,6 +47,8 @@
+@@ -48,6 +48,8 @@
  #include "net/proxy_resolution/win/proxy_resolver_winhttp.h"
  #elif BUILDFLAG(IS_APPLE)
  #include "net/proxy_resolution/proxy_resolver_apple.h"
@@ -173,7 +173,7 @@ index d26744b0678af..ddf2293f37a9f 100644
  #endif
  
  using base::TimeTicks;
-@@ -254,13 +256,15 @@ class ProxyResolverFactoryForSystem : public MultiThreadedProxyResolverFactory {
+@@ -255,13 +257,15 @@ class ProxyResolverFactoryForSystem : public MultiThreadedProxyResolverFactory {
      return std::make_unique<ProxyResolverFactoryWinHttp>();
  #elif BUILDFLAG(IS_APPLE)
      return std::make_unique<ProxyResolverFactoryApple>();
@@ -387,5 +387,5 @@ index 0000000000000..7ae45eeae1a43
 +
 +#endif  // NET_PROXY_RESOLUTION_PROXY_RESOLVER_LINUX_H_
 -- 
-2.53.0
+2.54.0
 

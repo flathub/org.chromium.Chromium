@@ -1,4 +1,4 @@
-From cb17c1d0770a20fdbfddb892682eda18778c5726 Mon Sep 17 00:00:00 2001
+From 3c2e07041be0f713f19be69a886808eaed659daf Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <git@refi64.dev>
 Date: Thu, 16 May 2024 17:02:06 -0500
 Subject: [PATCH] media/ffmpeg: Don't fail cross-compilation on unsupported
@@ -28,5 +28,5 @@ index e3da8ef626ed2..12c5289a857c8 100755
      for os in ARCH_MAP.keys():
          if os != target_os and target_os != 'all':
 -- 
-2.53.0
+2.54.0
 
