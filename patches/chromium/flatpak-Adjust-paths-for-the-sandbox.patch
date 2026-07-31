@@ -1,4 +1,4 @@
-From 4048c9ae91c353bbdfe1826931d3d372cec26d6a Mon Sep 17 00:00:00 2001
+From 0cf90e92af0e79e0f5dd8ab9b3399e194003b882 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Tue, 25 Aug 2020 19:26:07 -0500
 Subject: [PATCH] flatpak: Adjust paths for the sandbox
@@ -9,10 +9,10 @@ Subject: [PATCH] flatpak: Adjust paths for the sandbox
  2 files changed, 29 insertions(+), 1 deletion(-)
 
 diff --git a/chrome/common/BUILD.gn b/chrome/common/BUILD.gn
-index 1179b1f75c02a..7ca7188063e5b 100644
+index 202db8b06e3e1..d72bc08be84b0 100644
 --- a/chrome/common/BUILD.gn
 +++ b/chrome/common/BUILD.gn
-@@ -614,6 +614,10 @@ static_library("constants") {
+@@ -615,6 +615,10 @@ static_library("constants") {
        "//third_party/widevine/cdm:headers",
      ]
    }
@@ -24,7 +24,7 @@ index 1179b1f75c02a..7ca7188063e5b 100644
  
  # Use a static library here because many test binaries depend on this but don't
 diff --git a/chrome/common/chrome_paths.cc b/chrome/common/chrome_paths.cc
-index eae95c5f35740..2e0778545c711 100644
+index 56ff14c59c12a..0a5163be81bb8 100644
 --- a/chrome/common/chrome_paths.cc
 +++ b/chrome/common/chrome_paths.cc
 @@ -39,6 +39,10 @@
@@ -68,7 +68,7 @@ index eae95c5f35740..2e0778545c711 100644
        break;
      }
  #endif
-@@ -474,6 +492,12 @@ bool PathProvider(int key, base::FilePath* result) {
+@@ -462,6 +480,12 @@ bool PathProvider(int key, base::FilePath* result) {
            "/Library/Application Support/Chromium/NativeMessagingHosts"));
  #endif
  #else  // BUILDFLAG(IS_MAC)

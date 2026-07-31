@@ -1,4 +1,4 @@
-From b64774aff35c3a1f8c54a3ebd728b04aed88d549 Mon Sep 17 00:00:00 2001
+From 5533feec7b26862503227f94b862545f15abca0e Mon Sep 17 00:00:00 2001
 From: Andre Moreira Magalhaes <andre.magalhaes@endlessos.org>
 Date: Thu, 17 Dec 2020 19:05:10 -0300
 Subject: [PATCH] Add support for respecting system proxy settings when running
@@ -54,10 +54,10 @@ Closes https://github.com/flathub/org.chromium.Chromium/issues/36
  create mode 100644 net/proxy_resolution/proxy_resolver_linux.h
 
 diff --git a/chrome/app/generated_resources.grd b/chrome/app/generated_resources.grd
-index 779262fae00af..4117aba801167 100644
+index 5c0d36402d728..a626b8f529f31 100644
 --- a/chrome/app/generated_resources.grd
 +++ b/chrome/app/generated_resources.grd
-@@ -16298,6 +16298,12 @@ Please help our engineers fix this problem. Tell us what happened right before y
+@@ -16373,6 +16373,12 @@ Please help our engineers fix this problem. Tell us what happened right before y
  
            &lt;p&gt;But you can still configure via the command line.  Please see &lt;code&gt;man <ph name="PRODUCT_BINARY_NAME">$2<ex>google-chrome</ex></ph>&lt;/code&gt; for more information on flags and environment variables.&lt;/p&gt;
          </message>
@@ -71,10 +71,10 @@ index 779262fae00af..4117aba801167 100644
  
        <message name="IDS_IMAGE_FILES" desc="The description of the image file extensions in the select file dialog.">
 diff --git a/chrome/browser/net/system_network_context_manager.cc b/chrome/browser/net/system_network_context_manager.cc
-index c91cce0f0a87f..dbb5dc8f8a45c 100644
+index 9eb7b61264afe..b374e2cad0b93 100644
 --- a/chrome/browser/net/system_network_context_manager.cc
 +++ b/chrome/browser/net/system_network_context_manager.cc
-@@ -101,6 +101,10 @@
+@@ -100,6 +100,10 @@
  #include "chrome/browser/net/network_annotation_monitor.h"
  #endif  // BUILDFLAG(IS_CHROMEOS)
  
@@ -84,8 +84,8 @@ index c91cce0f0a87f..dbb5dc8f8a45c 100644
 +
  #if BUILDFLAG(IS_WIN)
  #include "chrome/browser/net/chrome_mojo_proxy_resolver_win.h"
- #endif  // BUILDFLAG(IS_WIN)
-@@ -974,7 +978,19 @@ void SystemNetworkContextManager::ConfigureDefaultNetworkContextParams(
+ #elif BUILDFLAG(IS_MAC)
+@@ -975,7 +979,19 @@ void SystemNetworkContextManager::ConfigureDefaultNetworkContextParams(
    // or if it does work, now.
    // Should be possible now that a private isolate is used.
    // http://crbug.com/41166927
@@ -140,10 +140,10 @@ index 8ffe8ed687fe8..165081bb74e92 100644
                                  base::ASCIIToUTF16(binary.BaseName().value())));
    AppendFooter(&data);
 diff --git a/net/BUILD.gn b/net/BUILD.gn
-index 06f2c841805eb..81feb363b9c97 100644
+index 2d24f81e7a5ca..b1315f158cd6c 100644
 --- a/net/BUILD.gn
 +++ b/net/BUILD.gn
-@@ -1413,6 +1413,8 @@ component("net") {
+@@ -1417,6 +1417,8 @@ component("net") {
      sources += [
        "base/address_map_cache_linux.cc",
        "base/address_map_cache_linux.h",
@@ -152,7 +152,7 @@ index 06f2c841805eb..81feb363b9c97 100644
      ]
    }
  
-@@ -1951,6 +1953,7 @@ source_set("net_deps") {
+@@ -1960,6 +1962,7 @@ source_set("net_deps") {
  
    if (use_gio) {
      public_configs += [ "//build/linux:gio_config" ]
@@ -161,7 +161,7 @@ index 06f2c841805eb..81feb363b9c97 100644
  
    if (is_android) {
 diff --git a/net/proxy_resolution/configured_proxy_resolution_service.cc b/net/proxy_resolution/configured_proxy_resolution_service.cc
-index b2451fa810f67..a0dfaf078de3b 100644
+index 4f585fd673c91..13cb5c6f5350d 100644
 --- a/net/proxy_resolution/configured_proxy_resolution_service.cc
 +++ b/net/proxy_resolution/configured_proxy_resolution_service.cc
 @@ -48,6 +48,8 @@

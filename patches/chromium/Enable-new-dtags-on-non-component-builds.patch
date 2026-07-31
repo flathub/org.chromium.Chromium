@@ -1,4 +1,4 @@
-From 2c8f6ce2d5a57335290f8f515f86dcda8b1e6c88 Mon Sep 17 00:00:00 2001
+From 0260457471ce78f660166051a953cc6d32edf359 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Thu, 19 Nov 2020 16:20:05 -0600
 Subject: [PATCH] Enable new-dtags on non-component builds
