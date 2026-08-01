@@ -115,6 +115,8 @@ modules:
         sha256: 70771c9212585cfd1b190465f92dae98d1d3fc4a4fab5cacbef71457ee08e254
         only-arches: [aarch64]
 
+  # Do NOT put any modules without strip=false and no-debuginfo=true below this
+  # one, otherwise the shared libraries shipped here get corrupted.
   - name: rust-nightly
     buildsystem: simple
     build-options:
