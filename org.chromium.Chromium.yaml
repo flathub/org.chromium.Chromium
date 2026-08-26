@@ -129,8 +129,8 @@ modules:
         only-arches:
           - aarch64
         dest: rust
-        url: https://static.rust-lang.org/dist/2026-04-10/rust-nightly-aarch64-unknown-linux-gnu.tar.xz
-        sha256: 22eebb5ce758584a96c89298ce8865b01a505fbc28348ecaa9732244543c76b9
+        url: https://static.rust-lang.org/dist/2026-06-16/rust-nightly-aarch64-unknown-linux-gnu.tar.xz
+        sha256: 31b3cd70d47e156e7a779bd0674cfd988ca94c8c988cf5f1c99bdb134a4522e7
         # x-checker-data:
         #  type: rust
         #  package: rust
@@ -140,8 +140,8 @@ modules:
         only-arches:
           - x86_64
         dest: rust
-        url: https://static.rust-lang.org/dist/2026-04-10/rust-nightly-x86_64-unknown-linux-gnu.tar.xz
-        sha256: 925d691874087dc48995f0860a32279927bc67a41bd31cfc592a1b4317dc3119
+        url: https://static.rust-lang.org/dist/2026-06-16/rust-nightly-x86_64-unknown-linux-gnu.tar.xz
+        sha256: 83867202cc434006d9b5ea86d13cff25ee6078ef09ffa5bcf495a470c1c05955
         # x-checker-data:
         #  type: rust
         #  package: rust
@@ -149,8 +149,8 @@ modules:
         #  target: x86_64-unknown-linux-gnu
       - type: archive
         dest: rust-src
-        url: https://static.rust-lang.org/dist/2026-04-10/rust-src-nightly.tar.xz
-        sha256: ce32db158d6c18b440ef8e933d71fc21d3129adb9986496bb4f55968e5e9ee70
+        url: https://static.rust-lang.org/dist/2026-06-16/rust-src-nightly.tar.xz
+        sha256: 75ad63bec495993655bdcd51c64828836a633c7e513190f288b79139cc75eca8
         # x-checker-data:
         #  type: rust
         #  package: rust-src
@@ -213,8 +213,8 @@ modules:
           type: chromium
           component: llvm-prebuilt
       - type: archive
-        url: https://commondatastorage.googleapis.com/chromium-browser-clang/Linux_x64/rust-toolchain-4c4205163abcbd08948b3efab796c543ba1ea687-2-llvmorg-23-init-10931-g20b6ec66.tar.xz
-        sha256: a96863c5b811af23cbe3f20fcfc82939e637be2bd79f05a117f1762c3bb35fe5
+        url: https://commondatastorage.googleapis.com/chromium-browser-clang/Linux_x64/rust-toolchain-b998449636a48e2c4a362809085b600a0174e1f2-5-llvmorg-23-init-19482-g53d18800.tar.xz
+        sha256: 1753392d6fe791a5ce743bfc70f45e151ee27bcccede516fb221b023f2c06a05
         dest: third_party/rust-toolchain
         strip-components: 0
         only-arches: [x86_64]
