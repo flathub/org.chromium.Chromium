@@ -1,4 +1,4 @@
-From fc1f5bfbb16945a5ca390aaa03519d2574d3eb06 Mon Sep 17 00:00:00 2001
+From 6dee54e67e99021621ea034a7a9b1a79d7423f8a Mon Sep 17 00:00:00 2001
 From: "re:fi.64" <hello@refi64.dev>
 Date: Fri, 16 Jan 2026 15:49:49 -0600
 Subject: [PATCH] build: Always set rustc_nightly_capability
@@ -8,10 +8,10 @@ Subject: [PATCH] build: Always set rustc_nightly_capability
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/build/config/rust.gni b/build/config/rust.gni
-index 5f33315c68b7f..e3d1631f0eeea 100644
+index 3b5db82dd161e..63fcd7bd685a9 100644
 --- a/build/config/rust.gni
 +++ b/build/config/rust.gni
-@@ -140,7 +140,7 @@ use_chromium_rust_toolchain = rust_sysroot_absolute == ""
+@@ -128,7 +128,7 @@ use_chromium_rust_toolchain = rust_sysroot_absolute == ""
  # `rustc_nightly_capability = false` will make the build avoid the use of
  # Rust nightly features. There are no bots that test this and there is no
  # guarantee it will work, but we accept patches for this configuration.

@@ -1,4 +1,4 @@
-From a875effbe682da0e7428bf40be2544481431b22c Mon Sep 17 00:00:00 2001
+From fb17508fc03aacd4e51d717448e56b65dab2342b Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <git@refi64.dev>
 Date: Thu, 16 May 2024 17:04:22 -0500
 Subject: [PATCH] media/ffmpeg: Skip formatting generated GN files

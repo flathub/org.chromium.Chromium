@@ -1,0 +1,49 @@
+From 47d8433d9d90ece714519e858590bd681661bc58 Mon Sep 17 00:00:00 2001
+From: "re:fi.64" <hello@refi64.dev>
+Date: Thu, 27 Aug 2026 11:55:56 -0500
+Subject: [PATCH] Disable Rust-based CBOR implementation when building w/ host
+ toolchain
+
+The newer cpp_api_from_rust code does not support the host toolchain:
+
+https://issues.chromium.org/issues/549864599
+---
+ components/cbor/BUILD.gn | 7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
+
+diff --git a/components/cbor/BUILD.gn b/components/cbor/BUILD.gn
+index 91fbfffd3c143..7a77e34eb9bd5 100644
+--- a/components/cbor/BUILD.gn
++++ b/components/cbor/BUILD.gn
+@@ -4,15 +4,18 @@
+ 
+ import("//build/buildflag_header.gni")
+ import("//build/config/cronet/config.gni")
++import("//build/config/rust.gni")
+ import("//testing/libfuzzer/fuzzer_test.gni")
+ 
++use_cbor_rust = !is_cronet_build && enable_cpp_api_from_rust
++
+ buildflag_header("buildflags") {
+   header = "cbor_buildflags.h"
+ 
+   # TODO(crbug.com/535682335): Remove `USE_CBOR_RUST` buildflag entirely,
+   # unconditionally enable Rust CBOR parser, and drop `is_cronet_build` check
+   # once Cronet supports Crubit dependencies.
+-  flags = [ "USE_CBOR_RUST=!$is_cronet_build" ]
++  flags = [ "USE_CBOR_RUST=$use_cbor_rust" ]
+ }
+ 
+ component("cbor") {
+@@ -37,7 +40,7 @@ component("cbor") {
+     "//base",
+   ]
+ 
+-  if (!is_cronet_build) {
++  if (use_cbor_rust) {
+     public_deps = [
+       "//build/rust/crubit",
+       "//components/cbor/rust:cbor_rust_bindings",
+-- 
+2.54.0
+

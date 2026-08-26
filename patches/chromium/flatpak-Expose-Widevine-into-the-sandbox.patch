@@ -1,4 +1,4 @@
-From 7dc083933002bf66dcbd04ecae16f1916ffd3702 Mon Sep 17 00:00:00 2001
+From 71848c83034b7951ca96b4561caecfb840dd6494 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Tue, 17 Nov 2020 13:00:39 -0600
 Subject: [PATCH] flatpak: Expose Widevine into the sandbox
@@ -10,7 +10,7 @@ Subject: [PATCH] flatpak: Expose Widevine into the sandbox
  3 files changed, 131 insertions(+), 24 deletions(-)
 
 diff --git a/content/browser/zygote_host/zygote_host_impl_linux.cc b/content/browser/zygote_host/zygote_host_impl_linux.cc
-index c611f34a2fca7..05fe616b0c0a8 100644
+index a3945ff88abb5..39cd4745727d3 100644
 --- a/content/browser/zygote_host/zygote_host_impl_linux.cc
 +++ b/content/browser/zygote_host/zygote_host_impl_linux.cc
 @@ -10,7 +10,10 @@
@@ -24,8 +24,8 @@ index c611f34a2fca7..05fe616b0c0a8 100644
  #include "base/posix/unix_domain_socket.h"
  #include "base/process/kill.h"
  #include "base/process/launch.h"
-@@ -18,9 +21,12 @@
- #include "base/strings/string_number_conversions.h"
+@@ -19,9 +22,12 @@
+ #include "base/time/time.h"
  #include "base/types/fixed_array.h"
  #include "build/build_config.h"
 +#include "chrome/common/chrome_paths.h"  // nogncheck
@@ -37,7 +37,7 @@ index c611f34a2fca7..05fe616b0c0a8 100644
  #include "content/public/common/zygote/zygote_handle.h"
  #include "sandbox/linux/services/credentials.h"
  #include "sandbox/linux/services/flatpak_sandbox.h"
-@@ -29,6 +35,7 @@
+@@ -30,6 +36,7 @@
  #include "sandbox/linux/suid/common/sandbox.h"
  #include "sandbox/policy/linux/sandbox_linux.h"
  #include "sandbox/policy/switches.h"
@@ -45,7 +45,7 @@ index c611f34a2fca7..05fe616b0c0a8 100644
  
  #if BUILDFLAG(IS_CHROMEOS)
  #include "content/common/zygote/zygote_communication_linux.h"
-@@ -193,8 +200,51 @@ pid_t ZygoteHostImpl::LaunchZygote(
+@@ -194,8 +201,51 @@ pid_t ZygoteHostImpl::LaunchZygote(
    if (is_sandboxed_zygote && use_namespace_sandbox_) {
      process = sandbox::NamespaceSandbox::LaunchProcess(*cmd_line, options);
    } else if (is_sandboxed_zygote && use_flatpak_sandbox_) {
