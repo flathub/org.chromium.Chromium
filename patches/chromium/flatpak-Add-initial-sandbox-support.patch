@@ -1,4 +1,4 @@
-From 006fdf2633b15aea0b41184b012d47820351dfcb Mon Sep 17 00:00:00 2001
+From 50b3f065533c5a76161f6ba3673aece3044cb11c Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Tue, 17 Mar 2020 13:18:27 -0500
 Subject: [PATCH] flatpak: Add initial sandbox support
@@ -30,10 +30,10 @@ Subject: [PATCH] flatpak: Add initial sandbox support
  create mode 100644 sandbox/linux/services/flatpak_sandbox.h
 
 diff --git a/.gitignore b/.gitignore
-index e9d02975508c7..8c15ebaa3dc47 100644
+index c763167e2ddba..bc8c6ad001433 100644
 --- a/.gitignore
 +++ b/.gitignore
-@@ -77,6 +77,7 @@ vs-chromium-project.txt
+@@ -78,6 +78,7 @@ vs-chromium-project.txt
  /.android_emulator_cipd_cache/
  /.clangd/
  /.clangd-index/
@@ -42,7 +42,7 @@ index e9d02975508c7..8c15ebaa3dc47 100644
  /.externalToolBuilders/
  /.settings/
 diff --git a/base/threading/thread_restrictions.h b/base/threading/thread_restrictions.h
-index 6eae2552e8627..ff7d5ec5ae85c 100644
+index 8714516286a17..a8cb52a4d08f2 100644
 --- a/base/threading/thread_restrictions.h
 +++ b/base/threading/thread_restrictions.h
 @@ -425,6 +425,9 @@ class ScopedAllowThreadJoinForWebRtcTransport;
@@ -125,10 +125,10 @@ index 1174a704b8126..e7fd738b705fb 100644
                       status & sandbox::policy::SandboxLinux::kNetNS;
    // A second-layer sandbox is also required to be adequately sandboxed.
 diff --git a/content/browser/child_process_host_impl.cc b/content/browser/child_process_host_impl.cc
-index 5c99c26000e42..c988651d676d3 100644
+index 6374969dc0241..9c1ea34b8f844 100644
 --- a/content/browser/child_process_host_impl.cc
 +++ b/content/browser/child_process_host_impl.cc
-@@ -36,6 +36,7 @@
+@@ -38,6 +38,7 @@
  
  #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
  #include "base/linux_util.h"
@@ -136,7 +136,7 @@ index 5c99c26000e42..c988651d676d3 100644
  #elif BUILDFLAG(IS_MAC)
  #include "base/apple/foundation_util.h"
  #include "content/browser/mac_helpers.h"
-@@ -61,7 +62,12 @@ base::FilePath ChildProcessHost::GetChildPath(int flags) {
+@@ -63,7 +64,12 @@ base::FilePath ChildProcessHost::GetChildPath(int flags) {
  #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
    // Use /proc/self/exe rather than our known binary path so updates
    // can't swap out the binary from underneath us.

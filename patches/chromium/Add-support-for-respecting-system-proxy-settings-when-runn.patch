@@ -1,4 +1,4 @@
-From 8aaf446346860b1c491cca6cb6cd9c805f73a587 Mon Sep 17 00:00:00 2001
+From 154bb516a5d856f7237064f2358f06c569d65c04 Mon Sep 17 00:00:00 2001
 From: Andre Moreira Magalhaes <andre.magalhaes@endlessos.org>
 Date: Thu, 17 Dec 2020 19:05:10 -0300
 Subject: [PATCH] Add support for respecting system proxy settings when running
@@ -54,10 +54,10 @@ Closes https://github.com/flathub/org.chromium.Chromium/issues/36
  create mode 100644 net/proxy_resolution/proxy_resolver_linux.h
 
 diff --git a/chrome/app/generated_resources.grd b/chrome/app/generated_resources.grd
-index 7e4c3abea6cc6..58b98eaf667fe 100644
+index 8df3f66084dc0..73e35236d22c2 100644
 --- a/chrome/app/generated_resources.grd
 +++ b/chrome/app/generated_resources.grd
-@@ -16288,6 +16288,12 @@ Please help our engineers fix this problem. Tell us what happened right before y
+@@ -16474,6 +16474,12 @@ Please help our engineers fix this problem. Tell us what happened right before y
  
            &lt;p&gt;But you can still configure via the command line.  Please see &lt;code&gt;man <ph name="PRODUCT_BINARY_NAME">$2<ex>google-chrome</ex></ph>&lt;/code&gt; for more information on flags and environment variables.&lt;/p&gt;
          </message>
@@ -107,10 +107,10 @@ index e1baad6622092..4e8958a6fea3c 100644
        LOG(ERROR) << "Cannot use V8 Proxy resolver in single process mode.";
      } else {
 diff --git a/chrome/browser/ui/webui/about/about_ui.cc b/chrome/browser/ui/webui/about/about_ui.cc
-index 64c2a2bbefcc0..adb4490ef840a 100644
+index d9b2b09c16bf4..f3748597b93f9 100644
 --- a/chrome/browser/ui/webui/about/about_ui.cc
 +++ b/chrome/browser/ui/webui/about/about_ui.cc
-@@ -85,6 +85,10 @@
+@@ -84,6 +84,10 @@
  #include "third_party/zlib/google/compression_utils.h"
  #endif
  
@@ -121,7 +121,7 @@ index 64c2a2bbefcc0..adb4490ef840a 100644
  using content::BrowserThread;
  
  namespace {
-@@ -415,8 +419,16 @@ std::string AboutLinuxProxyConfig() {
+@@ -414,8 +418,16 @@ std::string AboutLinuxProxyConfig() {
    data.append("<style>body { max-width: 70ex; padding: 2ex 5ex; }</style>");
    AppendBody(&data);
    base::FilePath binary = base::CommandLine::ForCurrentProcess()->GetProgram();
@@ -140,10 +140,10 @@ index 64c2a2bbefcc0..adb4490ef840a 100644
                                  base::ASCIIToUTF16(binary.BaseName().value())));
    AppendFooter(&data);
 diff --git a/net/BUILD.gn b/net/BUILD.gn
-index d2fda49ebd4e8..47076dd7dc7c7 100644
+index 1195c4be9c684..0f02ef91a8068 100644
 --- a/net/BUILD.gn
 +++ b/net/BUILD.gn
-@@ -1429,6 +1429,8 @@ component("net") {
+@@ -1426,6 +1426,8 @@ component("net") {
      sources += [
        "base/address_map_cache_linux.cc",
        "base/address_map_cache_linux.h",
@@ -152,7 +152,7 @@ index d2fda49ebd4e8..47076dd7dc7c7 100644
      ]
    }
  
-@@ -1979,6 +1981,7 @@ source_set("net_deps") {
+@@ -1978,6 +1980,7 @@ source_set("net_deps") {
  
    if (use_gio) {
      public_configs += [ "//build/linux:gio_config" ]
@@ -161,7 +161,7 @@ index d2fda49ebd4e8..47076dd7dc7c7 100644
  
    if (is_android) {
 diff --git a/net/proxy_resolution/configured_proxy_resolution_service.cc b/net/proxy_resolution/configured_proxy_resolution_service.cc
-index 4f585fd673c91..13cb5c6f5350d 100644
+index 11520accc8cf0..af9f4389de899 100644
 --- a/net/proxy_resolution/configured_proxy_resolution_service.cc
 +++ b/net/proxy_resolution/configured_proxy_resolution_service.cc
 @@ -48,6 +48,8 @@

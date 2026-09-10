@@ -1,4 +1,4 @@
-From 4164d21e8477dd74ab33e5e708b0038ef46c2d71 Mon Sep 17 00:00:00 2001
+From 61d36c0616d921d187611ebcbdc5fe69d9c5cef3 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Thu, 30 Sep 2021 11:27:43 -0500
 Subject: [PATCH] Clang build script: Disable hwasan
@@ -10,18 +10,18 @@ and we don't really need this for the Flatpak anyway.
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/tools/clang/scripts/build.py b/tools/clang/scripts/build.py
-index a9e248f2e5d97..f9a4e8459208c 100755
+index bd9d80b30c5b4..9c7d9953f3c71 100755
 --- a/tools/clang/scripts/build.py
 +++ b/tools/clang/scripts/build.py
-@@ -682,7 +682,7 @@ def compiler_rt_cmake_flags(*, sanitizers, profile):
-       'COMPILER_RT_BUILD_SANITIZERS=' + ('ON' if sanitizers else 'OFF'),
-       'COMPILER_RT_BUILD_XRAY=OFF',
-       # See crbug.com/1205046: don't build scudo (and others we don't need).
--      'COMPILER_RT_SANITIZERS_TO_BUILD=asan;dfsan;msan;hwasan;tsan;cfi',
-+      'COMPILER_RT_SANITIZERS_TO_BUILD=asan;dfsan;msan;tsan;cfi',
-       # We explicitly list all targets we want to build, do not autodetect
-       # targets.
-       'COMPILER_RT_DEFAULT_TARGET_ONLY=ON',
+@@ -790,7 +790,7 @@ def compiler_rt_cmake_flags(*, sanitizers, profile):
+     'COMPILER_RT_BUILD_SANITIZERS=' + ('ON' if sanitizers else 'OFF'),
+     'COMPILER_RT_BUILD_XRAY=OFF',
+     # See crbug.com/1205046: don't build scudo (and others we don't need).
+-    'COMPILER_RT_SANITIZERS_TO_BUILD=asan;dfsan;msan;hwasan;tsan;cfi',
++    'COMPILER_RT_SANITIZERS_TO_BUILD=asan;dfsan;msan;tsan;cfi',
+     # We explicitly list all targets we want to build, do not autodetect
+     # targets.
+     'COMPILER_RT_DEFAULT_TARGET_ONLY=ON',
 -- 
 2.54.0
 

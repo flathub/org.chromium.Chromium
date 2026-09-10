@@ -1,27 +1,31 @@
-From e42fbf89dba74a62791278abef9b19bcc1b21863 Mon Sep 17 00:00:00 2001
+From 3c2b78f317f8155781bd1f8cc6da83b3beff2a3e Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <git@refi64.dev>
 Date: Wed, 13 Sep 2023 09:31:07 -0500
 Subject: [PATCH] Clang build script: add support for building a subset of
  target triples
 
 ---
- tools/clang/scripts/build.py | 4 ++++
- 1 file changed, 4 insertions(+)
+ tools/clang/scripts/build.py | 8 ++++++++
+ 1 file changed, 8 insertions(+)
 
 diff --git a/tools/clang/scripts/build.py b/tools/clang/scripts/build.py
-index 5fe685dc00a6b..f71c5724ef257 100755
+index c9eebf7dbf639..e2e2da81d905b 100755
 --- a/tools/clang/scripts/build.py
 +++ b/tools/clang/scripts/build.py
-@@ -735,6 +735,8 @@ def main():
-   parser.add_argument('--bootstrap',
-                       action='store_true',
-                       help='first build clang with CC, then with itself.')
-+  parser.add_argument('--target-triple', action='append', dest='target_triples',
-+                      help='Only build support for the given triples')
-   parser.add_argument('--disable-asserts', action='store_true',
-                       help='build with asserts disabled')
-   parser.add_argument('--host-cc',
-@@ -1618,6 +1620,8 @@ def main():
+@@ -853,6 +853,12 @@ def main():
+     action='store_true',
+     help='first build clang with CC, then with itself.',
+   )
++  parser.add_argument(
++    '--target-triple',
++    action='append',
++    dest='target_triples',
++    help='Only build support for the given triples',
++  )
+   parser.add_argument(
+     '--disable-asserts', action='store_true', help='build with asserts disabled'
+   )
+@@ -1836,6 +1842,8 @@ def main():
    # -DLLVM_BUILTIN_TARGETS/-DLLVM_RUNTIME_TARGETS.
    all_triples = ''
    for triple in sorted(runtimes_triples_args.keys()):

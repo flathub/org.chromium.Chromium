@@ -21,7 +21,9 @@
       "patches/chromium/Only-check-the-Node-major-version-number.patch",
       "patches/chromium/build-Only-check-rustc_revision-when-using-Chromium-s-Rust.patch",
       "patches/chromium/build-Always-set-rustc_nightly_capability.patch",
-      "patches/chromium/Disable-Rust-based-CBOR-implementation-when-building-w-hos.patch"
+      "patches/chromium/Disable-Rust-based-CBOR-implementation-when-building-w-hos.patch",
+      "patches/chromium/Revert-Migrate-OpenType-format-check-bindings-to-Crubit.patch",
+      "patches/chromium/Use-the-system-Python-3-interpreter.patch"
     ]
   }
 ]

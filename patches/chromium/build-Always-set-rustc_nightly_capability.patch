@@ -1,4 +1,4 @@
-From 6dee54e67e99021621ea034a7a9b1a79d7423f8a Mon Sep 17 00:00:00 2001
+From 5307da1802088c4af07e778afcd7697ceb5d34a4 Mon Sep 17 00:00:00 2001
 From: "re:fi.64" <hello@refi64.dev>
 Date: Fri, 16 Jan 2026 15:49:49 -0600
 Subject: [PATCH] build: Always set rustc_nightly_capability
