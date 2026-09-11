@@ -1,2 +1,4 @@
 _build/
 .flatpak-builder/
+flatpak-cargo-generator.py
+flatpak-cargo-generator.py.stamp

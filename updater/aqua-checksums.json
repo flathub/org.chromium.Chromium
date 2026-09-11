@@ -1,0 +1,59 @@
+{
+  "checksums": [
+    {
+      "id": "github_release/github.com/astral-sh/uv/0.12.13/uv-aarch64-apple-darwin.tar.gz",
+      "checksum": "7E6DDB9316ACC00F2296C82FF4D99977870EE34B2F0DDCAE9444D714DB9364ED",
+      "algorithm": "sha256"
+    },
+    {
+      "id": "github_release/github.com/astral-sh/uv/0.12.13/uv-aarch64-unknown-linux-musl.tar.gz",
+      "checksum": "F44BC1037A17889FE562FFFD2002D4ED108E499FBE68B4F022AF244DC7B8244F",
+      "algorithm": "sha256"
+    },
+    {
+      "id": "github_release/github.com/astral-sh/uv/0.12.13/uv-x86_64-apple-darwin.tar.gz",
+      "checksum": "5E287EF61CB6A9B61B3A83FEF124FD143E400468A7DAC794230147A810E17119",
+      "algorithm": "sha256"
+    },
+    {
+      "id": "github_release/github.com/astral-sh/uv/0.12.13/uv-x86_64-pc-windows-msvc.zip",
+      "checksum": "A86C9DC7BAD9B03F388583B7187C05FE9951C2E0D392217E8FD43D97787F6EC2",
+      "algorithm": "sha256"
+    },
+    {
+      "id": "github_release/github.com/astral-sh/uv/0.12.13/uv-x86_64-unknown-linux-musl.tar.gz",
+      "checksum": "4E2BFD0C9007B1032A50E539E965FD0A6037D87AD93AE1580D220A92D4C94098",
+      "algorithm": "sha256"
+    },
+    {
+      "id": "github_release/github.com/nushell/nushell/0.115.1/nu-0.115.1-aarch64-apple-darwin.tar.gz",
+      "checksum": "2E6ED1EB043869FF05B5F2448A8C443E4D3A93557BA4303B21008A0523C96734",
+      "algorithm": "sha256"
+    },
+    {
+      "id": "github_release/github.com/nushell/nushell/0.115.1/nu-0.115.1-aarch64-unknown-linux-gnu.tar.gz",
+      "checksum": "5C4A5BCA0AF5B070E903A68FA014CC24E6419D0AC9CEC03A2948494B2D310E08",
+      "algorithm": "sha256"
+    },
+    {
+      "id": "github_release/github.com/nushell/nushell/0.115.1/nu-0.115.1-x86_64-apple-darwin.tar.gz",
+      "checksum": "0292F4B92AF29CFE5D9C4B2EC06EEB325B705D1D6C19536A8BEC2B75859B3485",
+      "algorithm": "sha256"
+    },
+    {
+      "id": "github_release/github.com/nushell/nushell/0.115.1/nu-0.115.1-x86_64-pc-windows-msvc.zip",
+      "checksum": "B83009CBC88021F4DC293C49320118886B78363F9A4BB14933D33C8803241F46",
+      "algorithm": "sha256"
+    },
+    {
+      "id": "github_release/github.com/nushell/nushell/0.115.1/nu-0.115.1-x86_64-unknown-linux-musl.tar.gz",
+      "checksum": "8A9722177DDD421EBA927B4BAAE4AE341A4D1C3434504BE7B1B17D998BAFDD87",
+      "algorithm": "sha256"
+    },
+    {
+      "id": "registries/github_content/github.com/aquaproj/aqua-registry/v4.562.0/registry.yaml",
+      "checksum": "3C4EB01CB307CEF6FBA324D8F7EA552499879BA18B3EC8AC6EA08056D498272E7AFE3C9336B62BBFAA54E34AF03A13A9568EAE771983F32F8DA1A58EF6D56845",
+      "algorithm": "sha512"
+    }
+  ]
+}
