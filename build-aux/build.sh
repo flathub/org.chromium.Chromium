@@ -8,6 +8,7 @@ ln_overwrite_all() {
 # Link our verisons of Node and OpenJDK into Chromium so the build scripts will
 # use them. For OpenJDK especially, this is a workaround for:
 # https://bugs.chromium.org/p/chromium/issues/detail?id=1192875
+mkdir -p third_party/node/linux  # not present in minimal tarballs
 ln_overwrite_all /usr/lib/sdk/node24 third_party/node/linux/node-linux-x64
 ln_overwrite_all /usr/lib/sdk/openjdk21 third_party/jdk/current
 
