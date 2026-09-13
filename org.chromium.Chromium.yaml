@@ -193,8 +193,8 @@ modules:
       - ./install.sh
     sources:
       - type: archive
-        url: https://github.com/chromium-linux-tarballs/chromium-tarballs/releases/download/153.0.8010.36/chromium-153.0.8010.36-linux.tar.xz
-        sha256: 5e2e8fe8c990e591b26237ed0fb9747a76f9da3eac439d7a726000879c468735
+        url: https://commondatastorage.googleapis.com/chromium-browser-official/chromium-153.0.8010.36.tar.xz
+        sha256: 93a4424d2bc4f24bd04789c3518a2c07511662bfacb46cb416818712147cd2bc
         x-checker-data:
           type: chromium
           component: chromium
