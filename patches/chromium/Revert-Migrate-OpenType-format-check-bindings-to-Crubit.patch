@@ -1,4 +1,4 @@
-From 7116603f777ee50e56470fe50ed5a637a81de415 Mon Sep 17 00:00:00 2001
+From ec2123fd9a77a213ada7178dd302436f38d3b97e Mon Sep 17 00:00:00 2001
 From: "re:fi.64" <hello@refi64.dev>
 Date: Thu, 10 Sep 2026 08:30:20 -0500
 Subject: [PATCH] Revert "Migrate OpenType format check bindings to Crubit"
@@ -14,7 +14,7 @@ This reverts commit 493e6c3911e33cc356856bafbffc6cf95521266b.
  delete mode 100644 third_party/blink/renderer/platform/fonts/BUILD.gn
 
 diff --git a/third_party/blink/renderer/platform/BUILD.gn b/third_party/blink/renderer/platform/BUILD.gn
-index 9bfa9565f03f1..6eed09d66d173 100644
+index 233618cf12e7b..02f921b06ba99 100644
 --- a/third_party/blink/renderer/platform/BUILD.gn
 +++ b/third_party/blink/renderer/platform/BUILD.gn
 @@ -186,6 +186,18 @@ group("make_platform_generated") {
@@ -28,15 +28,15 @@ index 9bfa9565f03f1..6eed09d66d173 100644
 +  cxx_bindings = [ crate_root ]
 +  deps = [
 +    "//third_party/rust/font_types/v0_12:lib",
-+    "//third_party/rust/read_fonts/v0_41:lib",
-+    "//third_party/rust/skrifa/v0_44:lib",
++    "//third_party/rust/read_fonts/v0_43:lib",
++    "//third_party/rust/skrifa/v0_46:lib",
 +  ]
 +}
 +
  rust_static_library("rustfft_ffi") {
    allow_unsafe = true  # Needed for FFI that underpins the `cxx` crate.
    crate_root = "audio/rustfft_ffi.rs"
-@@ -1794,7 +1806,6 @@ component("platform") {
+@@ -1792,7 +1804,6 @@ component("platform") {
      ":allow_discouraged_type",
      ":blink_platform_public_deps",
      ":platform_export",
@@ -44,7 +44,7 @@ index 9bfa9565f03f1..6eed09d66d173 100644
      "//gpu/command_buffer/client:raster_interface",
      "//media/capture:capture_lib",
      "//mojo/public/cpp/base",
-@@ -1821,8 +1832,8 @@ component("platform") {
+@@ -1819,8 +1830,8 @@ component("platform") {
      "//ui/native_theme/features",
    ]
    deps = [
@@ -56,7 +56,7 @@ index 9bfa9565f03f1..6eed09d66d173 100644
      "//build:chromecast_buildflags",
 diff --git a/third_party/blink/renderer/platform/fonts/BUILD.gn b/third_party/blink/renderer/platform/fonts/BUILD.gn
 deleted file mode 100644
-index 51b9b03ba7c85..0000000000000
+index eebce947edcce..0000000000000
 --- a/third_party/blink/renderer/platform/fonts/BUILD.gn
 +++ /dev/null
 @@ -1,19 +0,0 @@
@@ -75,8 +75,8 @@ index 51b9b03ba7c85..0000000000000
 -  }
 -  deps = [
 -    "//third_party/rust/font_types/v0_12:lib",
--    "//third_party/rust/read_fonts/v0_41:lib",
--    "//third_party/rust/skrifa/v0_44:lib",
+-    "//third_party/rust/read_fonts/v0_43:lib",
+-    "//third_party/rust/skrifa/v0_46:lib",
 -  ]
 -}
 diff --git a/third_party/blink/renderer/platform/fonts/opentype/font_format_check.cc b/third_party/blink/renderer/platform/fonts/opentype/font_format_check.cc

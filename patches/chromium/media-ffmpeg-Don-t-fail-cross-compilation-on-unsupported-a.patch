@@ -1,4 +1,4 @@
-From 92fdb0d47ab5ba216a0d787a567e0213194cab7b Mon Sep 17 00:00:00 2001
+From 7df79b1e2acc580d0897ceb481f75c1d94c74e36 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <git@refi64.dev>
 Date: Thu, 16 May 2024 17:02:06 -0500
 Subject: [PATCH] media/ffmpeg: Don't fail cross-compilation on unsupported

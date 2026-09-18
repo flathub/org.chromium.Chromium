@@ -1,4 +1,4 @@
-From 55d1d09816366762b8f1ddc4d44f7b6675709226 Mon Sep 17 00:00:00 2001
+From 6fe63737fc8908aaf794e115ea329aad89939934 Mon Sep 17 00:00:00 2001
 From: "re:fi.64" <hello@refi64.dev>
 Date: Thu, 27 Aug 2026 11:55:56 -0500
 Subject: [PATCH] Disable Rust-based CBOR implementation when building w/ host
@@ -12,7 +12,7 @@ https://issues.chromium.org/issues/549864599
  1 file changed, 5 insertions(+), 2 deletions(-)
 
 diff --git a/components/cbor/BUILD.gn b/components/cbor/BUILD.gn
-index 038c10d1b6e50..f3a6eacd198bb 100644
+index 0dfc9e5ebded5..4aa56e91d854e 100644
 --- a/components/cbor/BUILD.gn
 +++ b/components/cbor/BUILD.gn
 @@ -4,15 +4,18 @@
