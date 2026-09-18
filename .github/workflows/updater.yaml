@@ -12,11 +12,21 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - uses: aquaproj/aqua-installer@96a9bc20066c5bf5e275b41019cfc165b25f4e2e # v4.0.5
-        with:
-          aqua_version: v2.62.3
-          working_directory: updater
-          aqua_opts: ''  # remove '-l'
+      - name: Install aqua
+        # Based on aqua-installer's workflow:
+        # https://github.com/aquaproj/aqua-installer/blob/6d5ae97847bbfae6727f7e98543a026dd5b4bf5e/action.yaml
+        run: |
+          set -ex
+
+          curl -sSfL -O https://raw.githubusercontent.com/aquaproj/aqua-installer/v4.0.5/aqua-installer
+          echo '451028d56959cc738564885b1dbebc2691ea038ffde04e2472e4d486a3591146  aqua-installer' | sha256sum -c -
+          chmod +x aqua-installer
+          ./aqua-installer
+
+          echo "${AQUA_ROOT_DIR:-${XDG_DATA_HOME:-$HOME/.local/share}/aquaproj-aqua}/bin" >> $GITHUB_PATH
+
+      - name: Install deps
+        run: cd updater && aqua i
 
       - name: Configure git
         run: |
