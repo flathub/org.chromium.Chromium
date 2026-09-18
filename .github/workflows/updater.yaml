@@ -2,6 +2,11 @@ on:
   schedule:
     - cron: '0 */4 * * *'
   workflow_dispatch:
+    inputs:
+      dry-run:
+        description: 'Dry run'
+        required: false
+        type: boolean
 
 jobs:
   updater:
@@ -39,7 +44,7 @@ jobs:
         id: updater
         run: cd updater && ./update.nu --commit
 
-      - if: steps.updater.outputs.changed
+      - if: steps.updater.outputs.changed && !inputs.dry-run
         uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
         with:
           title: Updates for Chromium ${{ steps.updater.outputs.chromium-version }}
