@@ -1,4 +1,4 @@
-From eb31cf7431c5410ca43355d59a3224d8761bde91 Mon Sep 17 00:00:00 2001
+From 06841a0a6b3a728dabd842d4a86432dad655d364 Mon Sep 17 00:00:00 2001
 From: Ryan Gonzalez <rymg19@gmail.com>
 Date: Tue, 1 Mar 2022 19:29:12 -0600
 Subject: [PATCH] clang build script: Support disabling the bundled libxml2
@@ -11,10 +11,10 @@ attempting to build a toolchain without network access.
  1 file changed, 23 insertions(+), 10 deletions(-)
 
 diff --git a/tools/clang/scripts/build.py b/tools/clang/scripts/build.py
-index 9c7d9953f3c71..0ef3a054d779a 100755
+index e5192f547e3c8..55085ad6a10cc 100755
 --- a/tools/clang/scripts/build.py
 +++ b/tools/clang/scripts/build.py
-@@ -928,6 +928,12 @@ def main():
+@@ -938,6 +938,12 @@ def main():
      'trained for Chrome on Android',
      default='default' if sys.platform.startswith('linux') else '',
    )
@@ -27,7 +27,7 @@ index 9c7d9953f3c71..0ef3a054d779a 100755
    parser.add_argument(
      '--with-android',
      type=gn_arg,
-@@ -1022,6 +1028,10 @@ def main():
+@@ -1032,6 +1038,10 @@ def main():
      print('--with-ml-inliner-model only supports linux hosts')
      return 1
  
@@ -38,7 +38,7 @@ index 9c7d9953f3c71..0ef3a054d779a 100755
    # Don't buffer stdout, so that print statements are immediately flushed.
    # LLVM tests print output without newlines, so with buffering they won't be
    # immediately printed.
-@@ -1229,16 +1239,19 @@ def main():
+@@ -1241,16 +1251,19 @@ def main():
  
    deployment_target = DEFAULT_MACOSX_DEPLOYMENT_TARGET
  

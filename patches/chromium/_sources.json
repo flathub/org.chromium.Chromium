@@ -23,7 +23,10 @@
       "patches/chromium/build-Always-set-rustc_nightly_capability.patch",
       "patches/chromium/Disable-Rust-based-CBOR-implementation-when-building-w-hos.patch",
       "patches/chromium/Revert-Migrate-OpenType-format-check-bindings-to-Crubit.patch",
-      "patches/chromium/Use-the-system-Python-3-interpreter.patch"
+      "patches/chromium/Use-the-system-Python-3-interpreter.patch",
+      "patches/chromium/Revert-Migrate-Signed-Web-Bundle-signature-verification-to.patch",
+      "patches/chromium/Revert-Migrate-Web-Bundle-integrity-block-parser-to-dedica.patch",
+      "patches/chromium/Revert-athm_ffi-Crubit-changes.patch"
     ]
   }
 ]

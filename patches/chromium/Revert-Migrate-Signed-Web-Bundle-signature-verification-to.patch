@@ -1,0 +1,380 @@
+From c8692a05be04a1a49f7dacfc0b6f760854b35e64 Mon Sep 17 00:00:00 2001
+From: "re:fi.64" <hello@refi64.dev>
+Date: Tue, 22 Sep 2026 18:15:17 -0500
+Subject: [PATCH] Revert "Migrate Signed Web Bundle signature verification to
+ Rust crate"
+
+This reverts commit b2c9d9c61c9fefca5f64e702b330686e44eefb78.
+---
+ components/web_package/BUILD.gn               |   1 -
+ .../ecdsa_p256_sha256_signature.cc            |   8 +-
+ .../signed_web_bundles/ed25519_signature.cc   |   8 +-
+ .../signed_web_bundles/rust/BUILD.gn          |   1 -
+ .../signed_web_bundles/rust/lib.rs            |   5 -
+ .../rust/signature_verifier.rs                | 120 ------------------
+ .../signed_web_bundle_signature_verifier.cc   |  42 ++++--
+ .../signed_web_bundle_utils.cc                |  31 ++++-
+ 8 files changed, 69 insertions(+), 147 deletions(-)
+ delete mode 100644 components/web_package/signed_web_bundles/rust/signature_verifier.rs
+
+diff --git a/components/web_package/BUILD.gn b/components/web_package/BUILD.gn
+index eeb903b2113d8..1e3dfb0e2eebc 100644
+--- a/components/web_package/BUILD.gn
++++ b/components/web_package/BUILD.gn
+@@ -70,7 +70,6 @@ source_set("mojom_mapped_types") {
+ 
+   deps = [
+     "//base",
+-    "//components/web_package/signed_web_bundles/rust:signed_web_bundles_rust_bindings",
+     "//crypto",
+     "//mojo/public/cpp/bindings",
+   ]
+diff --git a/components/web_package/signed_web_bundles/ecdsa_p256_sha256_signature.cc b/components/web_package/signed_web_bundles/ecdsa_p256_sha256_signature.cc
+index 2d820f0913313..b5a5ffbaab700 100644
+--- a/components/web_package/signed_web_bundles/ecdsa_p256_sha256_signature.cc
++++ b/components/web_package/signed_web_bundles/ecdsa_p256_sha256_signature.cc
+@@ -9,7 +9,8 @@
+ #include "base/strings/stringprintf.h"
+ #include "base/types/expected.h"
+ #include "components/web_package/signed_web_bundles/ecdsa_p256_public_key.h"
+-#include "components/web_package/signed_web_bundles/rust/signed_web_bundles_rust.h"
++#include "crypto/keypair.h"
++#include "crypto/sign.h"
+ 
+ namespace web_package {
+ 
+@@ -50,8 +51,9 @@ EcdsaP256SHA256Signature::EcdsaP256SHA256Signature(std::vector<uint8_t> bytes)
+ [[nodiscard]] bool EcdsaP256SHA256Signature::Verify(
+     base::span<const uint8_t> message,
+     const EcdsaP256PublicKey& public_key) const {
+-  return signed_web_bundles::rust::verify_ecdsa_p256_signature(
+-      public_key.bytes(), bytes(), message);
++  auto key = crypto::keypair::PublicKey::FromEcP256Point(public_key.bytes());
++  return crypto::sign::Verify(crypto::sign::ECDSA_SHA256, *key, message,
++                              bytes());
+ }
+ 
+ }  // namespace web_package
+diff --git a/components/web_package/signed_web_bundles/ed25519_signature.cc b/components/web_package/signed_web_bundles/ed25519_signature.cc
+index 1011178e2fc92..62e24aeec1111 100644
+--- a/components/web_package/signed_web_bundles/ed25519_signature.cc
++++ b/components/web_package/signed_web_bundles/ed25519_signature.cc
+@@ -7,7 +7,6 @@
+ #include <algorithm>
+ 
+ #include "base/strings/stringprintf.h"
+-#include "components/web_package/signed_web_bundles/rust/signed_web_bundles_rust.h"
+ #include "third_party/boringssl/src/include/openssl/curve25519.h"
+ 
+ namespace web_package {
+@@ -43,8 +42,11 @@ Ed25519Signature::Ed25519Signature(std::array<uint8_t, kLength>& bytes)
+ [[nodiscard]] bool Ed25519Signature::Verify(
+     base::span<const uint8_t> message,
+     const Ed25519PublicKey& public_key) const {
+-  return signed_web_bundles::rust::verify_ed25519_signature(public_key.bytes(),
+-                                                            bytes(), message);
++  const std::array<uint8_t, ED25519_PUBLIC_KEY_LEN>& public_key_bytes =
++      public_key.bytes();
++  const std::array<uint8_t, ED25519_SIGNATURE_LEN>& signature_bytes = bytes();
++  return ED25519_verify(message.data(), message.size(), signature_bytes.data(),
++                        public_key_bytes.data());
+ }
+ 
+ }  // namespace web_package
+diff --git a/components/web_package/signed_web_bundles/rust/BUILD.gn b/components/web_package/signed_web_bundles/rust/BUILD.gn
+index 8e1bf00dba878..d569d80135be7 100644
+--- a/components/web_package/signed_web_bundles/rust/BUILD.gn
++++ b/components/web_package/signed_web_bundles/rust/BUILD.gn
+@@ -10,7 +10,6 @@ rust_static_library("signed_web_bundles_rust") {
+   sources = [
+     "constants.rs",
+     "integrity_block.rs",
+-    "signature_verifier.rs",
+     "types.rs",
+     crate_root,
+   ]
+diff --git a/components/web_package/signed_web_bundles/rust/lib.rs b/components/web_package/signed_web_bundles/rust/lib.rs
+index 7ff9adc06be06..4cc7381cc5a40 100644
+--- a/components/web_package/signed_web_bundles/rust/lib.rs
++++ b/components/web_package/signed_web_bundles/rust/lib.rs
+@@ -9,7 +9,6 @@ extern crate alloc;
+ 
+ mod constants;
+ mod integrity_block;
+-mod signature_verifier;
+ mod types;
+ 
+ pub use constants::{
+@@ -18,8 +17,4 @@ pub use constants::{
+     TOP_LEVEL_ARRAY_LENGTH, V2_VERSION_BYTES, WEB_BUNDLE_ID_ATTRIBUTE_NAME,
+ };
+ pub use integrity_block::parse_integrity_block;
+-pub use signature_verifier::{
+-    create_empty_integrity_block_cbor, create_signature_payload, verify_ecdsa_p256_signature,
+-    verify_ed25519_signature, verify_signature, Sha512Hasher,
+-};
+ pub use types::{IntegrityBlock, ParseError, SignatureStackEntry, SignatureType};
+diff --git a/components/web_package/signed_web_bundles/rust/signature_verifier.rs b/components/web_package/signed_web_bundles/rust/signature_verifier.rs
+deleted file mode 100644
+index db885baa200ee..0000000000000
+--- a/components/web_package/signed_web_bundles/rust/signature_verifier.rs
++++ /dev/null
+@@ -1,120 +0,0 @@
+-// Copyright 2026 The Chromium Authors
+-// Use of this source code is governed by a BSD-style license that can be
+-// found in the LICENSE file.
+-
+-use alloc::vec::Vec;
+-
+-use crate::constants::{MAGIC_BYTES, V2_VERSION_BYTES};
+-use crate::types::SignatureType;
+-
+-/// Constructs the CBOR representation of an integrity block with an empty
+-/// signature array by parsing the pre-encoded attributes and serializing
+-/// the top-level CBOR structure using the memory-safe CBOR writer.
+-pub fn create_empty_integrity_block_cbor(attributes_cbor: &[u8]) -> Vec<u8> {
+-    let attributes_value = match cbor::parse_with_config(attributes_cbor, cbor::Config::default()) {
+-        Ok(parsed) => parsed.value,
+-        Err(_) => cbor::Value::Map(Default::default()),
+-    };
+-
+-    let top_array = cbor::Value::Array(alloc::vec![
+-        cbor::Value::Bytestring(MAGIC_BYTES),
+-        cbor::Value::Bytestring(V2_VERSION_BYTES),
+-        attributes_value,
+-        cbor::Value::Array(Vec::new()),
+-    ]);
+-
+-    cbor::write(&top_array)
+-}
+-
+-fn append_payload_item(payload: &mut Vec<u8>, item: &[u8]) {
+-    payload.extend_from_slice(&(item.len() as u64).to_be_bytes());
+-    payload.extend_from_slice(item);
+-}
+-
+-/// Constructs the signature payload by concatenating 8-byte big-endian
+-/// length-prefixed chunks: unsigned_web_bundle_hash, integrity_block_cbor, and
+-/// attributes_cbor.
+-pub fn create_signature_payload(
+-    unsigned_web_bundle_hash: &[u8],
+-    integrity_block_cbor: &[u8],
+-    attributes_cbor: &[u8],
+-) -> Vec<u8> {
+-    let mut payload = Vec::with_capacity(
+-        8 + unsigned_web_bundle_hash.len()
+-            + 8
+-            + integrity_block_cbor.len()
+-            + 8
+-            + attributes_cbor.len(),
+-    );
+-    append_payload_item(&mut payload, unsigned_web_bundle_hash);
+-    append_payload_item(&mut payload, integrity_block_cbor);
+-    append_payload_item(&mut payload, attributes_cbor);
+-    payload
+-}
+-
+-/// Verifies an Ed25519 signature over `message` using BoringSSL.
+-#[must_use]
+-pub fn verify_ed25519_signature(public_key: &[u8], signature: &[u8], message: &[u8]) -> bool {
+-    let Ok(pk_bytes) = public_key.try_into() else {
+-        return false;
+-    };
+-    let Ok(sig_bytes) = signature.try_into() else {
+-        return false;
+-    };
+-    let pk = bssl_crypto::ed25519::PublicKey::from_bytes(pk_bytes);
+-    pk.verify(message, sig_bytes).is_ok()
+-}
+-
+-/// Verifies an ECDSA P-256 signature (ASN.1 DER format) over `message` using
+-/// BoringSSL.
+-#[must_use]
+-pub fn verify_ecdsa_p256_signature(public_key: &[u8], signature: &[u8], message: &[u8]) -> bool {
+-    let Some(pk) =
+-        bssl_crypto::ecdsa::PublicKey::<bssl_crypto::ec::P256>::from_x962_compressed(public_key)
+-    else {
+-        return false;
+-    };
+-    pk.verify(message, signature).is_ok()
+-}
+-
+-/// Dispatches signature verification based on `signature_type`.
+-#[must_use]
+-pub fn verify_signature(
+-    signature_type: SignatureType,
+-    public_key: &[u8],
+-    signature: &[u8],
+-    message: &[u8],
+-) -> bool {
+-    match signature_type {
+-        SignatureType::Ed25519 => verify_ed25519_signature(public_key, signature, message),
+-        SignatureType::EcdsaP256SHA256 => {
+-            verify_ecdsa_p256_signature(public_key, signature, message)
+-        }
+-        SignatureType::Unknown => true,
+-    }
+-}
+-
+-/// Streaming SHA-512 hasher using BoringSSL.
+-pub struct Sha512Hasher {
+-    inner: bssl_crypto::digest::Sha512,
+-}
+-
+-impl Default for Sha512Hasher {
+-    fn default() -> Self {
+-        Self::new()
+-    }
+-}
+-
+-impl Sha512Hasher {
+-    pub fn new() -> Self {
+-        Self { inner: bssl_crypto::digest::Sha512::new() }
+-    }
+-
+-    pub fn update(&mut self, chunk: &[u8]) {
+-        self.inner.update(chunk);
+-    }
+-
+-    pub fn finish(self) -> [u8; 64] {
+-        self.inner.digest()
+-    }
+-}
+diff --git a/components/web_package/signed_web_bundles/signed_web_bundle_signature_verifier.cc b/components/web_package/signed_web_bundles/signed_web_bundle_signature_verifier.cc
+index 4aef9c4eb62f2..ff88d0ac16730 100644
+--- a/components/web_package/signed_web_bundles/signed_web_bundle_signature_verifier.cc
++++ b/components/web_package/signed_web_bundles/signed_web_bundle_signature_verifier.cc
+@@ -20,14 +20,17 @@
+ #include "base/task/thread_pool.h"
+ #include "base/types/expected.h"
+ #include "base/types/expected_macros.h"
++#include "components/cbor/values.h"
++#include "components/cbor/writer.h"
++#include "components/web_package/signed_web_bundles/constants.h"
+ #include "components/web_package/signed_web_bundles/identity_validator.h"
+ #include "components/web_package/signed_web_bundles/integrity_block_parser.h"
+-#include "components/web_package/signed_web_bundles/rust/signed_web_bundles_rust.h"
+ #include "components/web_package/signed_web_bundles/signed_web_bundle_id.h"
+ #include "components/web_package/signed_web_bundles/signed_web_bundle_integrity_block.h"
+ #include "components/web_package/signed_web_bundles/signed_web_bundle_signature_stack.h"
+ #include "components/web_package/signed_web_bundles/signed_web_bundle_signature_stack_entry.h"
+ #include "components/web_package/signed_web_bundles/signed_web_bundle_utils.h"
++#include "crypto/hash.h"
+ #include "third_party/abseil-cpp/absl/functional/overload.h"
+ #include "third_party/boringssl/src/include/openssl/sha.h"
+ 
+@@ -37,10 +40,32 @@ namespace {
+ 
+ std::vector<uint8_t> CreateIntegrityBlockCbor(
+     const SignedWebBundleIntegrityBlock& integrity_block) {
+-  auto ib_cbor_rust =
+-      signed_web_bundles::rust::create_empty_integrity_block_cbor(
+-          integrity_block.attributes_cbor());
+-  return std::vector<uint8_t>(ib_cbor_rust.begin(), ib_cbor_rust.end());
++  // This function looks like it should use a cbor::Value::ArrayValue to build
++  // the outer array, but it can't: one of the elements is a pre-encoded CBOR
++  // value which we can't safely decode because it's untrusted input. This is
++  // obviously undesirable, because there's no guarantee at all that the
++  // pre-encoded value is actually valid CBOR.
++  //
++  // TODO(https://crbug.com/454485901): once there's a memory-safe CBOR parser,
++  // re-parse the pre-encoded value, then re-encode it here instead of
++  // constructing a CBOR array by hand so that we're guaranteed that the result
++  // of this function is valid.
++  std::vector<uint8_t> ib_cbor;
++
++  // 0x84 is the encoding byte for an array of length 4.
++  ib_cbor.push_back(0x84);
++  base::Extend(ib_cbor,
++               *cbor::Writer::Write(cbor::Value(kIntegrityBlockMagicBytes)));
++  base::Extend(ib_cbor, *cbor::Writer::Write(
++                            cbor::Value(kIntegrityBlockV2VersionBytes)));
++  // We cannot parse `attributes().cbor()` back to a cbor::Value as they
++  // technically represent untrusted input.
++  base::Extend(ib_cbor, integrity_block.attributes_cbor());
++  // Encode an empty signature array.
++  base::Extend(ib_cbor,
++               *cbor::Writer::Write(cbor::Value(cbor::Value::ArrayValue())));
++
++  return ib_cbor;
+ }
+ 
+ base::expected<void, SignedWebBundleSignatureVerifier::Error>
+@@ -104,7 +129,7 @@ SignedWebBundleSignatureVerifier::CalculateHashOfUnsignedWebBundle(
+     return base::unexpected(base::File::ErrorToString(file.GetLastFileError()));
+   }
+ 
+-  signed_web_bundles::rust::Sha512Hasher hasher;
++  crypto::hash::Hasher hash(crypto::hash::kSha512);
+ 
+   // Calculate the hash of the Signed Web Bundle excluding its integrity block.
+   // The file might be too big to read it into memory all at once, which is why
+@@ -121,14 +146,15 @@ SignedWebBundleSignatureVerifier::CalculateHashOfUnsignedWebBundle(
+           base::File::ErrorToString(file.GetLastFileError()));
+     }
+     data.resize(*bytes_read);
+-    hasher.update(data);
++    hash.Update(data);
+ 
+     if (!base::CheckAdd(offset, *bytes_read).AssignIfValid(&offset)) {
+       return base::unexpected("The Signed Web Bundle is too large.");
+     }
+   }
+ 
+-  SHA512Digest digest = std::move(hasher).finish();
++  SHA512Digest digest;
++  hash.Finish(digest);
+   return digest;
+ }
+ 
+diff --git a/components/web_package/signed_web_bundles/signed_web_bundle_utils.cc b/components/web_package/signed_web_bundles/signed_web_bundle_utils.cc
+index 6ac2b51ffe83c..9258161892fbf 100644
+--- a/components/web_package/signed_web_bundles/signed_web_bundle_utils.cc
++++ b/components/web_package/signed_web_bundles/signed_web_bundle_utils.cc
+@@ -5,18 +5,37 @@
+ #include "components/web_package/signed_web_bundles/signed_web_bundle_utils.h"
+ 
+ #include <cstdint>
+-#include <vector>
+ 
+-#include "components/web_package/signed_web_bundles/rust/signed_web_bundles_rust.h"
++#include "base/containers/extend.h"
++#include "base/containers/span.h"
++#include "base/containers/span_writer.h"
+ 
+ namespace web_package {
+ 
++namespace {
++
++void AddItemToPayload(std::vector<uint8_t>& payload,
++                      base::span<const uint8_t> item) {
++  // Each item that is part of the payload is prefixed with its length encoded
++  // as a 64 bit unsigned integer.
++  std::array<uint8_t, sizeof(uint64_t)> length;
++  auto writer = base::SpanWriter(base::span(length));
++  CHECK(writer.WriteU64BigEndian(item.size()));
++
++  base::Extend(payload, base::span(length));
++  base::Extend(payload, item);
++}
++
++}  // namespace
++
+ std::vector<uint8_t> CreateSignaturePayload(
+     const SignedWebBundleSignatureData& data) {
+-  auto payload_rust = signed_web_bundles::rust::create_signature_payload(
+-      data.unsigned_web_bundle_hash, data.integrity_block_cbor,
+-      data.attributes_cbor);
+-  return std::vector<uint8_t>(payload_rust.begin(), payload_rust.end());
++  std::vector<uint8_t> payload;
++  AddItemToPayload(payload, data.unsigned_web_bundle_hash);
++  AddItemToPayload(payload, data.integrity_block_cbor);
++  AddItemToPayload(payload, data.attributes_cbor);
++
++  return payload;
+ }
+ 
+ }  // namespace web_package
+-- 
+2.54.0
+

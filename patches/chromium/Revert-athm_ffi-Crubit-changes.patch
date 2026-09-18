@@ -1,0 +1,3865 @@
+From e334f4b52530b77d7b52c013ec2ac7d19b335ab5 Mon Sep 17 00:00:00 2001
+From: "re:fi.64" <hello@refi64.dev>
+Date: Tue, 22 Sep 2026 19:03:21 -0500
+Subject: [PATCH] Revert athm_ffi Crubit changes
+
+---
+ .../private_verification_tokens/BUILD.gn      |   1 -
+ ...te_verification_tokens_service_unittest.cc |  10 +-
+ ...ion_tokens_url_loader_throttle_unittest.cc |  10 +-
+ .../installer_policies/BUILD.gn               |   1 -
+ ...cation_tokens_installer_policy_unittest.cc |  26 +-
+ .../private_verification_tokens/BUILD.gn      |   1 -
+ .../common/BUILD.gn                           |  31 +-
+ .../common/athm_ffi.rs                        | 307 +++++++
+ .../common/athm_ffi/BUILD.gn                  |  46 --
+ .../common/athm_ffi/athm_ffi.rs               |  43 -
+ .../common/athm_ffi/client.rs                 |  57 --
+ .../common/athm_ffi/issuer.rs                 |  66 --
+ .../common/athm_ffi/privacy_pass_client.rs    | 158 ----
+ .../common/athm_ffi/privacy_pass_common.rs    | 105 ---
+ .../common/athm_ffi/privacy_pass_issuer.rs    | 135 ---
+ .../common/athm_ffi/privacy_pass_unittest.rs  | 767 ------------------
+ .../common/athm_ffi/types.rs                  |  63 --
+ .../common/athm_test_issuer.cc                | 117 ++-
+ .../common/athm_test_issuer.h                 |  68 +-
+ .../common/athm_test_issuer_unittest.cc       | 126 +--
+ .../common/privacy_pass_athm_batch_request.cc |  81 +-
+ .../common/privacy_pass_athm_batch_request.h  |  17 +-
+ ...rivacy_pass_athm_batch_request_unittest.cc |  18 +-
+ ...ivate_verification_tokens_issuer_config.cc |  50 +-
+ ...rification_tokens_issuer_config_internal.h |   6 +-
+ ...ification_tokens_issuer_config_unittest.cc | 275 ++-----
+ .../private_verification_tokens_test_util.h   |  30 -
+ 27 files changed, 608 insertions(+), 2007 deletions(-)
+ create mode 100644 components/private_verification_tokens/common/athm_ffi.rs
+ delete mode 100644 components/private_verification_tokens/common/athm_ffi/BUILD.gn
+ delete mode 100644 components/private_verification_tokens/common/athm_ffi/athm_ffi.rs
+ delete mode 100644 components/private_verification_tokens/common/athm_ffi/client.rs
+ delete mode 100644 components/private_verification_tokens/common/athm_ffi/issuer.rs
+ delete mode 100644 components/private_verification_tokens/common/athm_ffi/privacy_pass_client.rs
+ delete mode 100644 components/private_verification_tokens/common/athm_ffi/privacy_pass_common.rs
+ delete mode 100644 components/private_verification_tokens/common/athm_ffi/privacy_pass_issuer.rs
+ delete mode 100644 components/private_verification_tokens/common/athm_ffi/privacy_pass_unittest.rs
+ delete mode 100644 components/private_verification_tokens/common/athm_ffi/types.rs
+ delete mode 100644 components/private_verification_tokens/common/private_verification_tokens_test_util.h
+
+diff --git a/chrome/browser/private_verification_tokens/BUILD.gn b/chrome/browser/private_verification_tokens/BUILD.gn
+index 130ba89d96982..59dcc527aad96 100644
+--- a/chrome/browser/private_verification_tokens/BUILD.gn
++++ b/chrome/browser/private_verification_tokens/BUILD.gn
+@@ -76,7 +76,6 @@ source_set("unit_tests") {
+     "//components/private_verification_tokens/common:private_verification_tokens_database",
+     "//components/private_verification_tokens/common:private_verification_tokens_issuer_config",
+     "//components/private_verification_tokens/common:private_verification_tokens_parameters",
+-    "//components/private_verification_tokens/common:test_support",
+     "//content/test:test_support",
+     "//net",
+     "//services/network:test_support",
+diff --git a/chrome/browser/private_verification_tokens/private_verification_tokens_service_unittest.cc b/chrome/browser/private_verification_tokens/private_verification_tokens_service_unittest.cc
+index c56c210554983..9f0ad2e81b1a3 100644
+--- a/chrome/browser/private_verification_tokens/private_verification_tokens_service_unittest.cc
++++ b/chrome/browser/private_verification_tokens/private_verification_tokens_service_unittest.cc
+@@ -29,7 +29,6 @@
+ #include "components/private_verification_tokens/common/athm_test_issuer.h"
+ #include "components/private_verification_tokens/common/private_verification_tokens_database.h"
+ #include "components/private_verification_tokens/common/private_verification_tokens_issuer_config.h"
+-#include "components/private_verification_tokens/common/private_verification_tokens_test_util.h"
+ #include "components/private_verification_tokens/common/private_verification_tokens_token.h"
+ #include "content/public/test/browser_task_environment.h"
+ #include "net/base/features.h"
+@@ -43,9 +42,6 @@
+ 
+ namespace {
+ 
+-using ::private_verification_tokens::test::FutureExpiration;
+-using ::private_verification_tokens::test::GetFutureExpiration;
+-
+ const base::FilePath::CharType kDatabaseName[] =
+     FILE_PATH_LITERAL("PrivateVerificationTokens");
+ 
+@@ -193,8 +189,7 @@ class PrivateVerificationTokensServiceTest : public testing::Test {
+         base::Base64Encode(test_issuer_->public_key());
+     const std::string encoded_public_key_proof =
+         base::Base64Encode(test_issuer_->public_key_proof());
+-    const FutureExpiration future_expiration = GetFutureExpiration();
+-    const std::string expiration_str = future_expiration.string_rep;
++    const std::string expiration_str = "12";
+     const std::string json_str = base::StringPrintf(
+         R"({
+       "issuers": [
+@@ -267,8 +262,7 @@ class PrivateVerificationTokensServiceTest : public testing::Test {
+  private:
+   std::optional<private_verification_tokens::AthmTestIssuer> test_issuer_;
+   base::test::ScopedFeatureList scoped_feature_list_;
+-  content::BrowserTaskEnvironment task_environment_{
+-      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
++  content::BrowserTaskEnvironment task_environment_;
+   base::ScopedTempDir temp_dir_;
+   base::FilePath db_path_;
+   TestingProfile profile_;
+diff --git a/chrome/browser/private_verification_tokens/private_verification_tokens_url_loader_throttle_unittest.cc b/chrome/browser/private_verification_tokens/private_verification_tokens_url_loader_throttle_unittest.cc
+index 4ee03adac3ec7..a9a0614b3495c 100644
+--- a/chrome/browser/private_verification_tokens/private_verification_tokens_url_loader_throttle_unittest.cc
++++ b/chrome/browser/private_verification_tokens/private_verification_tokens_url_loader_throttle_unittest.cc
+@@ -26,7 +26,6 @@
+ #include "components/content_settings/core/browser/host_content_settings_map.h"
+ #include "components/private_verification_tokens/common/athm_test_issuer.h"
+ #include "components/private_verification_tokens/common/private_verification_tokens_issuer_config.h"
+-#include "components/private_verification_tokens/common/private_verification_tokens_test_util.h"
+ #include "components/private_verification_tokens/common/private_verification_tokens_token.h"
+ #include "content/public/test/browser_task_environment.h"
+ #include "net/base/features.h"
+@@ -47,9 +46,6 @@
+ 
+ namespace {
+ 
+-using ::private_verification_tokens::test::FutureExpiration;
+-using ::private_verification_tokens::test::GetFutureExpiration;
+-
+ class PrivateVerificationTokensURLLoaderThrottleTest : public testing::Test {
+  public:
+   PrivateVerificationTokensURLLoaderThrottleTest() {
+@@ -140,8 +136,7 @@ class PrivateVerificationTokensURLLoaderThrottleTest : public testing::Test {
+         base::Base64Encode(test_issuer_->public_key());
+     const std::string encoded_public_key_proof =
+         base::Base64Encode(test_issuer_->public_key_proof());
+-    const FutureExpiration future_expiration = GetFutureExpiration();
+-    const std::string expiration_str = future_expiration.string_rep;
++    const std::string expiration_str = "12";
+     const std::string json_str = base::StringPrintf(
+         R"({
+       "issuers": [
+@@ -237,8 +232,7 @@ class PrivateVerificationTokensURLLoaderThrottleTest : public testing::Test {
+           /*num_buckets=*/2,
+           base::as_byte_span(std::string_view("dummy-deployment-id")));
+   base::test::ScopedFeatureList scoped_feature_list_;
+-  content::BrowserTaskEnvironment task_environment_{
+-      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
++  content::BrowserTaskEnvironment task_environment_;
+   base::ScopedTempDir temp_dir_;
+   TestingProfile profile_;
+   std::unique_ptr<PrivateVerificationTokensService> service_;
+diff --git a/components/component_updater/installer_policies/BUILD.gn b/components/component_updater/installer_policies/BUILD.gn
+index 645f1457832ac..fbbf0148cfa4c 100644
+--- a/components/component_updater/installer_policies/BUILD.gn
++++ b/components/component_updater/installer_policies/BUILD.gn
+@@ -107,7 +107,6 @@ source_set("unit_tests") {
+     "//components/optimization_guide/core",
+     "//components/optimization_guide/proto:optimization_guide_proto",
+     "//components/private_verification_tokens/common:private_verification_tokens_issuer_config",
+-    "//components/private_verification_tokens/common:test_support",
+     "//mojo/public/cpp/base:protobuf_support",
+     "//services/network/public/cpp",
+     "//testing/gmock",
+diff --git a/components/component_updater/installer_policies/private_verification_tokens_installer_policy_unittest.cc b/components/component_updater/installer_policies/private_verification_tokens_installer_policy_unittest.cc
+index 653c95b90be54..356d16e1f5753 100644
+--- a/components/component_updater/installer_policies/private_verification_tokens_installer_policy_unittest.cc
++++ b/components/component_updater/installer_policies/private_verification_tokens_installer_policy_unittest.cc
+@@ -19,16 +19,12 @@
+ #include "base/json/json_reader.h"
+ #include "base/memory/scoped_refptr.h"
+ #include "base/run_loop.h"
+-#include "base/strings/string_number_conversions.h"
+-#include "base/strings/string_util.h"
+-#include "base/strings/stringprintf.h"
+ #include "base/test/bind.h"
+ #include "base/test/task_environment.h"
+ #include "base/time/time.h"
+ #include "base/values.h"
+ #include "base/version.h"
+ #include "components/component_updater/component_installer.h"
+-#include "components/private_verification_tokens/common/private_verification_tokens_test_util.h"
+ #include "testing/gmock/include/gmock/gmock.h"
+ #include "testing/gtest/include/gtest/gtest.h"
+ #include "url/gurl.h"
+@@ -43,8 +39,7 @@ class PrivateVerificationTokensInstallerPolicyTest : public ::testing::Test {
+   }
+ 
+  protected:
+-  base::test::TaskEnvironment env_{
+-      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
++  base::test::TaskEnvironment env_;
+   base::ScopedTempDir component_install_dir_;
+ };
+ 
+@@ -102,13 +97,7 @@ TEST_F(PrivateVerificationTokensInstallerPolicyTest, CustomUninstall) {
+ 
+ TEST_F(PrivateVerificationTokensInstallerPolicyTest, ParsesValidJson) {
+   base::RunLoop run_loop;
+-
+-  const ::private_verification_tokens::test::FutureExpiration
+-      future_expiration =
+-          ::private_verification_tokens::test::GetFutureExpiration();
+-
+-  std::string json_content = base::StringPrintf(
+-      R"(
++  std::string json_content = R"(
+     {
+       "1": {
+         "issuers": [
+@@ -118,7 +107,7 @@ TEST_F(PrivateVerificationTokensInstallerPolicyTest, ParsesValidJson) {
+             "publicKey": "cHZ0LWtleQ==",
+             "publicKeyProof": "cHZ0LXByb29m",
+             "batchSize": 4,
+-            "expiration": "%s",
++            "expiration": "12",
+             "redeemers": ["https://s1.a.example", "https://s2.a.example"],
+             "deploymentId": "dep-a"
+           },
+@@ -128,15 +117,14 @@ TEST_F(PrivateVerificationTokensInstallerPolicyTest, ParsesValidJson) {
+             "publicKey": "YW5vdGhlci1hd2Vzb21lLWtleQ==",
+             "publicKeyProof": "YW5vdGhlci1hd2Vzb21lLXByb29m",
+             "batchSize": 3,
+-            "expiration": "%s",
++            "expiration": "24",
+             "redeemers": ["https://sub1.b.example", "https://sub2.b.example"],
+             "deploymentId": "dep-b"
+           }
+         ]
+       }
+     }
+-  )",
+-      future_expiration.string_rep, future_expiration.string_rep);
++  )";
+ 
+   bool callback_called = false;
+   auto callback =
+@@ -157,7 +145,7 @@ TEST_F(PrivateVerificationTokensInstallerPolicyTest, ParsesValidJson) {
+         const private_verification_tokens::PrivateVerificationTokensPublicKey
+             expected_pk_a{origin_a, base::ToVector<uint8_t>(decoded_key_a),
+                           base::ToVector<uint8_t>(decoded_proof_a),
+-                          future_expiration.time, 1};
++                          base::Time::UnixEpoch() + base::Seconds(12), 1};
+ 
+         EXPECT_TRUE(got->config().contains(origin_a));
+         const private_verification_tokens::IssuerConfig& config_a =
+@@ -183,7 +171,7 @@ TEST_F(PrivateVerificationTokensInstallerPolicyTest, ParsesValidJson) {
+         private_verification_tokens::PrivateVerificationTokensPublicKey
+             expected_pk_b{origin_b, base::ToVector<uint8_t>(decoded_key_b),
+                           base::ToVector<uint8_t>(decoded_proof_b),
+-                          future_expiration.time, 1};
++                          base::Time::UnixEpoch() + base::Seconds(24), 1};
+ 
+         EXPECT_TRUE(got->config().contains(origin_b));
+         const private_verification_tokens::IssuerConfig& config_b =
+diff --git a/components/private_verification_tokens/BUILD.gn b/components/private_verification_tokens/BUILD.gn
+index 6c349a4431d33..7249ad1f45d48 100644
+--- a/components/private_verification_tokens/BUILD.gn
++++ b/components/private_verification_tokens/BUILD.gn
+@@ -23,7 +23,6 @@ source_set("unit_tests") {
+     deps += [
+       "//components/private_verification_tokens/common:athm_test_issuer_unittest",
+       "//components/private_verification_tokens/common:privacy_pass_athm_batch_request_unittest",
+-      "//components/private_verification_tokens/common/athm_ffi:privacy_pass_unittests",
+     ]
+   }
+ }
+diff --git a/components/private_verification_tokens/common/BUILD.gn b/components/private_verification_tokens/common/BUILD.gn
+index 997319449023d..5bd96d661d669 100644
+--- a/components/private_verification_tokens/common/BUILD.gn
++++ b/components/private_verification_tokens/common/BUILD.gn
+@@ -173,27 +173,30 @@ source_set("private_verification_tokens_issuer_config_unittest") {
+   deps = [
+     ":private_verification_tokens_issuer_config",
+     ":private_verification_tokens_parameters",
+-    ":test_support",
+     "//base",
+-    "//base/test:test_support",
+     "//testing/gmock",
+     "//testing/gtest",
+     "//url",
+   ]
+ }
+ 
+-source_set("test_support") {
+-  testonly = true
+-  sources = [ "private_verification_tokens_test_util.h" ]
+-  deps = [ "//base" ]
+-}
+-
+-# ATHM (Anonymous Tokens with Hidden Metadata): Crubit bindings over
++# ATHM (Anonymous Tokens with Hidden Metadata): a cxx bridge over
+ # //third_party/anonymous_tokens:athm and the C++ that calls it.
+ if (enable_rust) {
++  import("//build/rust/rust_static_library.gni")
++
++  rust_static_library("athm_ffi") {
++    crate_root = "athm_ffi.rs"
++    sources = [ "athm_ffi.rs" ]
++    cxx_bindings = [ "athm_ffi.rs" ]
++    allow_unsafe = true  # Required for the cxx FFI layer.
++    deps = [ "//third_party/anonymous_tokens:athm" ]
++    visibility = [ ":*" ]
++  }
++
+   # Test issuer modeled on network::TestTrustTokenIssuer: holds the secret ATHM
+   # key material and exposes issuer-side (Issue/Verify) and client-side
+-  # (request/finalize) operations over Crubit bindings.
++  # (request/finalize) operations over the cxx bridge.
+   # This is to be used in tests only. Chrome does not need/use
+   # issuer side capability.
+   source_set("athm_test_issuer") {
+@@ -202,11 +205,9 @@ if (enable_rust) {
+       "athm_test_issuer.cc",
+       "athm_test_issuer.h",
+     ]
+-    public_deps = [
+-      "//base",
+-      "//components/private_verification_tokens/common/athm_ffi:athm_ffi_bindings",
+-    ]
++    public_deps = [ "//base" ]
+     deps = [
++      ":athm_ffi",
+       ":private_verification_tokens_parameters",
+       "//crypto",
+       "//third_party/anonymous_tokens:athm_token_encodings_utils",
+@@ -219,6 +220,7 @@ if (enable_rust) {
+       "privacy_pass_athm_batch_request.h",
+     ]
+     deps = [
++      ":athm_ffi",
+       ":private_verification_tokens_parameters",
+       ":private_verification_tokens_public_key",
+       "//crypto",
+@@ -227,7 +229,6 @@ if (enable_rust) {
+     public_deps = [
+       ":private_verification_tokens_issuer_config",
+       "//base",
+-      "//components/private_verification_tokens/common/athm_ffi:athm_ffi_bindings",
+     ]
+   }
+ 
+diff --git a/components/private_verification_tokens/common/athm_ffi.rs b/components/private_verification_tokens/common/athm_ffi.rs
+new file mode 100644
+index 0000000000000..4e30645923fbb
+--- /dev/null
++++ b/components/private_verification_tokens/common/athm_ffi.rs
+@@ -0,0 +1,307 @@
++// Copyright 2026 The Chromium Authors
++// Use of this source code is governed by a BSD-style license that can be
++// found in the LICENSE file.
++
++//! cxx FFI bridge over the Anonymous Tokens with Hidden Metadata (ATHM) crate
++//! (`//third_party/anonymous_tokens:athm`), exposing the issuer- and
++//! client-side protocol operations to C++. The elliptic-curve and hashing
++//! primitives run on Chromium's in-tree BoringSSL via the `bssl_sys` bindings.
++//!
++//! All values cross the boundary as the serialized ATHM wire encodings (see the
++//! ATHM spec for the encoding). The issuer-side functions hold the secret key;
++//! the client-side functions use only public material.
++//!
++//! This is the building block intended for a real Private Verification Tokens
++//! issuance/redemption flow, so the contract distinguishes input-decoding
++//! failures (`InvalidInput`) from cryptographic-operation failures
++//! (`OperationFailed`) rather than collapsing both into one sentinel.
++//!
++//! Malformed serialized inputs are rejected gracefully: the BoringSSL backend's
++//! point decoder validates each compressed point and surfaces `InvalidInput`
++//! rather than aborting (verified empirically against tampered, truncated, and
++//! garbage tokens). The constant-time arithmetic path does `assert!` on a
++//! non-curve point, but it only runs on points that already decoded
++//! successfully, so it is not reachable from untrusted boundary input.
++//!
++//! TODO: These entry points decode untrusted serialized input and are prime
++//! fuzz targets; add cargo-fuzz/libfuzzer coverage for them in a follow-up.
++
++use athm::{
++    finalize_token, key_gen, token_request, token_response, verify_token, Decodable, Encodable,
++    Params, PrivateKey, PublicKey, PublicKeyProof, Token, TokenContext, TokenRequest,
++    TokenResponse,
++};
++
++#[cxx::bridge(namespace = "private_verification_tokens")]
++mod ffi {
++    /// Outcome of a bridge operation.
++    enum AthmStatus {
++        /// The operation succeeded; the accompanying payload is valid.
++        Ok,
++        /// One of the serialized inputs failed to decode.
++        InvalidInput,
++        /// Inputs decoded, but the cryptographic operation failed (e.g. invalid
++        /// proof, out-of-range metadata, or a token that did not verify).
++        OperationFailed,
++    }
++
++    // Client params. Field is the serialized wire encoding of the
++    // ATHM params object. Valid only when `status` is `OK`.
++    struct AthmClientParams {
++        status: AthmStatus,
++        params: Vec<u8>,
++    }
++
++    /// Server (issuer) key material. Each field is the serialized wire encoding
++    /// of the corresponding ATHM object. Valid only when `status` is `Ok`.
++    struct AthmKeyMaterial {
++        status: AthmStatus,
++        params: Vec<u8>,
++        private_key: Vec<u8>,
++        public_key: Vec<u8>,
++        public_key_proof: Vec<u8>,
++    }
++
++    /// A serialized-bytes result (used for issuance responses and tokens). The
++    /// `bytes` are meaningful only when `status` is `Ok`.
++    struct AthmBytesResult {
++        status: AthmStatus,
++        bytes: Vec<u8>,
++    }
++
++    /// Result of the client building a token request. `context` is the client's
++    /// secret state that it must retain until it finalizes the token.
++    struct AthmClientRequest {
++        status: AthmStatus,
++        context: Vec<u8>,
++        request: Vec<u8>,
++    }
++
++    /// Result of verifying a token. `metadata` is meaningful only when `status`
++    /// is `Ok`.
++    struct AthmVerifyResult {
++        status: AthmStatus,
++        metadata: u8,
++    }
++
++    extern "Rust" {
++        // --- Issuer side (holds the secret key) ---
++
++        /// Generates issuer key material for `n_buckets` metadata buckets under
++        /// `deployment_id`.
++        fn athm_key_gen(n_buckets: u8, deployment_id: &[u8]) -> AthmKeyMaterial;
++
++        /// Signs a client `request`, embedding `hidden_metadata` (which must be
++        /// `< n_buckets`). `private_key` and `public_key` must come from the
++        /// same `athm_key_gen` call.
++        fn athm_issue(
++            private_key: &[u8],
++            public_key: &[u8],
++            request: &[u8],
++            hidden_metadata: u8,
++            params: &[u8],
++        ) -> AthmBytesResult;
++
++        /// Verifies a finalized `token` and recovers the hidden metadata.
++        fn athm_verify(private_key: &[u8], token: &[u8], params: &[u8]) -> AthmVerifyResult;
++
++        // --- Client side (only public material) ---
++
++        /// Generates client params for `n_buckets` metadata buckets under
++        /// `deployment_id`.
++        fn athm_client_params(n_buckets: u8, deployment_id: &[u8]) -> AthmClientParams;
++
++        /// Builds a blinded token request from the issuer's public material.
++        fn athm_client_request(
++            public_key: &[u8],
++            public_key_proof: &[u8],
++            params: &[u8],
++        ) -> AthmClientRequest;
++
++        /// Unblinds the issuer `response` into a finalized token.
++        fn athm_client_finalize(
++            context: &[u8],
++            public_key: &[u8],
++            request: &[u8],
++            response: &[u8],
++            params: &[u8],
++        ) -> AthmBytesResult;
++
++        /// Returns the expected wire size in bytes of a single `TokenResponse`
++        /// for the given ATHM `params`. Returns 0 if `params` fails to
++        /// decode.
++        fn athm_token_response_size(params: &[u8]) -> usize;
++    }
++}
++
++use ffi::AthmStatus;
++
++fn encode<T: Encodable>(value: &T) -> Vec<u8> {
++    let mut out = Vec::new();
++    value.encode(&mut out);
++    out
++}
++
++// Error-result constructors: one per result struct, so each struct's empty
++// "error" shape lives in a single place.
++fn err_key_material(status: AthmStatus) -> ffi::AthmKeyMaterial {
++    ffi::AthmKeyMaterial {
++        status,
++        params: Vec::new(),
++        private_key: Vec::new(),
++        public_key: Vec::new(),
++        public_key_proof: Vec::new(),
++    }
++}
++
++fn err_bytes(status: AthmStatus) -> ffi::AthmBytesResult {
++    ffi::AthmBytesResult { status, bytes: Vec::new() }
++}
++
++fn err_request(status: AthmStatus) -> ffi::AthmClientRequest {
++    ffi::AthmClientRequest { status, context: Vec::new(), request: Vec::new() }
++}
++
++fn err_verify(status: AthmStatus) -> ffi::AthmVerifyResult {
++    ffi::AthmVerifyResult { status, metadata: 0 }
++}
++
++fn err_client_params(status: AthmStatus) -> ffi::AthmClientParams {
++    ffi::AthmClientParams { status, params: Vec::new() }
++}
++
++fn athm_client_params(n_buckets: u8, deployment_id: &[u8]) -> ffi::AthmClientParams {
++    let params = match Params::new(n_buckets, deployment_id.to_vec()) {
++        Ok(params) => params,
++        Err(_) => return err_client_params(AthmStatus::InvalidInput),
++    };
++    ffi::AthmClientParams { status: AthmStatus::Ok, params: encode(&params) }
++}
++
++fn athm_key_gen(n_buckets: u8, deployment_id: &[u8]) -> ffi::AthmKeyMaterial {
++    let params = match Params::new(n_buckets, deployment_id.to_vec()) {
++        Ok(params) => params,
++        Err(_) => return err_key_material(AthmStatus::InvalidInput),
++    };
++    let (private_key, public_key, proof) = key_gen(&params);
++    ffi::AthmKeyMaterial {
++        status: AthmStatus::Ok,
++        params: encode(&params),
++        private_key: encode(&private_key),
++        public_key: encode(&public_key),
++        public_key_proof: encode(&proof),
++    }
++}
++
++fn athm_issue(
++    private_key: &[u8],
++    public_key: &[u8],
++    request: &[u8],
++    hidden_metadata: u8,
++    params: &[u8],
++) -> ffi::AthmBytesResult {
++    let (Ok(params), Ok(private_key), Ok(public_key), Ok(request)) = (
++        Params::decode(params),
++        PrivateKey::decode(private_key),
++        PublicKey::decode(public_key),
++        TokenRequest::decode(request),
++    ) else {
++        return err_bytes(AthmStatus::InvalidInput);
++    };
++    match token_response(&private_key, &public_key, &request, hidden_metadata, &params) {
++        Ok(response) => ffi::AthmBytesResult { status: AthmStatus::Ok, bytes: encode(&response) },
++        Err(_) => err_bytes(AthmStatus::OperationFailed),
++    }
++}
++
++fn athm_verify(private_key: &[u8], token: &[u8], params: &[u8]) -> ffi::AthmVerifyResult {
++    let (Ok(params), Ok(private_key), Ok(token)) =
++        (Params::decode(params), PrivateKey::decode(private_key), Token::decode(token))
++    else {
++        return err_verify(AthmStatus::InvalidInput);
++    };
++    match verify_token(&private_key, &token, &params).into_option() {
++        Some(metadata) => ffi::AthmVerifyResult { status: AthmStatus::Ok, metadata },
++        None => err_verify(AthmStatus::OperationFailed),
++    }
++}
++
++fn athm_client_request(
++    public_key: &[u8],
++    public_key_proof: &[u8],
++    params: &[u8],
++) -> ffi::AthmClientRequest {
++    let (Ok(params), Ok(public_key), Ok(proof)) = (
++        Params::decode(params),
++        PublicKey::decode(public_key),
++        PublicKeyProof::decode(public_key_proof),
++    ) else {
++        return err_request(AthmStatus::InvalidInput);
++    };
++    match token_request(&public_key, &proof, &params) {
++        Ok((context, request)) => ffi::AthmClientRequest {
++            status: AthmStatus::Ok,
++            context: encode(&context),
++            request: encode(&request),
++        },
++        Err(_) => err_request(AthmStatus::OperationFailed),
++    }
++}
++
++fn athm_client_finalize(
++    context: &[u8],
++    public_key: &[u8],
++    request: &[u8],
++    response: &[u8],
++    params: &[u8],
++) -> ffi::AthmBytesResult {
++    // `TokenResponse` decodes against `params` (it is sized by `n_buckets`), so
++    // decode `params` first and reuse it.
++    let Ok(params) = Params::decode(params) else {
++        return err_bytes(AthmStatus::InvalidInput);
++    };
++    let (Ok(context), Ok(public_key), Ok(request), Ok(response)) = (
++        TokenContext::decode(context),
++        PublicKey::decode(public_key),
++        TokenRequest::decode(request),
++        TokenResponse::decode(response, &params),
++    ) else {
++        return err_bytes(AthmStatus::InvalidInput);
++    };
++    match finalize_token(&context, &public_key, &request, &response, &params) {
++        Ok(token) => ffi::AthmBytesResult { status: AthmStatus::Ok, bytes: encode(&token) },
++        Err(_) => err_bytes(AthmStatus::OperationFailed),
++    }
++}
++
++// Wire sizes in bytes for P-256 field elements and points in the BoringSSL
++// backend.
++const SCALAR_SIZE: usize = 32;
++const POINT_SIZE: usize = 33; // SEC-1 compressed format: 1-byte header + 32-byte X-coordinate
++
++// Number of dynamic challenge/response scalars per metadata bucket in
++// IssuanceProof (e_vec and a_vec).
++const SCALARS_PER_METADATA_BUCKET: usize = 2;
++
++/// Computes the wire size of an ATHM `IssuanceProof` for `n_buckets`:
++/// - `big_c`: 1 Point
++/// - `a_d`, `a_rho`, `a_w`: 3 fixed Scalars
++/// - `e_vec`, `a_vec`: `n_buckets` Scalars each (2 * `n_buckets` Scalars)
++const fn issuance_proof_size(n_buckets: u8) -> usize {
++    POINT_SIZE + (3 + (n_buckets as usize) * SCALARS_PER_METADATA_BUCKET) * SCALAR_SIZE
++}
++
++/// Computes the wire size of an ATHM `TokenResponse` for `n_buckets`:
++/// - `big_u`, `big_v`: 2 Points
++/// - `ts`: 1 Scalar
++/// - `issuance_proof`: `issuance_proof_size(n_buckets)`
++const fn token_response_size_for_buckets(n_buckets: u8) -> usize {
++    2 * POINT_SIZE + SCALAR_SIZE + issuance_proof_size(n_buckets)
++}
++
++fn athm_token_response_size(params: &[u8]) -> usize {
++    let Ok(params) = Params::decode(params) else {
++        return 0;
++    };
++    token_response_size_for_buckets(params.n_buckets)
++}
+diff --git a/components/private_verification_tokens/common/athm_ffi/BUILD.gn b/components/private_verification_tokens/common/athm_ffi/BUILD.gn
+deleted file mode 100644
+index e9762ac8f2eca..0000000000000
+--- a/components/private_verification_tokens/common/athm_ffi/BUILD.gn
++++ /dev/null
+@@ -1,46 +0,0 @@
+-# Copyright 2026 The Chromium Authors
+-# Use of this source code is governed by a BSD-style license that can be
+-# found in the LICENSE file.
+-
+-import("//build/config/rust.gni")
+-import("//build/rust/rust_static_library.gni")
+-
+-assert(enable_rust)
+-
+-rust_static_library("athm_ffi") {
+-  crate_root = "athm_ffi.rs"
+-  sources = [
+-    "athm_ffi.rs",
+-    "client.rs",
+-    "issuer.rs",
+-    "privacy_pass_client.rs",
+-    "privacy_pass_common.rs",
+-    "privacy_pass_issuer.rs",
+-    "types.rs",
+-  ]
+-  cpp_api_from_rust = {
+-    target_name = "athm_ffi_bindings"
+-    cpp_namespace = "private_verification_tokens"
+-  }
+-  deps = [ "//third_party/anonymous_tokens:athm" ]
+-  visibility = [
+-    ":*",
+-    "//components/private_verification_tokens/common:*",
+-  ]
+-}
+-
+-rust_static_library("privacy_pass_unittests") {
+-  testonly = true
+-  is_gtest_unittests = true
+-  crate_root = "privacy_pass_unittest.rs"
+-  sources = [ "privacy_pass_unittest.rs" ]
+-  deps = [
+-    ":athm_ffi",
+-    "//testing/rust_gtest_interop",
+-    "//third_party/anonymous_tokens:athm",
+-  ]
+-  visibility = [
+-    "//components/private_verification_tokens:*",
+-    "//components/private_verification_tokens/common:*",
+-  ]
+-}
+diff --git a/components/private_verification_tokens/common/athm_ffi/athm_ffi.rs b/components/private_verification_tokens/common/athm_ffi/athm_ffi.rs
+deleted file mode 100644
+index 339e5970d3a42..0000000000000
+--- a/components/private_verification_tokens/common/athm_ffi/athm_ffi.rs
++++ /dev/null
+@@ -1,43 +0,0 @@
+-// Copyright 2026 The Chromium Authors
+-// Use of this source code is governed by a BSD-style license that can be
+-// found in the LICENSE file.
+-
+-//! Crubit FFI over the Anonymous Tokens with Hidden Metadata (ATHM) crate
+-//! (`//third_party/anonymous_tokens:athm`), exposing the issuer- and
+-//! client-side protocol operations to C++. The elliptic-curve and hashing
+-//! primitives run on Chromium's in-tree `BoringSSL` via the `bssl_sys`
+-//! bindings.
+-//!
+-//! Public keys, blinded requests, responses, and finalized tokens cross the
+-//! boundary as serialized ATHM wire encodings or rich types (`TokenRequest`,
+-//! `AthmClientRequest`). Protocol parameters (`AthmParameters`) are derived
+-//! locally by each party and never transmitted over the wire.
+-//!
+-//! This is the building block intended for a real Private Verification Tokens
+-//! issuance/redemption flow, so the contract distinguishes input-decoding
+-//! failures (`InvalidInput`) from cryptographic-operation failures
+-//! (`OperationFailed`) rather than collapsing both into one sentinel.
+-//!
+-//! Malformed serialized inputs are rejected gracefully: the `BoringSSL`
+-//! backend's point decoder validates each compressed point and surfaces
+-//! `InvalidInput` rather than aborting (verified empirically against tampered,
+-//! truncated, and garbage tokens). The constant-time arithmetic path does
+-//! `assert!` on a non-curve point, but it only runs on points that already
+-//! decoded successfully, so it is not reachable from untrusted boundary input.
+-//!
+-//! TODO: These entry points decode untrusted serialized input and are prime
+-//! fuzz targets; add cargo-fuzz/libfuzzer coverage for them in a follow-up.
+-
+-pub mod client;
+-pub mod issuer;
+-pub mod privacy_pass_client;
+-pub mod privacy_pass_common;
+-pub mod privacy_pass_issuer;
+-pub mod types;
+-
+-pub use client::AthmClientRequest;
+-pub use issuer::AthmKeyMaterial;
+-pub use privacy_pass_client::*;
+-pub use privacy_pass_common::*;
+-pub use privacy_pass_issuer::*;
+-pub use types::{AthmParameters, AthmStatus, TokenRequest};
+diff --git a/components/private_verification_tokens/common/athm_ffi/client.rs b/components/private_verification_tokens/common/athm_ffi/client.rs
+deleted file mode 100644
+index b66f427f6e0b8..0000000000000
+--- a/components/private_verification_tokens/common/athm_ffi/client.rs
++++ /dev/null
+@@ -1,57 +0,0 @@
+-// Copyright 2026 The Chromium Authors
+-// Use of this source code is governed by a BSD-style license that can be
+-// found in the LICENSE file.
+-
+-use athm::{PublicKey, PublicKeyProof, TokenContext, TokenResponse};
+-
+-use crate::types::{AthmParameters, AthmStatus, TokenRequest};
+-
+-/// Result of the client building a token request. `context` is the client's
+-/// secret state that it must retain until it finalizes the token.
+-#[derive(Clone)]
+-pub struct AthmClientRequest {
+-    pub(crate) context: TokenContext,
+-    pub(crate) request: TokenRequest,
+-}
+-
+-impl AthmClientRequest {
+-    /// Builds a blinded token request from the issuer's public material and
+-    /// protocol parameters.
+-    pub fn try_new(
+-        public_key: &[u8],
+-        public_key_proof: &[u8],
+-        params: &AthmParameters,
+-    ) -> Result<Self, AthmStatus> {
+-        use athm::Decodable;
+-        let public_key = PublicKey::decode(public_key).map_err(|_| AthmStatus::InvalidInput)?;
+-        let proof =
+-            PublicKeyProof::decode(public_key_proof).map_err(|_| AthmStatus::InvalidInput)?;
+-        athm::token_request(&public_key, &proof, &params.0)
+-            .map(|(context, request)| AthmClientRequest { context, request: TokenRequest(request) })
+-            .map_err(|_| AthmStatus::OperationFailed)
+-    }
+-
+-    /// Unblinds the issuer `response` into a finalized token using the stored
+-    /// context and request.
+-    pub fn finalize(
+-        &self,
+-        public_key: &[u8],
+-        response: &[u8],
+-        params: &AthmParameters,
+-    ) -> Result<Vec<u8>, AthmStatus> {
+-        use athm::Decodable;
+-        let public_key = PublicKey::decode(public_key).map_err(|_| AthmStatus::InvalidInput)?;
+-        let response =
+-            TokenResponse::decode(response, &params.0).map_err(|_| AthmStatus::InvalidInput)?;
+-        athm::finalize_token(&self.context, &public_key, &self.request.0, &response, &params.0)
+-            .map(|token| crate::types::encode(&token))
+-            .map_err(|_| AthmStatus::OperationFailed)
+-    }
+-
+-    /// Serialized wire encoding of the blinded token request to send to the
+-    /// issuer.
+-    #[must_use]
+-    pub fn request(&self) -> Vec<u8> {
+-        self.request.to_bytes()
+-    }
+-}
+diff --git a/components/private_verification_tokens/common/athm_ffi/issuer.rs b/components/private_verification_tokens/common/athm_ffi/issuer.rs
+deleted file mode 100644
+index 09055de194e92..0000000000000
+--- a/components/private_verification_tokens/common/athm_ffi/issuer.rs
++++ /dev/null
+@@ -1,66 +0,0 @@
+-// Copyright 2026 The Chromium Authors
+-// Use of this source code is governed by a BSD-style license that can be
+-// found in the LICENSE file.
+-
+-use athm::{Params, PrivateKey, PublicKey, PublicKeyProof, Token};
+-
+-use crate::types::{AthmStatus, TokenRequest};
+-
+-/// Server (issuer) key material.
+-#[derive(Clone)]
+-pub struct AthmKeyMaterial {
+-    pub(crate) params: Params,
+-    pub(crate) private_key: PrivateKey,
+-    pub(crate) public_key: PublicKey,
+-    pub(crate) public_key_proof: PublicKeyProof,
+-}
+-
+-impl AthmKeyMaterial {
+-    /// Generates issuer key material for `n_buckets` metadata buckets under
+-    /// `deployment_id`.
+-    pub fn try_new(n_buckets: u8, deployment_id: &[u8]) -> Result<Self, AthmStatus> {
+-        let params =
+-            Params::new(n_buckets, deployment_id.to_vec()).map_err(|_| AthmStatus::InvalidInput)?;
+-        let (private_key, public_key, public_key_proof) = athm::key_gen(&params);
+-        Ok(AthmKeyMaterial { params, private_key, public_key, public_key_proof })
+-    }
+-
+-    /// Returns the serialized public key bytes.
+-    #[must_use]
+-    pub fn public_key(&self) -> Vec<u8> {
+-        crate::types::encode(&self.public_key)
+-    }
+-
+-    /// Returns the serialized public key proof bytes.
+-    #[must_use]
+-    pub fn public_key_proof(&self) -> Vec<u8> {
+-        crate::types::encode(&self.public_key_proof)
+-    }
+-
+-    /// Signs a client `request`, embedding `hidden_metadata` (which must be
+-    /// `< n_buckets`).
+-    pub fn issue(
+-        &self,
+-        request: &TokenRequest,
+-        hidden_metadata: u8,
+-    ) -> Result<Vec<u8>, AthmStatus> {
+-        athm::token_response(
+-            &self.private_key,
+-            &self.public_key,
+-            &request.0,
+-            hidden_metadata,
+-            &self.params,
+-        )
+-        .map(|response| crate::types::encode(&response))
+-        .map_err(|_| AthmStatus::OperationFailed)
+-    }
+-
+-    /// Verifies a finalized `token` and recovers the hidden metadata.
+-    pub fn verify(&self, token: &[u8]) -> Result<u8, AthmStatus> {
+-        use athm::Decodable;
+-        let token = Token::decode(token).map_err(|_| AthmStatus::InvalidInput)?;
+-        athm::verify_token(&self.private_key, &token, &self.params)
+-            .into_option()
+-            .ok_or(AthmStatus::OperationFailed)
+-    }
+-}
+diff --git a/components/private_verification_tokens/common/athm_ffi/privacy_pass_client.rs b/components/private_verification_tokens/common/athm_ffi/privacy_pass_client.rs
+deleted file mode 100644
+index 95fdbd8166213..0000000000000
+--- a/components/private_verification_tokens/common/athm_ffi/privacy_pass_client.rs
++++ /dev/null
+@@ -1,158 +0,0 @@
+-// Copyright 2026 The Chromium Authors
+-// Use of this source code is governed by a BSD-style license that can be
+-// found in the LICENSE file.
+-
+-//! Client-side operations for Privacy Pass ATHM, including batch request
+-//! management.
+-
+-use athm::{Decodable, Params, PublicKey, PublicKeyProof, Token, TokenResponse};
+-
+-use crate::privacy_pass_common::{Frame, TokenState, UnframeError, TOKEN_REQUEST_FRAMED_SIZE};
+-use crate::privacy_pass_issuer::PrivacyPassAthmIssuer;
+-use crate::types::AthmStatus;
+-
+-/// Client key material and cryptographic parameters.
+-pub struct PrivacyPassAthmClient {
+-    public_key: PublicKey,
+-    public_key_proof: PublicKeyProof,
+-    params: Params,
+-}
+-
+-impl PrivacyPassAthmClient {
+-    pub fn try_new(
+-        public_key: &[u8],
+-        public_key_proof: &[u8],
+-        num_buckets: u8,
+-        deployment_id: &[u8],
+-    ) -> Result<Self, AthmStatus> {
+-        let params = Params::new(num_buckets, deployment_id.to_vec())
+-            .map_err(|_| AthmStatus::InvalidInput)?;
+-        let public_key = PublicKey::decode(public_key).map_err(|_| AthmStatus::InvalidInput)?;
+-        let public_key_proof =
+-            PublicKeyProof::decode(public_key_proof).map_err(|_| AthmStatus::InvalidInput)?;
+-        Ok(Self { public_key, public_key_proof, params })
+-    }
+-
+-    pub fn new(issuer: &PrivacyPassAthmIssuer) -> Self {
+-        PrivacyPassAthmClient {
+-            public_key: issuer.public_key.clone(),
+-            public_key_proof: issuer.public_key_proof.clone(),
+-            params: issuer.params.clone(),
+-        }
+-    }
+-
+-    pub fn new_token_state(&self) -> Result<TokenState, AthmStatus> {
+-        athm::token_request(&self.public_key, &self.public_key_proof, &self.params)
+-            .map(|(context, request)| TokenState { context, request })
+-            .map_err(|_| AthmStatus::OperationFailed)
+-    }
+-
+-    pub fn finalize_request(
+-        &self,
+-        state: TokenState,
+-        response: TokenResponse,
+-    ) -> Result<Token, AthmStatus> {
+-        athm::finalize_token_generic(
+-            &state.context,
+-            &self.public_key,
+-            &state.request,
+-            &response,
+-            &self.params,
+-        )
+-        .map_err(|_| AthmStatus::OperationFailed)
+-    }
+-}
+-
+-/// Parsed token responses as seen by the client.
+-pub struct TokenResponseInboundBatch {
+-    pub responses: Vec<TokenResponse>,
+-}
+-
+-impl TokenResponseInboundBatch {
+-    pub fn from_bytes(
+-        input: &[u8],
+-        client: &PrivacyPassAthmClient,
+-    ) -> Result<TokenResponseInboundBatch, UnframeError> {
+-        let single_response_size = TokenResponse::encoded_size_for_buckets(client.params.n_buckets);
+-        if single_response_size == 0
+-            || input.is_empty()
+-            || !input.len().is_multiple_of(single_response_size)
+-        {
+-            return Err(UnframeError::UnexpectedLength);
+-        }
+-        let responses = input
+-            .chunks_exact(single_response_size)
+-            .map(|chunk| {
+-                TokenResponse::decode(chunk, &client.params)
+-                    .map_err(|_| UnframeError::DecodeFailure)
+-            })
+-            .collect::<Result<Vec<_>, _>>()?;
+-        Ok(TokenResponseInboundBatch { responses })
+-    }
+-
+-    pub fn finalize_batch(
+-        self,
+-        states: Vec<TokenState>,
+-        client: &PrivacyPassAthmClient,
+-    ) -> Result<Vec<Token>, AthmStatus> {
+-        if states.len() != self.responses.len() {
+-            return Err(AthmStatus::InvalidInput);
+-        }
+-        states
+-            .into_iter()
+-            .zip(self.responses)
+-            .map(|(state, response)| client.finalize_request(state, response))
+-            .collect()
+-    }
+-}
+-
+-pub struct PrivacyPassBatchClient {
+-    client: PrivacyPassAthmClient,
+-    states: Vec<TokenState>,
+-    request_body: Vec<u8>,
+-}
+-
+-impl PrivacyPassBatchClient {
+-    pub fn try_new(
+-        public_key: &[u8],
+-        public_key_proof: &[u8],
+-        num_buckets: u8,
+-        deployment_id: &[u8],
+-        version: u32,
+-        batch_size: usize,
+-    ) -> Result<Self, AthmStatus> {
+-        if batch_size == 0 {
+-            return Err(AthmStatus::InvalidInput);
+-        }
+-        let client = PrivacyPassAthmClient::try_new(
+-            public_key,
+-            public_key_proof,
+-            num_buckets,
+-            deployment_id,
+-        )?;
+-        let mut states = Vec::with_capacity(batch_size);
+-        let mut request_body = Vec::with_capacity(batch_size * TOKEN_REQUEST_FRAMED_SIZE + 4);
+-        for _ in 0..batch_size {
+-            let state = client.new_token_state()?;
+-            request_body.extend_from_slice(&state.request.frame(&client.public_key));
+-            states.push(state);
+-        }
+-        request_body.extend_from_slice(&version.to_be_bytes());
+-        Ok(PrivacyPassBatchClient { client, states, request_body })
+-    }
+-
+-    pub fn request_body(&self) -> &[u8] {
+-        &self.request_body
+-    }
+-
+-    pub fn finalize(&mut self, response_body: &[u8]) -> Result<Vec<Vec<u8>>, AthmStatus> {
+-        let states = std::mem::take(&mut self.states);
+-        if states.is_empty() {
+-            return Err(AthmStatus::OperationFailed);
+-        }
+-        let inbound = TokenResponseInboundBatch::from_bytes(response_body, &self.client)
+-            .map_err(|_| AthmStatus::InvalidInput)?;
+-        let tokens = inbound.finalize_batch(states, &self.client)?;
+-        Ok(tokens.iter().map(|t| t.frame(&self.client.public_key)).collect())
+-    }
+-}
+diff --git a/components/private_verification_tokens/common/athm_ffi/privacy_pass_common.rs b/components/private_verification_tokens/common/athm_ffi/privacy_pass_common.rs
+deleted file mode 100644
+index 6d6d314be742a..0000000000000
+--- a/components/private_verification_tokens/common/athm_ffi/privacy_pass_common.rs
++++ /dev/null
+@@ -1,105 +0,0 @@
+-// Copyright 2026 The Chromium Authors
+-// Use of this source code is governed by a BSD-style license that can be
+-// found in the LICENSE file.
+-
+-//! Common Privacy Pass framing, framing traits, and token state types.
+-
+-use athm::{Decodable, Encodable, PublicKey, Token, TokenContext, TokenRequest};
+-
+-pub const ATHM_TOKEN_TYPE: [u8; 2] = (0xC07Eu16).to_be_bytes();
+-
+-pub trait TruncatedKeyId {
+-    fn truncated_key_id(&self) -> u8;
+-}
+-
+-impl TruncatedKeyId for PublicKey {
+-    fn truncated_key_id(&self) -> u8 {
+-        self.key_id()[31]
+-    }
+-}
+-
+-#[repr(u8)]
+-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+-pub enum UnframeError {
+-    UnexpectedLength,
+-    UnexpectedType,
+-    MultipleKeyIds,
+-    DecodeFailure,
+-}
+-
+-/// Set of operations for framing and unframing ATHM messages. `K` is the type
+-/// of the key_id metadata associated with each framed message.
+-pub trait Frame<K> {
+-    fn framed_size() -> usize;
+-    fn frame(&self, key: &PublicKey) -> Vec<u8>;
+-    fn unframe(input: &[u8]) -> Result<(Self, K), UnframeError>
+-    where
+-        Self: Sized;
+-}
+-
+-// Token type + truncated key id + encoded token request body.
+-pub const TOKEN_REQUEST_FRAMED_SIZE: usize = std::mem::size_of_val(&ATHM_TOKEN_TYPE)
+-    + std::mem::size_of::<u8>()
+-    + TokenRequest::encoded_size();
+-
+-/// Implements the framing of token requests as outlined in https://www.rfc-editor.org/rfc/rfc9578.html#section-5.1-8
+-impl Frame<u8> for TokenRequest {
+-    fn framed_size() -> usize {
+-        TOKEN_REQUEST_FRAMED_SIZE
+-    }
+-
+-    fn frame(&self, key: &PublicKey) -> Vec<u8> {
+-        let mut out: Vec<u8> = Vec::with_capacity(Self::framed_size());
+-        out.extend_from_slice(&ATHM_TOKEN_TYPE);
+-        out.push(key.truncated_key_id());
+-        self.encode(&mut out);
+-        out
+-    }
+-
+-    fn unframe(input: &[u8]) -> Result<(Self, u8), UnframeError> {
+-        let byte_array: &[u8; TOKEN_REQUEST_FRAMED_SIZE] =
+-            input.try_into().map_err(|_| UnframeError::UnexpectedLength)?;
+-        if byte_array[0..2] != ATHM_TOKEN_TYPE {
+-            return Err(UnframeError::UnexpectedType);
+-        }
+-        let truncated_key_id = byte_array[2];
+-        Self::decode(&byte_array[3..])
+-            .map(|request| (request, truncated_key_id))
+-            .map_err(|_| UnframeError::DecodeFailure)
+-    }
+-}
+-
+-// Token type + full SHA256 KeyID + Encoded token body
+-pub const TOKEN_FRAMED_SIZE: usize =
+-    std::mem::size_of_val(&ATHM_TOKEN_TYPE) + 32 + Token::encoded_size();
+-
+-impl Frame<[u8; 32]> for Token {
+-    fn framed_size() -> usize {
+-        TOKEN_FRAMED_SIZE
+-    }
+-
+-    fn frame(&self, key: &PublicKey) -> Vec<u8> {
+-        let mut out: Vec<u8> = Vec::with_capacity(Self::framed_size());
+-        out.extend_from_slice(&ATHM_TOKEN_TYPE);
+-        out.extend_from_slice(&key.key_id());
+-        self.encode(&mut out);
+-        out
+-    }
+-
+-    fn unframe(input: &[u8]) -> Result<(Self, [u8; 32]), UnframeError> {
+-        let byte_array: &[u8; TOKEN_FRAMED_SIZE] =
+-            input.try_into().map_err(|_| UnframeError::UnexpectedLength)?;
+-        if byte_array[0..2] != ATHM_TOKEN_TYPE {
+-            return Err(UnframeError::UnexpectedType);
+-        }
+-        let key_id: [u8; 32] = byte_array[2..34].try_into().unwrap();
+-        Self::decode(&byte_array[34..])
+-            .map(|token| (token, key_id))
+-            .map_err(|_| UnframeError::DecodeFailure)
+-    }
+-}
+-
+-pub struct TokenState {
+-    pub(crate) context: TokenContext,
+-    pub request: TokenRequest,
+-}
+diff --git a/components/private_verification_tokens/common/athm_ffi/privacy_pass_issuer.rs b/components/private_verification_tokens/common/athm_ffi/privacy_pass_issuer.rs
+deleted file mode 100644
+index cbb693b1d56ac..0000000000000
+--- a/components/private_verification_tokens/common/athm_ffi/privacy_pass_issuer.rs
++++ /dev/null
+@@ -1,135 +0,0 @@
+-// Copyright 2026 The Chromium Authors
+-// Use of this source code is governed by a BSD-style license that can be
+-// found in the LICENSE file.
+-
+-//! Issuer-side operations for Privacy Pass ATHM.
+-
+-use athm::{
+-    Encodable, Params, PrivateKey, PublicKey, PublicKeyProof, Token, TokenRequest, TokenResponse,
+-};
+-
+-use crate::privacy_pass_common::{Frame, TruncatedKeyId, UnframeError, TOKEN_REQUEST_FRAMED_SIZE};
+-use crate::types::AthmStatus;
+-
+-/// Parsed results from a token issuance request as seen by the server.
+-pub struct TokenRequestInboundBatch {
+-    pub version: u32,
+-    pub truncated_key_id: u8,
+-    pub requests: Vec<TokenRequest>,
+-}
+-
+-impl TokenRequestInboundBatch {
+-    pub fn from_bytes(input: &[u8]) -> Result<TokenRequestInboundBatch, UnframeError> {
+-        let (request_batch_bytes, version_bytes) =
+-            input.split_last_chunk::<4>().ok_or(UnframeError::UnexpectedLength)?;
+-        let version = u32::from_be_bytes(*version_bytes);
+-        let (request_byte_chunks, remainder) =
+-            request_batch_bytes.as_chunks::<TOKEN_REQUEST_FRAMED_SIZE>();
+-        if !remainder.is_empty() || request_byte_chunks.is_empty() {
+-            return Err(UnframeError::UnexpectedLength);
+-        }
+-        let requests_and_key_ids: Vec<(TokenRequest, u8)> = request_byte_chunks
+-            .iter()
+-            .map(|request_bytes| TokenRequest::unframe(request_bytes))
+-            .collect::<Result<_, _>>()?;
+-        let (requests, key_ids): (Vec<TokenRequest>, Vec<u8>) =
+-            requests_and_key_ids.into_iter().unzip();
+-        let truncated_key_id = *key_ids.first().ok_or(UnframeError::UnexpectedLength)?;
+-        if !key_ids.into_iter().all(|x| x == truncated_key_id) {
+-            return Err(UnframeError::MultipleKeyIds);
+-        }
+-
+-        Ok(TokenRequestInboundBatch { version, truncated_key_id, requests })
+-    }
+-}
+-
+-pub struct PrivacyPassAthmIssuer {
+-    private_key: PrivateKey,
+-    pub public_key: PublicKey,
+-    pub public_key_proof: PublicKeyProof,
+-    pub params: Params,
+-}
+-
+-impl PrivacyPassAthmIssuer {
+-    pub fn try_new(num_buckets: u8, deployment_id: &[u8]) -> Result<Self, AthmStatus> {
+-        let params = Params::new(num_buckets, deployment_id.to_vec())
+-            .map_err(|_| AthmStatus::InvalidInput)?;
+-        let (private_key, public_key, public_key_proof) = athm::key_gen(&params);
+-        Ok(PrivacyPassAthmIssuer { params, private_key, public_key, public_key_proof })
+-    }
+-
+-    pub fn public_key_bytes(&self) -> Vec<u8> {
+-        let mut out = Vec::new();
+-        self.public_key.encode(&mut out);
+-        out
+-    }
+-
+-    pub fn public_key_proof_bytes(&self) -> Vec<u8> {
+-        let mut out = Vec::new();
+-        self.public_key_proof.encode(&mut out);
+-        out
+-    }
+-
+-    pub fn key_id(&self) -> [u8; 32] {
+-        self.public_key.key_id()
+-    }
+-
+-    pub fn truncated_key_id(&self) -> u8 {
+-        self.public_key.truncated_key_id()
+-    }
+-
+-    pub fn issue(
+-        &self,
+-        request: TokenRequest,
+-        hidden_metadata: u8,
+-    ) -> Result<TokenResponse, AthmStatus> {
+-        athm::token_response(
+-            &self.private_key,
+-            &self.public_key,
+-            &request,
+-            hidden_metadata,
+-            &self.params,
+-        )
+-        .map_err(|_| AthmStatus::OperationFailed)
+-    }
+-
+-    pub fn issue_batch(
+-        &self,
+-        batch: TokenRequestInboundBatch,
+-        hidden_metadata: u8,
+-    ) -> Result<Vec<u8>, AthmStatus> {
+-        if batch.truncated_key_id != self.public_key.truncated_key_id() {
+-            return Err(AthmStatus::InvalidInput);
+-        }
+-        let single_response_size = TokenResponse::encoded_size_for_buckets(self.params.n_buckets);
+-        let mut out = Vec::with_capacity(batch.requests.len() * single_response_size);
+-        for request in batch.requests {
+-            let response = self.issue(request, hidden_metadata)?;
+-            response.encode(&mut out);
+-        }
+-        Ok(out)
+-    }
+-
+-    pub fn issue_batch_from_bytes(
+-        &self,
+-        request_body: &[u8],
+-        hidden_metadata: u8,
+-    ) -> Result<Vec<u8>, AthmStatus> {
+-        let inbound = TokenRequestInboundBatch::from_bytes(request_body)
+-            .map_err(|_| AthmStatus::InvalidInput)?;
+-        self.issue_batch(inbound, hidden_metadata)
+-    }
+-
+-    pub fn verify(&self, token: Token) -> Result<u8, AthmStatus> {
+-        Option::<u8>::from(athm::verify_token(&self.private_key, &token, &self.params))
+-            .ok_or(AthmStatus::OperationFailed)
+-    }
+-
+-    pub fn verify_wire_token(&self, wire_token: &[u8]) -> Result<u8, AthmStatus> {
+-        let (token, key_id) = Token::unframe(wire_token).map_err(|_| AthmStatus::InvalidInput)?;
+-        if key_id != self.public_key.key_id() {
+-            return Err(AthmStatus::InvalidInput);
+-        }
+-        self.verify(token)
+-    }
+-}
+diff --git a/components/private_verification_tokens/common/athm_ffi/privacy_pass_unittest.rs b/components/private_verification_tokens/common/athm_ffi/privacy_pass_unittest.rs
+deleted file mode 100644
+index ea346233fa96f..0000000000000
+--- a/components/private_verification_tokens/common/athm_ffi/privacy_pass_unittest.rs
++++ /dev/null
+@@ -1,767 +0,0 @@
+-// Copyright 2026 The Chromium Authors
+-// Use of this source code is governed by a BSD-style license that can be
+-// found in the LICENSE file.
+-
+-chromium::import! {
+-    "//components/private_verification_tokens/common/athm_ffi:athm_ffi";
+-}
+-
+-use athm::{Decodable, Encodable, Token, TokenRequest};
+-use athm_ffi::types::AthmStatus;
+-use athm_ffi::{
+-    Frame, PrivacyPassAthmClient, PrivacyPassAthmIssuer, PrivacyPassBatchClient,
+-    TokenRequestInboundBatch, TokenResponseInboundBatch, UnframeError,
+-};
+-use rust_gtest_interop::prelude::*;
+-
+-const DEPLOYMENT_ID: &[u8] = b"privacy-pass-test-deployment";
+-
+-#[gtest(PrivacyPassTest, IssuerAndClientCreationSuccess)]
+-fn test_issuer_and_client_creation_success() {
+-    let issuer = PrivacyPassAthmIssuer::try_new(4, DEPLOYMENT_ID);
+-    let issuer = issuer.unwrap();
+-
+-    // Verify public key and proof can be encoded.
+-    let mut pk_bytes = Vec::new();
+-    issuer.public_key.encode(&mut pk_bytes);
+-    expect_false!(pk_bytes.is_empty());
+-
+-    let mut proof_bytes = Vec::new();
+-    issuer.public_key_proof.encode(&mut proof_bytes);
+-    expect_false!(proof_bytes.is_empty());
+-
+-    // Create client using try_new.
+-    let client = PrivacyPassAthmClient::try_new(&pk_bytes, &proof_bytes, 4, DEPLOYMENT_ID);
+-    expect_true!(client.is_ok());
+-
+-    // Create client using convenience constructor from issuer.
+-    let _client_from_issuer = PrivacyPassAthmClient::new(&issuer);
+-}
+-
+-#[gtest(PrivacyPassTest, IssuerCreationInvalidParams)]
+-fn test_issuer_creation_invalid_params() {
+-    // 0 buckets is invalid.
+-    let res_zero = PrivacyPassAthmIssuer::try_new(0, DEPLOYMENT_ID);
+-    expect_eq!(res_zero.err(), Some(AthmStatus::InvalidInput));
+-
+-    // Deployment ID > 255 bytes is invalid in ATHM parameters.
+-    let long_id = vec![0x42; 256];
+-    let res_long = PrivacyPassAthmIssuer::try_new(4, &long_id);
+-    expect_eq!(res_long.err(), Some(AthmStatus::InvalidInput));
+-}
+-
+-#[gtest(PrivacyPassTest, ClientCreationInvalidParams)]
+-fn test_client_creation_invalid_params() {
+-    let issuer = PrivacyPassAthmIssuer::try_new(4, DEPLOYMENT_ID).unwrap();
+-    let mut pk_bytes = Vec::new();
+-    issuer.public_key.encode(&mut pk_bytes);
+-    let mut proof_bytes = Vec::new();
+-    issuer.public_key_proof.encode(&mut proof_bytes);
+-
+-    // Invalid public key bytes.
+-    let res_bad_pk = PrivacyPassAthmClient::try_new(b"invalid_pk", &proof_bytes, 4, DEPLOYMENT_ID);
+-    expect_eq!(res_bad_pk.err(), Some(AthmStatus::InvalidInput));
+-
+-    // Invalid proof bytes.
+-    let res_bad_proof =
+-        PrivacyPassAthmClient::try_new(&pk_bytes, b"invalid_proof", 4, DEPLOYMENT_ID);
+-    expect_eq!(res_bad_proof.err(), Some(AthmStatus::InvalidInput));
+-
+-    // 0 buckets.
+-    let res_zero_buckets =
+-        PrivacyPassAthmClient::try_new(&pk_bytes, &proof_bytes, 0, DEPLOYMENT_ID);
+-    expect_eq!(res_zero_buckets.err(), Some(AthmStatus::InvalidInput));
+-
+-    // Overlong deployment ID.
+-    let long_id = vec![0x42; 256];
+-    let res_long_id = PrivacyPassAthmClient::try_new(&pk_bytes, &proof_bytes, 4, &long_id);
+-    expect_eq!(res_long_id.err(), Some(AthmStatus::InvalidInput));
+-}
+-
+-#[gtest(PrivacyPassTest, IssuanceAndVerificationRoundtrip)]
+-fn test_issuance_and_verification_roundtrip() {
+-    let num_buckets = 4;
+-    let issuer = PrivacyPassAthmIssuer::try_new(num_buckets, DEPLOYMENT_ID).unwrap();
+-    let client = PrivacyPassAthmClient::new(&issuer);
+-
+-    for metadata in 0..num_buckets {
+-        let state = client.new_token_state();
+-        let state = state.unwrap();
+-
+-        let response = issuer.issue(state.request.clone(), metadata);
+-        let response = response.unwrap();
+-
+-        let token = client.finalize_request(state, response);
+-        let token = token.unwrap();
+-
+-        let recovered_metadata = issuer.verify(token);
+-        expect_eq!(recovered_metadata, Ok(metadata));
+-    }
+-}
+-
+-#[gtest(PrivacyPassTest, MultipleBucketConfigurations)]
+-fn test_multiple_bucket_configurations() {
+-    for num_buckets in [1, 2, 8, 16] {
+-        let issuer = PrivacyPassAthmIssuer::try_new(num_buckets, DEPLOYMENT_ID).unwrap();
+-        let client = PrivacyPassAthmClient::new(&issuer);
+-
+-        let test_metadata = num_buckets - 1;
+-        let state = client.new_token_state().unwrap();
+-        let response = issuer.issue(state.request.clone(), test_metadata).unwrap();
+-        let token = client.finalize_request(state, response).unwrap();
+-
+-        let recovered = issuer.verify(token);
+-        expect_eq!(recovered, Ok(test_metadata));
+-    }
+-}
+-
+-#[gtest(PrivacyPassTest, RequestBlindingRandomness)]
+-fn test_request_blinding_randomness() {
+-    let issuer = PrivacyPassAthmIssuer::try_new(4, DEPLOYMENT_ID).unwrap();
+-    let client = PrivacyPassAthmClient::new(&issuer);
+-
+-    let state1 = client.new_token_state().unwrap();
+-    let state2 = client.new_token_state().unwrap();
+-
+-    let mut req1_bytes = Vec::new();
+-    state1.request.encode(&mut req1_bytes);
+-    let mut req2_bytes = Vec::new();
+-    state2.request.encode(&mut req2_bytes);
+-
+-    expect_ne!(req1_bytes, req2_bytes);
+-}
+-
+-#[gtest(PrivacyPassTest, IssueWithOutOfRangeMetadataFails)]
+-fn test_issue_with_out_of_range_metadata_fails() {
+-    let num_buckets = 4;
+-    let issuer = PrivacyPassAthmIssuer::try_new(num_buckets, DEPLOYMENT_ID).unwrap();
+-    let client = PrivacyPassAthmClient::new(&issuer);
+-
+-    let state = client.new_token_state().unwrap();
+-
+-    // Metadata == num_buckets is out of range (valid range is 0..num_buckets).
+-    let response = issuer.issue(state.request.clone(), num_buckets);
+-    expect_eq!(response.err(), Some(AthmStatus::OperationFailed));
+-
+-    // Higher out-of-range metadata.
+-    let response_high = issuer.issue(state.request, num_buckets + 10);
+-    expect_eq!(response_high.err(), Some(AthmStatus::OperationFailed));
+-}
+-
+-#[gtest(PrivacyPassTest, WrongIssuerKeyDoesNotVerify)]
+-fn test_wrong_issuer_key_does_not_verify() {
+-    let issuer_a = PrivacyPassAthmIssuer::try_new(4, DEPLOYMENT_ID).unwrap();
+-    let issuer_b = PrivacyPassAthmIssuer::try_new(4, DEPLOYMENT_ID).unwrap();
+-    let client_a = PrivacyPassAthmClient::new(&issuer_a);
+-
+-    let state = client_a.new_token_state().unwrap();
+-    let response = issuer_a.issue(state.request.clone(), 2).unwrap();
+-    let token = client_a.finalize_request(state, response).unwrap();
+-
+-    expect_eq!(issuer_a.verify(token.clone()), Ok(2));
+-    expect_eq!(issuer_b.verify(token).err(), Some(AthmStatus::OperationFailed));
+-}
+-
+-#[gtest(PrivacyPassTest, TamperedTokenDoesNotVerify)]
+-fn test_tampered_token_does_not_verify() {
+-    let issuer = PrivacyPassAthmIssuer::try_new(4, DEPLOYMENT_ID).unwrap();
+-    let client = PrivacyPassAthmClient::new(&issuer);
+-
+-    let state = client.new_token_state().unwrap();
+-    let response = issuer.issue(state.request.clone(), 1).unwrap();
+-    let token = client.finalize_request(state, response).unwrap();
+-
+-    let mut token_bytes = Vec::new();
+-    token.encode(&mut token_bytes);
+-    expect_eq!(token_bytes.len(), 98);
+-
+-    // Corrupt a coordinate byte.
+-    token_bytes[40] ^= 0xFF;
+-
+-    let tampered_token = Token::decode(&token_bytes);
+-    if let Ok(t) = tampered_token {
+-        expect_eq!(issuer.verify(t).err(), Some(AthmStatus::OperationFailed));
+-    }
+-}
+-
+-#[gtest(PrivacyPassTest, TokenRequestFramingAndUnframing)]
+-fn test_token_request_framing_and_unframing() {
+-    let issuer = PrivacyPassAthmIssuer::try_new(4, DEPLOYMENT_ID).unwrap();
+-    let client = PrivacyPassAthmClient::new(&issuer);
+-
+-    let state = client.new_token_state().unwrap();
+-    let original_request = state.request;
+-
+-    expect_eq!(<TokenRequest as Frame<u8>>::framed_size(), 36);
+-
+-    let framed = original_request.frame(&issuer.public_key);
+-    expect_eq!(framed.len(), 36);
+-    expect_eq!(&framed[0..2], &[0xC0, 0x7E]);
+-    expect_eq!(framed[2], issuer.public_key.key_id()[31]);
+-
+-    let (unframed, truncated_key_id) = <TokenRequest as Frame<u8>>::unframe(&framed).unwrap();
+-    expect_eq!(truncated_key_id, issuer.public_key.key_id()[31]);
+-
+-    let mut original_bytes = Vec::new();
+-    original_request.encode(&mut original_bytes);
+-    let mut unframed_bytes = Vec::new();
+-    unframed.encode(&mut unframed_bytes);
+-    expect_eq!(original_bytes, unframed_bytes);
+-}
+-
+-#[gtest(PrivacyPassTest, TokenRequestUnframeErrors)]
+-fn test_token_request_unframe_errors() {
+-    let issuer = PrivacyPassAthmIssuer::try_new(4, DEPLOYMENT_ID).unwrap();
+-    let client = PrivacyPassAthmClient::new(&issuer);
+-    let state = client.new_token_state().unwrap();
+-    let framed = state.request.frame(&issuer.public_key);
+-
+-    // Unexpected length: too short.
+-    let short = &framed[..35];
+-    expect_eq!(
+-        <TokenRequest as Frame<u8>>::unframe(short).err(),
+-        Some(UnframeError::UnexpectedLength)
+-    );
+-
+-    // Unexpected length: too long.
+-    let mut long = framed.clone();
+-    long.push(0x00);
+-    expect_eq!(
+-        <TokenRequest as Frame<u8>>::unframe(&long).err(),
+-        Some(UnframeError::UnexpectedLength)
+-    );
+-
+-    // Unexpected token type.
+-    let mut bad_type = framed.clone();
+-    bad_type[0] = 0x00;
+-    bad_type[1] = 0x01;
+-    expect_eq!(
+-        <TokenRequest as Frame<u8>>::unframe(&bad_type).err(),
+-        Some(UnframeError::UnexpectedType)
+-    );
+-
+-    // Decode failure: corrupt curve point.
+-    let mut bad_point = framed;
+-    bad_point[3] = 0xFF; // Invalid compressed curve point header
+-    expect_eq!(
+-        <TokenRequest as Frame<u8>>::unframe(&bad_point).err(),
+-        Some(UnframeError::DecodeFailure)
+-    );
+-}
+-
+-#[gtest(PrivacyPassTest, TokenFramingAndUnframing)]
+-fn test_token_framing_and_unframing() {
+-    let issuer = PrivacyPassAthmIssuer::try_new(4, DEPLOYMENT_ID).unwrap();
+-    let client = PrivacyPassAthmClient::new(&issuer);
+-
+-    let state = client.new_token_state().unwrap();
+-    let response = issuer.issue(state.request.clone(), 3).unwrap();
+-    let token = client.finalize_request(state, response).unwrap();
+-
+-    expect_eq!(<Token as Frame<[u8; 32]>>::framed_size(), 132);
+-
+-    let framed = token.frame(&issuer.public_key);
+-    expect_eq!(framed.len(), 132);
+-    expect_eq!(&framed[0..2], &[0xC0, 0x7E]);
+-    expect_eq!(&framed[2..34], &issuer.public_key.key_id());
+-
+-    let (unframed_token, key_id) = <Token as Frame<[u8; 32]>>::unframe(&framed).unwrap();
+-    expect_eq!(key_id, issuer.public_key.key_id());
+-
+-    // Verified unframed token recovers the correct metadata.
+-    let recovered = issuer.verify(unframed_token);
+-    expect_eq!(recovered, Ok(3));
+-}
+-
+-#[gtest(PrivacyPassTest, TokenUnframeErrors)]
+-fn test_token_unframe_errors() {
+-    let issuer = PrivacyPassAthmIssuer::try_new(4, DEPLOYMENT_ID).unwrap();
+-    let client = PrivacyPassAthmClient::new(&issuer);
+-
+-    let state = client.new_token_state().unwrap();
+-    let response = issuer.issue(state.request.clone(), 0).unwrap();
+-    let token = client.finalize_request(state, response).unwrap();
+-    let framed = token.frame(&issuer.public_key);
+-
+-    // Unexpected length: too short.
+-    let short = &framed[..131];
+-    expect_eq!(
+-        <Token as Frame<[u8; 32]>>::unframe(short).err(),
+-        Some(UnframeError::UnexpectedLength)
+-    );
+-
+-    // Unexpected length: too long.
+-    let mut long = framed.clone();
+-    long.push(0x00);
+-    expect_eq!(
+-        <Token as Frame<[u8; 32]>>::unframe(&long).err(),
+-        Some(UnframeError::UnexpectedLength)
+-    );
+-
+-    // Unexpected token type.
+-    let mut bad_type = framed.clone();
+-    bad_type[0] = 0x12;
+-    bad_type[1] = 0x34;
+-    expect_eq!(
+-        <Token as Frame<[u8; 32]>>::unframe(&bad_type).err(),
+-        Some(UnframeError::UnexpectedType)
+-    );
+-
+-    // Decode failure: corrupt compressed EC point header in token.
+-    let mut bad_token = framed;
+-    bad_token[66] = 0xFF; // Corrupt first byte of compressed point P (starts at offset 34 + 32 = 66)
+-    expect_eq!(
+-        <Token as Frame<[u8; 32]>>::unframe(&bad_token).err(),
+-        Some(UnframeError::DecodeFailure)
+-    );
+-}
+-
+-#[gtest(PrivacyPassTest, EndToEndFramedProtocolWorkflow)]
+-fn test_end_to_end_framed_protocol_workflow() {
+-    let issuer = PrivacyPassAthmIssuer::try_new(4, DEPLOYMENT_ID).unwrap();
+-    let client = PrivacyPassAthmClient::new(&issuer);
+-    let expected_metadata = 2;
+-
+-    // 1. Client creates request state using PrivacyPassAthmClient and frames the
+-    //    request.
+-    let state = client.new_token_state().unwrap();
+-    let framed_request = state.request.frame(&issuer.public_key);
+-    expect_eq!(framed_request.len(), 36);
+-
+-    // 2. Issuer receives framed request, unframes and verifies truncated key ID.
+-    let (unframed_request, truncated_key_id) =
+-        <TokenRequest as Frame<u8>>::unframe(&framed_request).unwrap();
+-    expect_eq!(truncated_key_id, issuer.public_key.key_id()[31]);
+-
+-    // 3. Issuer issues response with metadata.
+-    let response = issuer.issue(unframed_request, expected_metadata).unwrap();
+-
+-    // 4. Client finalizes token using PrivacyPassAthmClient and frames it for
+-    //    redemption.
+-    let token = client.finalize_request(state, response).unwrap();
+-    let framed_token = token.frame(&issuer.public_key);
+-    expect_eq!(framed_token.len(), 132);
+-
+-    // 5. Issuer receives framed token, unframes, checks key ID, and verifies
+-    //    metadata.
+-    let (unframed_token, key_id) = <Token as Frame<[u8; 32]>>::unframe(&framed_token).unwrap();
+-    expect_eq!(key_id, issuer.public_key.key_id());
+-    let recovered_metadata = issuer.verify(unframed_token);
+-    expect_eq!(recovered_metadata, Ok(expected_metadata));
+-}
+-
+-#[gtest(PrivacyPassTest, TokenRequestInboundBatchFromBytesSingleRequest)]
+-fn test_token_request_inbound_batch_from_bytes_single_request() {
+-    let issuer = PrivacyPassAthmIssuer::try_new(4, DEPLOYMENT_ID).unwrap();
+-    let client = PrivacyPassAthmClient::new(&issuer);
+-
+-    let state = client.new_token_state().unwrap();
+-    let mut batch_bytes = state.request.frame(&issuer.public_key);
+-    expect_eq!(batch_bytes.len(), 36);
+-
+-    let version = 1u32;
+-    batch_bytes.extend_from_slice(&version.to_be_bytes());
+-    expect_eq!(batch_bytes.len(), 40);
+-
+-    let batch = TokenRequestInboundBatch::from_bytes(&batch_bytes);
+-    let batch = batch.unwrap();
+-
+-    expect_eq!(batch.version, 1);
+-    expect_eq!(batch.truncated_key_id, issuer.public_key.key_id()[31]);
+-    expect_eq!(batch.requests.len(), 1);
+-}
+-
+-#[gtest(PrivacyPassTest, TokenRequestInboundBatchFromBytesMultipleRequests)]
+-fn test_token_request_inbound_batch_from_bytes_multiple_requests() {
+-    let issuer = PrivacyPassAthmIssuer::try_new(4, DEPLOYMENT_ID).unwrap();
+-    let client = PrivacyPassAthmClient::new(&issuer);
+-
+-    let state1 = client.new_token_state().unwrap();
+-    let state2 = client.new_token_state().unwrap();
+-    let state3 = client.new_token_state().unwrap();
+-
+-    let mut batch_bytes = Vec::new();
+-    batch_bytes.extend_from_slice(&state1.request.frame(&issuer.public_key));
+-    batch_bytes.extend_from_slice(&state2.request.frame(&issuer.public_key));
+-    batch_bytes.extend_from_slice(&state3.request.frame(&issuer.public_key));
+-    expect_eq!(batch_bytes.len(), 36 * 3);
+-
+-    let version = 1u32;
+-    batch_bytes.extend_from_slice(&version.to_be_bytes());
+-    expect_eq!(batch_bytes.len(), 36 * 3 + 4);
+-
+-    let batch = TokenRequestInboundBatch::from_bytes(&batch_bytes).unwrap();
+-    expect_eq!(batch.version, 1);
+-    expect_eq!(batch.truncated_key_id, issuer.public_key.key_id()[31]);
+-    expect_eq!(batch.requests.len(), 3);
+-}
+-
+-#[gtest(PrivacyPassTest, TokenRequestInboundBatchFromBytesErrors)]
+-fn test_token_request_inbound_batch_from_bytes_errors() {
+-    let issuer = PrivacyPassAthmIssuer::try_new(4, DEPLOYMENT_ID).unwrap();
+-    let client = PrivacyPassAthmClient::new(&issuer);
+-
+-    // Empty input: UnexpectedLength.
+-    expect_eq!(
+-        TokenRequestInboundBatch::from_bytes(&[]).err(),
+-        Some(UnframeError::UnexpectedLength)
+-    );
+-
+-    // Input shorter than 4 bytes: UnexpectedLength.
+-    expect_eq!(
+-        TokenRequestInboundBatch::from_bytes(&[0, 1, 2]).err(),
+-        Some(UnframeError::UnexpectedLength)
+-    );
+-
+-    // Only version (4 bytes, 0 requests): UnexpectedLength.
+-    expect_eq!(
+-        TokenRequestInboundBatch::from_bytes(&1u32.to_be_bytes()).err(),
+-        Some(UnframeError::UnexpectedLength)
+-    );
+-
+-    let state = client.new_token_state().unwrap();
+-    let framed = state.request.frame(&issuer.public_key);
+-
+-    // Incomplete request chunk: 35 bytes + 4 bytes version = 39 bytes.
+-    let mut bad_len = framed[..35].to_vec();
+-    bad_len.extend_from_slice(&1u32.to_be_bytes());
+-    expect_eq!(
+-        TokenRequestInboundBatch::from_bytes(&bad_len).err(),
+-        Some(UnframeError::UnexpectedLength)
+-    );
+-
+-    // Extra trailing byte: 37 bytes + 4 bytes version = 41 bytes.
+-    let mut bad_len2 = framed.clone();
+-    bad_len2.push(0x00);
+-    bad_len2.extend_from_slice(&1u32.to_be_bytes());
+-    expect_eq!(
+-        TokenRequestInboundBatch::from_bytes(&bad_len2).err(),
+-        Some(UnframeError::UnexpectedLength)
+-    );
+-
+-    // Unexpected token type in request chunk.
+-    let mut bad_type = framed.clone();
+-    bad_type[0] = 0x00;
+-    bad_type[1] = 0x01;
+-    bad_type.extend_from_slice(&1u32.to_be_bytes());
+-    expect_eq!(
+-        TokenRequestInboundBatch::from_bytes(&bad_type).err(),
+-        Some(UnframeError::UnexpectedType)
+-    );
+-
+-    // Decode failure in request chunk (corrupt curve point).
+-    let mut bad_point = framed.clone();
+-    bad_point[3] = 0xFF;
+-    bad_point.extend_from_slice(&1u32.to_be_bytes());
+-    expect_eq!(
+-        TokenRequestInboundBatch::from_bytes(&bad_point).err(),
+-        Some(UnframeError::DecodeFailure)
+-    );
+-
+-    // Inconsistent key IDs in batch (MultipleKeyIds).
+-    let issuer_b = PrivacyPassAthmIssuer::try_new(4, b"deployment-b").unwrap();
+-    let client_b = PrivacyPassAthmClient::new(&issuer_b);
+-    let state_b = client_b.new_token_state().unwrap();
+-
+-    let mut multi_key_batch = Vec::new();
+-    multi_key_batch.extend_from_slice(&framed); // Key ID from issuer A
+-    multi_key_batch.extend_from_slice(&state_b.request.frame(&issuer_b.public_key)); // Key ID from issuer B
+-    multi_key_batch.extend_from_slice(&1u32.to_be_bytes());
+-    expect_eq!(
+-        TokenRequestInboundBatch::from_bytes(&multi_key_batch).err(),
+-        Some(UnframeError::MultipleKeyIds)
+-    );
+-}
+-
+-#[gtest(PrivacyPassTest, IssueBatchAndTokenResponseInboundBatchSuccess)]
+-fn test_issue_batch_and_token_response_inbound_batch_success() {
+-    let issuer = PrivacyPassAthmIssuer::try_new(4, DEPLOYMENT_ID).unwrap();
+-    let client = PrivacyPassAthmClient::new(&issuer);
+-    let expected_metadata = 3;
+-
+-    let state1 = client.new_token_state().unwrap();
+-    let state2 = client.new_token_state().unwrap();
+-    let state3 = client.new_token_state().unwrap();
+-
+-    let mut batch_bytes = Vec::new();
+-    batch_bytes.extend_from_slice(&state1.request.frame(&issuer.public_key));
+-    batch_bytes.extend_from_slice(&state2.request.frame(&issuer.public_key));
+-    batch_bytes.extend_from_slice(&state3.request.frame(&issuer.public_key));
+-    batch_bytes.extend_from_slice(&1u32.to_be_bytes());
+-
+-    let request_batch = TokenRequestInboundBatch::from_bytes(&batch_bytes).unwrap();
+-    let response_bytes = issuer.issue_batch(request_batch, expected_metadata);
+-    let response_bytes = response_bytes.unwrap();
+-
+-    // Client side: parses the concatenated token responses using
+-    // TokenResponseInboundBatch.
+-    let response_batch = TokenResponseInboundBatch::from_bytes(&response_bytes, &client);
+-    let response_batch = response_batch.unwrap();
+-    expect_eq!(response_batch.responses.len(), 3);
+-
+-    // Client side: finalizes the entire batch via response_batch.finalize_batch.
+-    let states = vec![state1, state2, state3];
+-    let tokens = response_batch.finalize_batch(states, &client);
+-    let tokens = tokens.unwrap();
+-    expect_eq!(tokens.len(), 3);
+-
+-    for token in tokens {
+-        let recovered = issuer.verify(token);
+-        expect_eq!(recovered, Ok(expected_metadata));
+-    }
+-}
+-
+-#[gtest(PrivacyPassTest, TokenResponseInboundBatchFromBytesErrors)]
+-fn test_token_response_inbound_batch_from_bytes_errors() {
+-    let issuer = PrivacyPassAthmIssuer::try_new(4, DEPLOYMENT_ID).unwrap();
+-    let client = PrivacyPassAthmClient::new(&issuer);
+-
+-    // Empty input: UnexpectedLength.
+-    expect_eq!(
+-        TokenResponseInboundBatch::from_bytes(&[], &client).err(),
+-        Some(UnframeError::UnexpectedLength)
+-    );
+-
+-    let state = client.new_token_state().unwrap();
+-    let mut req_batch_bytes = state.request.frame(&issuer.public_key);
+-    req_batch_bytes.extend_from_slice(&1u32.to_be_bytes());
+-    let req_batch = TokenRequestInboundBatch::from_bytes(&req_batch_bytes).unwrap();
+-
+-    let valid_response_bytes = issuer.issue_batch(req_batch, 1).unwrap();
+-    let single_resp_len = valid_response_bytes.len();
+-
+-    // Partial response length: UnexpectedLength.
+-    let short_resp = &valid_response_bytes[..single_resp_len - 1];
+-    expect_eq!(
+-        TokenResponseInboundBatch::from_bytes(short_resp, &client).err(),
+-        Some(UnframeError::UnexpectedLength)
+-    );
+-
+-    // Extra trailing byte: UnexpectedLength.
+-    let mut long_resp = valid_response_bytes.clone();
+-    long_resp.push(0x00);
+-    expect_eq!(
+-        TokenResponseInboundBatch::from_bytes(&long_resp, &client).err(),
+-        Some(UnframeError::UnexpectedLength)
+-    );
+-
+-    // Decode failure: corrupt curve point data in response.
+-    let mut corrupt_resp = valid_response_bytes;
+-    corrupt_resp[0] = 0xFF; // Invalid compressed point header for big_u
+-    expect_eq!(
+-        TokenResponseInboundBatch::from_bytes(&corrupt_resp, &client).err(),
+-        Some(UnframeError::DecodeFailure)
+-    );
+-}
+-
+-#[gtest(PrivacyPassTest, TokenResponseInboundBatchFinalizeErrors)]
+-fn test_token_response_inbound_batch_finalize_errors() {
+-    let issuer = PrivacyPassAthmIssuer::try_new(4, DEPLOYMENT_ID).unwrap();
+-    let client = PrivacyPassAthmClient::new(&issuer);
+-
+-    let state1 = client.new_token_state().unwrap();
+-    let state2 = client.new_token_state().unwrap();
+-
+-    let mut req_batch_bytes = state1.request.frame(&issuer.public_key);
+-    req_batch_bytes.extend_from_slice(&1u32.to_be_bytes());
+-    let req_batch = TokenRequestInboundBatch::from_bytes(&req_batch_bytes).unwrap();
+-
+-    let valid_response_bytes = issuer.issue_batch(req_batch, 1).unwrap();
+-    let response_batch =
+-        TokenResponseInboundBatch::from_bytes(&valid_response_bytes, &client).unwrap();
+-
+-    // State count mismatch: 2 states provided for 1 response in batch.
+-    let state1_again = client.new_token_state().unwrap();
+-    expect_true!(response_batch.finalize_batch(vec![state1_again, state2], &client).is_err());
+-}
+-
+-#[gtest(PrivacyPassTest, IssueBatchKeyIdMismatchReturnsNone)]
+-fn test_issue_batch_key_id_mismatch_returns_none() {
+-    let issuer_a = PrivacyPassAthmIssuer::try_new(4, DEPLOYMENT_ID).unwrap();
+-    let issuer_b = PrivacyPassAthmIssuer::try_new(4, b"other-deployment").unwrap();
+-    let client_b = PrivacyPassAthmClient::new(&issuer_b);
+-
+-    let state = client_b.new_token_state().unwrap();
+-    let mut batch_bytes = state.request.frame(&issuer_b.public_key);
+-    batch_bytes.extend_from_slice(&1u32.to_be_bytes());
+-
+-    let batch = TokenRequestInboundBatch::from_bytes(&batch_bytes).unwrap();
+-    // Batch is framed with issuer_b's truncated key ID; sending to issuer_a must
+-    // return Err.
+-    let response = issuer_a.issue_batch(batch, 1);
+-    expect_true!(response.is_err());
+-}
+-
+-#[gtest(PrivacyPassTest, IssueBatchOutOfRangeMetadataReturnsNone)]
+-fn test_issue_batch_out_of_range_metadata_returns_none() {
+-    let issuer = PrivacyPassAthmIssuer::try_new(4, DEPLOYMENT_ID).unwrap();
+-    let client = PrivacyPassAthmClient::new(&issuer);
+-
+-    let state = client.new_token_state().unwrap();
+-    let mut batch_bytes = state.request.frame(&issuer.public_key);
+-    batch_bytes.extend_from_slice(&1u32.to_be_bytes());
+-
+-    let batch = TokenRequestInboundBatch::from_bytes(&batch_bytes).unwrap();
+-    // Metadata == 4 is out of range for 4 buckets (0..4).
+-    let response = issuer.issue_batch(batch, 4);
+-    expect_true!(response.is_err());
+-}
+-
+-#[gtest(PrivacyPassTest, BatchRequestTryNewSuccessAndRequestBody)]
+-fn test_batch_request_try_new_success_and_request_body() {
+-    let issuer = PrivacyPassAthmIssuer::try_new(4, DEPLOYMENT_ID).unwrap();
+-    let mut pk_bytes = Vec::new();
+-    issuer.public_key.encode(&mut pk_bytes);
+-    let mut proof_bytes = Vec::new();
+-    issuer.public_key_proof.encode(&mut proof_bytes);
+-
+-    let batch_size = 5;
+-    let version = 1;
+-    let batch_req = PrivacyPassBatchClient::try_new(
+-        &pk_bytes,
+-        &proof_bytes,
+-        4,
+-        DEPLOYMENT_ID,
+-        version,
+-        batch_size,
+-    );
+-    let batch_req = batch_req.unwrap();
+-
+-    let body = batch_req.request_body();
+-    expect_eq!(body.len(), batch_size * 36 + 4);
+-}
+-
+-#[gtest(PrivacyPassTest, BatchRequestTryNewInvalidParameters)]
+-fn test_batch_request_try_new_invalid_parameters() {
+-    let issuer = PrivacyPassAthmIssuer::try_new(4, DEPLOYMENT_ID).unwrap();
+-    let mut pk_bytes = Vec::new();
+-    issuer.public_key.encode(&mut pk_bytes);
+-    let mut proof_bytes = Vec::new();
+-    issuer.public_key_proof.encode(&mut proof_bytes);
+-
+-    // 0 batch size is invalid.
+-    expect_eq!(
+-        PrivacyPassBatchClient::try_new(&pk_bytes, &proof_bytes, 4, DEPLOYMENT_ID, 1, 0).err(),
+-        Some(AthmStatus::InvalidInput)
+-    );
+-
+-    // 0 buckets is invalid.
+-    expect_eq!(
+-        PrivacyPassBatchClient::try_new(&pk_bytes, &proof_bytes, 0, DEPLOYMENT_ID, 1, 2).err(),
+-        Some(AthmStatus::InvalidInput)
+-    );
+-
+-    // Invalid public key.
+-    expect_eq!(
+-        PrivacyPassBatchClient::try_new(b"invalid_pk", &proof_bytes, 4, DEPLOYMENT_ID, 1, 2).err(),
+-        Some(AthmStatus::InvalidInput)
+-    );
+-
+-    // Invalid proof.
+-    expect_eq!(
+-        PrivacyPassBatchClient::try_new(&pk_bytes, b"invalid_proof", 4, DEPLOYMENT_ID, 1, 2).err(),
+-        Some(AthmStatus::InvalidInput)
+-    );
+-
+-    // Overlong deployment ID (> 255 bytes).
+-    let long_id = vec![0x42; 256];
+-    expect_eq!(
+-        PrivacyPassBatchClient::try_new(&pk_bytes, &proof_bytes, 4, &long_id, 1, 2).err(),
+-        Some(AthmStatus::InvalidInput)
+-    );
+-}
+-
+-#[gtest(PrivacyPassTest, BatchRequestRoundtripIssuanceAndFinalization)]
+-fn test_batch_request_roundtrip_issuance_and_finalization() {
+-    let issuer = PrivacyPassAthmIssuer::try_new(4, DEPLOYMENT_ID).unwrap();
+-    let mut pk_bytes = Vec::new();
+-    issuer.public_key.encode(&mut pk_bytes);
+-    let mut proof_bytes = Vec::new();
+-    issuer.public_key_proof.encode(&mut proof_bytes);
+-
+-    let batch_size = 3;
+-    let mut batch_req =
+-        PrivacyPassBatchClient::try_new(&pk_bytes, &proof_bytes, 4, DEPLOYMENT_ID, 1, batch_size)
+-            .unwrap();
+-
+-    let request_body = batch_req.request_body();
+-    let inbound_batch = TokenRequestInboundBatch::from_bytes(request_body).unwrap();
+-    expect_eq!(inbound_batch.version, 1);
+-
+-    let metadata = 2;
+-    let response_body = issuer.issue_batch(inbound_batch, metadata).unwrap();
+-
+-    let finalized_tokens = batch_req.finalize(&response_body);
+-    let finalized_tokens = finalized_tokens.unwrap();
+-    expect_eq!(finalized_tokens.len(), batch_size);
+-
+-    for token_bytes in finalized_tokens {
+-        expect_eq!(token_bytes.len(), 132);
+-        let (unframed, _key_id) = Token::unframe(&token_bytes).unwrap();
+-        let recovered = issuer.verify(unframed);
+-        expect_eq!(recovered, Ok(metadata));
+-    }
+-}
+-
+-#[gtest(PrivacyPassTest, BatchRequestFinalizeErrorHandling)]
+-fn test_batch_request_finalize_error_handling() {
+-    let issuer = PrivacyPassAthmIssuer::try_new(4, DEPLOYMENT_ID).unwrap();
+-    let mut pk_bytes = Vec::new();
+-    issuer.public_key.encode(&mut pk_bytes);
+-    let mut proof_bytes = Vec::new();
+-    issuer.public_key_proof.encode(&mut proof_bytes);
+-
+-    let batch_size = 2;
+-    let mut batch_req =
+-        PrivacyPassBatchClient::try_new(&pk_bytes, &proof_bytes, 4, DEPLOYMENT_ID, 1, batch_size)
+-            .unwrap();
+-
+-    // Invalid response body (truncated).
+-    let bad_response = vec![0u8; 10];
+-    let res = batch_req.finalize(&bad_response);
+-    expect_eq!(res.err(), Some(AthmStatus::InvalidInput));
+-
+-    // Calling finalize again on a consumed/failed request returns
+-    // AthmStatus::OperationFailed.
+-    let res_second = batch_req.finalize(&bad_response);
+-    expect_eq!(res_second.err(), Some(AthmStatus::OperationFailed));
+-}
+-
+-#[gtest(PrivacyPassTest, IssuerWireMethodsRoundtrip)]
+-fn test_issuer_wire_methods_roundtrip() {
+-    let issuer = PrivacyPassAthmIssuer::try_new(2, b"1").unwrap();
+-    let pk_bytes = issuer.public_key_bytes();
+-    let proof_bytes = issuer.public_key_proof_bytes();
+-    expect_false!(pk_bytes.is_empty());
+-    expect_false!(proof_bytes.is_empty());
+-    expect_eq!(issuer.truncated_key_id(), issuer.key_id()[31]);
+-
+-    let batch_size = 2;
+-    let mut batch_req =
+-        PrivacyPassBatchClient::try_new(&pk_bytes, &proof_bytes, 2, b"1", 1, batch_size).unwrap();
+-
+-    let request_body = batch_req.request_body();
+-    let metadata = 0;
+-    let response_body = issuer.issue_batch_from_bytes(request_body, metadata).unwrap();
+-
+-    let finalized_tokens = batch_req.finalize(&response_body).unwrap();
+-    expect_eq!(finalized_tokens.len(), batch_size);
+-
+-    for token_bytes in &finalized_tokens {
+-        let recovered = issuer.verify_wire_token(token_bytes).unwrap();
+-        expect_eq!(recovered, metadata);
+-    }
+-
+-    // Error handling on issue_batch_from_bytes
+-    expect_eq!(issuer.issue_batch_from_bytes(&[], metadata).err(), Some(AthmStatus::InvalidInput));
+-    expect_eq!(
+-        issuer.issue_batch_from_bytes(&[0u8; 10], metadata).err(),
+-        Some(AthmStatus::InvalidInput)
+-    );
+-
+-    // Error handling on verify_wire_token
+-    expect_eq!(issuer.verify_wire_token(&[0u8; 10]).err(), Some(AthmStatus::InvalidInput));
+-    let mut bad_token = finalized_tokens[0].clone();
+-    bad_token[0] = 0xFF; // Bad token type
+-    expect_eq!(issuer.verify_wire_token(&bad_token).err(), Some(AthmStatus::InvalidInput));
+-}
+diff --git a/components/private_verification_tokens/common/athm_ffi/types.rs b/components/private_verification_tokens/common/athm_ffi/types.rs
+deleted file mode 100644
+index 486efeaa65518..0000000000000
+--- a/components/private_verification_tokens/common/athm_ffi/types.rs
++++ /dev/null
+@@ -1,63 +0,0 @@
+-// Copyright 2026 The Chromium Authors
+-// Use of this source code is governed by a BSD-style license that can be
+-// found in the LICENSE file.
+-
+-use athm::{Params, PublicKey, PublicKeyProof};
+-
+-/// Error outcome of a bridge operation.
+-#[repr(u8)]
+-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+-pub enum AthmStatus {
+-    /// One of the serialized inputs failed to decode.
+-    InvalidInput = 1,
+-    /// Inputs decoded, but the cryptographic operation failed (e.g. invalid
+-    /// proof, out-of-range metadata, or a token that did not verify).
+-    OperationFailed = 2,
+-}
+-
+-/// Blinded token request from the client.
+-#[derive(Clone)]
+-pub struct TokenRequest(pub(crate) athm::TokenRequest);
+-
+-impl TokenRequest {
+-    /// Decodes a serialized token request from wire bytes.
+-    pub fn decode(bytes: &[u8]) -> Result<Self, AthmStatus> {
+-        use athm::Decodable;
+-        athm::TokenRequest::decode(bytes).map(TokenRequest).map_err(|_| AthmStatus::InvalidInput)
+-    }
+-
+-    /// Serializes the token request to wire bytes.
+-    #[must_use]
+-    pub fn to_bytes(&self) -> Vec<u8> {
+-        encode(&self.0)
+-    }
+-}
+-
+-/// Public parameters for the ATHM protocol, derived deterministically by each
+-/// party from `(n_buckets, deployment_id)`. Parameters are never sent over the
+-/// wire.
+-#[derive(Clone)]
+-pub struct AthmParameters(pub(crate) Params);
+-
+-impl AthmParameters {
+-    /// Creates parameters for `n_buckets` metadata buckets under
+-    /// `deployment_id`.
+-    pub fn try_new(n_buckets: u8, deployment_id: &[u8]) -> Result<Self, AthmStatus> {
+-        Params::new(n_buckets, deployment_id.to_vec())
+-            .map(AthmParameters)
+-            .map_err(|_| AthmStatus::InvalidInput)
+-    }
+-
+-    /// Returns the expected wire size in bytes of a single `TokenResponse`.
+-    #[must_use]
+-    pub fn token_response_size(&self) -> usize {
+-        core::mem::size_of::<PublicKey>()
+-            + (2 + self.0.n_buckets as usize) * core::mem::size_of::<PublicKeyProof>()
+-    }
+-}
+-
+-pub(crate) fn encode<T: athm::Encodable>(value: &T) -> Vec<u8> {
+-    let mut out = Vec::new();
+-    value.encode(&mut out);
+-    out
+-}
+diff --git a/components/private_verification_tokens/common/athm_test_issuer.cc b/components/private_verification_tokens/common/athm_test_issuer.cc
+index 6c0a09f24d9ff..5eb36264c93e6 100644
+--- a/components/private_verification_tokens/common/athm_test_issuer.cc
++++ b/components/private_verification_tokens/common/athm_test_issuer.cc
+@@ -6,15 +6,14 @@
+ 
+ #include <utility>
+ 
++#include "base/containers/span_rust.h"
+ #include "base/containers/to_vector.h"
+-#include "base/numerics/byte_conversions.h"
+ #include "base/strings/string_util.h"
+ #include "base/strings/string_view_util.h"
+-#include "components/private_verification_tokens/common/athm_ffi/athm_ffi.h"
++#include "components/private_verification_tokens/common/athm_ffi.rs.h"
+ #include "components/private_verification_tokens/common/private_verification_tokens_parameters.h"
+ #include "crypto/hash.h"
+ #include "third_party/anonymous_tokens/src/anonymous_tokens/cpp/privacy_pass/athm_token_encodings_utils.h"
+-#include "third_party/crubit/support/rs_std/slice_ref.h"
+ 
+ namespace private_verification_tokens {
+ 
+@@ -22,40 +21,42 @@ namespace private_verification_tokens {
+ std::optional<AthmTestIssuer> AthmTestIssuer::Create(
+     uint8_t num_buckets,
+     base::span<const uint8_t> deployment_id) {
+-  auto key_material = AthmKeyMaterial::try_new(
+-      num_buckets, rs_std::SliceRef<const uint8_t>(deployment_id));
+-  if (!key_material.has_value()) {
++  AthmKeyMaterial key_material =
++      athm_key_gen(num_buckets, base::SpanToRustSlice(deployment_id));
++  if (key_material.status != AthmStatus::Ok) {
+     return std::nullopt;
+   }
+-  return AthmTestIssuer(std::move(*key_material));
++  return AthmTestIssuer(base::ToVector(key_material.params),
++                        base::ToVector(key_material.private_key),
++                        base::ToVector(key_material.public_key),
++                        base::ToVector(key_material.public_key_proof));
+ }
+ 
+-AthmTestIssuer::AthmTestIssuer(AthmKeyMaterial key_material)
+-    : key_material_(std::move(key_material)) {}
++AthmTestIssuer::AthmTestIssuer(std::vector<uint8_t> params,
++                               std::vector<uint8_t> private_key,
++                               std::vector<uint8_t> public_key,
++                               std::vector<uint8_t> public_key_proof)
++    : params_(std::move(params)),
++      private_key_(std::move(private_key)),
++      public_key_(std::move(public_key)),
++      public_key_proof_(std::move(public_key_proof)),
++      key_id_(crypto::hash::Sha256(public_key_)) {}
+ 
+ AthmTestIssuer::AthmTestIssuer(AthmTestIssuer&&) = default;
+ AthmTestIssuer& AthmTestIssuer::operator=(AthmTestIssuer&&) = default;
+ AthmTestIssuer::~AthmTestIssuer() = default;
+ 
+-std::optional<std::vector<uint8_t>> AthmTestIssuer::Issue(
+-    const TokenRequest& request,
+-    uint8_t hidden_metadata) const {
+-  auto result = key_material_.issue(request, hidden_metadata);
+-  if (!result.has_value()) {
+-    return std::nullopt;
+-  }
+-  return base::ToVector(*result);
+-}
+-
+ std::optional<std::vector<uint8_t>> AthmTestIssuer::Issue(
+     base::span<const uint8_t> request,
+     uint8_t hidden_metadata) const {
+-  auto token_req =
+-      TokenRequest::decode(rs_std::SliceRef<const uint8_t>(request));
+-  if (!token_req.has_value()) {
++  AthmBytesResult result = athm_issue(
++      base::SpanToRustSlice(private_key_), base::SpanToRustSlice(public_key_),
++      base::SpanToRustSlice(request), hidden_metadata,
++      base::SpanToRustSlice(params_));
++  if (result.status != AthmStatus::Ok) {
+     return std::nullopt;
+   }
+-  return Issue(*token_req, hidden_metadata);
++  return base::ToVector(result.bytes);
+ }
+ 
+ std::optional<std::vector<std::vector<uint8_t>>> AthmTestIssuer::BatchIssue(
+@@ -90,34 +91,23 @@ std::optional<std::vector<std::vector<uint8_t>>> AthmTestIssuer::BatchIssue(
+ std::optional<std::string> AthmTestIssuer::BatchIssue(
+     std::string_view request_body,
+     uint8_t hidden_metadata) const {
+-  constexpr size_t kVersionSize = sizeof(uint32_t);
+-  if (request_body.size() < kVersionSize) {
+-    return std::nullopt;
+-  }
+-
+-  base::span<const uint8_t> request_body_span =
+-      base::as_byte_span(request_body);
+-  const uint32_t version =
+-      base::U32FromBigEndian(request_body_span.last<kVersionSize>());
+   std::optional<PrivateVerificationTokensParameters> params =
+-      GetParametersForVersion(version);
++      GetParametersForVersion(1);
+   if (!params.has_value()) {
+     return std::nullopt;
+   }
+ 
+-  std::string_view token_requests =
+-      request_body.substr(0, request_body.size() - kVersionSize);
+-  if (token_requests.empty() ||
+-      token_requests.size() % params->single_request_size != 0) {
++  if (request_body.empty() ||
++      request_body.size() % params->single_request_size != 0) {
+     return std::nullopt;
+   }
+ 
+-  const size_t batch_size = token_requests.size() / params->single_request_size;
++  const size_t batch_size = request_body.size() / params->single_request_size;
+   std::vector<std::vector<uint8_t>> requests;
+   requests.reserve(batch_size);
+   for (size_t i = 0; i < batch_size; ++i) {
+     base::span<const uint8_t> single_req =
+-        base::as_byte_span(token_requests)
++        base::as_byte_span(request_body)
+             .subspan(i * params->single_request_size,
+                      params->single_request_size);
+     requests.push_back(base::ToVector(single_req));
+@@ -138,11 +128,13 @@ std::optional<std::string> AthmTestIssuer::BatchIssue(
+ 
+ std::optional<uint8_t> AthmTestIssuer::Verify(
+     base::span<const uint8_t> token) const {
+-  auto result = key_material_.verify(rs_std::SliceRef<const uint8_t>(token));
+-  if (!result.has_value()) {
++  AthmVerifyResult result =
++      athm_verify(base::SpanToRustSlice(private_key_),
++                  base::SpanToRustSlice(token), base::SpanToRustSlice(params_));
++  if (result.status != AthmStatus::Ok) {
+     return std::nullopt;
+   }
+-  return *result;
++  return result.metadata;
+ }
+ 
+ std::optional<uint8_t> AthmTestIssuer::VerifyWithCheck(
+@@ -152,7 +144,7 @@ std::optional<uint8_t> AthmTestIssuer::VerifyWithCheck(
+       base::as_string_view(marshaled_token), &token);
+   if (!status.ok() ||
+       token.token_type != PrivateVerificationTokensParameters::kAthmTokenType ||
+-      base::as_byte_span(token.issuer_key_id) != base::as_byte_span(key_id())) {
++      base::as_byte_span(token.issuer_key_id) != base::as_byte_span(key_id_)) {
+     return std::nullopt;
+   }
+   return Verify(base::as_byte_span(token.token));
+@@ -166,19 +158,20 @@ std::optional<AthmTestClient> AthmTestClient::Create(
+     base::span<const uint8_t> public_key_proof,
+     uint8_t num_buckets,
+     base::span<const uint8_t> deployment_id) {
+-  auto params = AthmParameters::try_new(
+-      num_buckets, rs_std::SliceRef<const uint8_t>(deployment_id));
+-  if (!params.has_value()) {
++  AthmClientParams params =
++      athm_client_params(num_buckets, base::SpanToRustSlice(deployment_id));
++  if (params.status != AthmStatus::Ok) {
+     return std::nullopt;
+   }
+ 
+   return AthmTestClient(base::ToVector(public_key),
+-                        base::ToVector(public_key_proof), std::move(*params));
++                        base::ToVector(public_key_proof),
++                        base::ToVector(params.params));
+ }
+ 
+ AthmTestClient::AthmTestClient(std::vector<uint8_t> public_key,
+                                std::vector<uint8_t> public_key_proof,
+-                               AthmParameters params)
++                               std::vector<uint8_t> params)
+     : public_key_(std::move(public_key)),
+       public_key_proof_(std::move(public_key_proof)),
+       params_(std::move(params)) {}
+@@ -189,26 +182,30 @@ AthmTestClient& AthmTestClient::operator=(const AthmTestClient&) = default;
+ AthmTestClient::AthmTestClient(AthmTestClient&&) = default;
+ AthmTestClient& AthmTestClient::operator=(AthmTestClient&&) = default;
+ 
+-std::optional<AthmClientRequest> AthmTestClient::CreateClientRequest() const {
+-  auto bridge_result = AthmClientRequest::try_new(
+-      rs_std::SliceRef<const uint8_t>(public_key_),
+-      rs_std::SliceRef<const uint8_t>(public_key_proof_), params_);
+-  if (!bridge_result.has_value()) {
++std::optional<AthmTestClient::ClientRequest>
++AthmTestClient::CreateClientRequest() const {
++  AthmClientRequest bridge_result = athm_client_request(
++      base::SpanToRustSlice(public_key_),
++      base::SpanToRustSlice(public_key_proof_), base::SpanToRustSlice(params_));
++  if (bridge_result.status != AthmStatus::Ok) {
+     return std::nullopt;
+   }
+-  return std::move(*bridge_result);
++  return ClientRequest{.context = base::ToVector(bridge_result.context),
++                       .request = base::ToVector(bridge_result.request)};
+ }
+ 
+ std::optional<std::vector<uint8_t>> AthmTestClient::FinalizeToken(
+-    const AthmClientRequest& client_request,
++    const ClientRequest& client_request,
+     base::span<const uint8_t> response) const {
+-  auto result = client_request.finalize(
+-      rs_std::SliceRef<const uint8_t>(public_key_),
+-      rs_std::SliceRef<const uint8_t>(response), params_);
+-  if (!result.has_value()) {
++  AthmBytesResult result = athm_client_finalize(
++      base::SpanToRustSlice(client_request.context),
++      base::SpanToRustSlice(public_key_),
++      base::SpanToRustSlice(client_request.request),
++      base::SpanToRustSlice(response), base::SpanToRustSlice(params_));
++  if (result.status != AthmStatus::Ok) {
+     return std::nullopt;
+   }
+-  return base::ToVector(*result);
++  return base::ToVector(result.bytes);
+ }
+ 
+ }  // namespace private_verification_tokens
+diff --git a/components/private_verification_tokens/common/athm_test_issuer.h b/components/private_verification_tokens/common/athm_test_issuer.h
+index 417f15d8b3d9e..b31e7d30e99eb 100644
+--- a/components/private_verification_tokens/common/athm_test_issuer.h
++++ b/components/private_verification_tokens/common/athm_test_issuer.h
+@@ -13,8 +13,6 @@
+ #include <vector>
+ 
+ #include "base/containers/span.h"
+-#include "base/containers/to_vector.h"
+-#include "components/private_verification_tokens/common/athm_ffi/athm_ffi.h"
+ #include "crypto/hash.h"
+ 
+ namespace private_verification_tokens {
+@@ -27,8 +25,8 @@ namespace private_verification_tokens {
+ // to participate (public key, the public-key proof, and the public protocol
+ // params). All inputs/outputs are serialized ATHM wire encodings.
+ //
+-// The crypto runs through the Crubit bindings in athm_ffi.rs on Chromium's
+-// in-tree BoringSSL. This is a test utility, not production code.
++// The crypto runs through the cxx bridge in athm_ffi.rs on Chromium's in-tree
++// BoringSSL. This is a test utility, not production code.
+ class AthmTestIssuer {
+  public:
+   // Creates an issuer for `num_buckets` metadata buckets (valid hidden metadata
+@@ -47,24 +45,21 @@ class AthmTestIssuer {
+   AthmTestIssuer& operator=(const AthmTestIssuer&) = delete;
+ 
+   // Public material the client/browser needs (the "verification key" analog).
+-  std::vector<uint8_t> public_key() const {
+-    return base::ToVector(key_material_.public_key());
++  const std::vector<uint8_t>& public_key() const { return public_key_; }
++  const std::vector<uint8_t>& public_key_proof() const {
++    return public_key_proof_;
+   }
+-  std::vector<uint8_t> public_key_proof() const {
+-    return base::ToVector(key_material_.public_key_proof());
++  const std::vector<uint8_t>& params() const { return params_; }
++  // The 32-byte SHA-256 digest of `public_key_`.
++  const std::array<uint8_t, crypto::hash::kSha256Size>& key_id() const {
++    return key_id_;
+   }
+-  // The 32-byte SHA-256 digest of `public_key()`.
+-  std::array<uint8_t, crypto::hash::kSha256Size> key_id() const {
+-    return crypto::hash::Sha256(public_key());
+-  }
+-  // The 1-byte truncated key ID (last byte of `key_id()`) used in Privacy Pass
+-  // / ATHM token request and redemption framing.
+-  uint8_t truncated_key_id() const { return key_id().back(); }
++  // The 1-byte truncated key ID (last byte of `key_id_`) used in Privacy Pass /
++  // ATHM token request and redemption framing.
++  uint8_t truncated_key_id() const { return key_id_.back(); }
+ 
+   // Issuer side: signs `request`, embedding `hidden_metadata`. Returns the
+   // serialized token response, or nullopt on failure.
+-  std::optional<std::vector<uint8_t>> Issue(const TokenRequest& request,
+-                                            uint8_t hidden_metadata) const;
+   std::optional<std::vector<uint8_t>> Issue(base::span<const uint8_t> request,
+                                             uint8_t hidden_metadata) const;
+ 
+@@ -80,12 +75,11 @@ class AthmTestIssuer {
+       uint8_t hidden_metadata) const;
+ 
+   // Issuer side: processes a concatenated batch request body `request_body`
+-  // (sliced into single wire-formatted request chunks according to the 4-byte
+-  // version number extracted from the end of the request body) by delegating to
+-  // the vector BatchIssue() overload. Returns the concatenated serialized token
+-  // responses as a string, or nullopt if `request_body` has an invalid/empty
+-  // size, an unsupported version, or if any request fails validation or
+-  // signing.
++  // (sliced into single wire-formatted request chunks according to Version 1
++  // parameters) by delegating to the vector BatchIssue() overload. Returns the
++  // concatenated serialized token responses as a string, or nullopt if
++  // `request_body` has an invalid/empty size, or if any request fails
++  // validation or signing.
+   std::optional<std::string> BatchIssue(std::string_view request_body,
+                                         uint8_t hidden_metadata) const;
+ 
+@@ -102,9 +96,16 @@ class AthmTestIssuer {
+       base::span<const uint8_t> marshaled_token) const;
+ 
+  private:
+-  explicit AthmTestIssuer(AthmKeyMaterial key_material);
++  AthmTestIssuer(std::vector<uint8_t> params,
++                 std::vector<uint8_t> private_key,
++                 std::vector<uint8_t> public_key,
++                 std::vector<uint8_t> public_key_proof);
+ 
+-  AthmKeyMaterial key_material_;
++  std::vector<uint8_t> params_;
++  std::vector<uint8_t> private_key_;
++  std::vector<uint8_t> public_key_;
++  std::vector<uint8_t> public_key_proof_;
++  std::array<uint8_t, crypto::hash::kSha256Size> key_id_;
+ };
+ 
+ // A self-contained test client for Anonymous Tokens with Hidden Metadata
+@@ -115,6 +116,15 @@ class AthmTestIssuer {
+ // can drive the issuer and client as separate parties.
+ class AthmTestClient {
+  public:
++  // The client state produced by CreateClientRequest(). Holding one of these
++  // means it is valid; CreateClientRequest() returns nullopt on failure.
++  struct ClientRequest {
++    // Client-secret state that must be retained until FinalizeToken().
++    std::vector<uint8_t> context;
++    // The blinded request to send to the issuer.
++    std::vector<uint8_t> request;
++  };
++
+   static std::optional<AthmTestClient> Create(
+       base::span<const uint8_t> public_key,
+       base::span<const uint8_t> public_key_proof,
+@@ -128,23 +138,23 @@ class AthmTestClient {
+   AthmTestClient& operator=(AthmTestClient&&);
+ 
+   // Client side: builds a blinded token request from public material.
+-  std::optional<AthmClientRequest> CreateClientRequest() const;
++  std::optional<ClientRequest> CreateClientRequest() const;
+ 
+   // Client side: unblinds the issuer `response` into a finalized token, using
+   // the `client_request` returned by CreateClientRequest(). Returns the
+   // serialized token, or nullopt on failure.
+   std::optional<std::vector<uint8_t>> FinalizeToken(
+-      const AthmClientRequest& client_request,
++      const ClientRequest& client_request,
+       base::span<const uint8_t> response) const;
+ 
+  private:
+   AthmTestClient(std::vector<uint8_t> public_key,
+                  std::vector<uint8_t> public_key_proof,
+-                 AthmParameters params);
++                 std::vector<uint8_t> params);
+ 
+   std::vector<uint8_t> public_key_;
+   std::vector<uint8_t> public_key_proof_;
+-  AthmParameters params_;
++  std::vector<uint8_t> params_;
+ };
+ 
+ }  // namespace private_verification_tokens
+diff --git a/components/private_verification_tokens/common/athm_test_issuer_unittest.cc b/components/private_verification_tokens/common/athm_test_issuer_unittest.cc
+index 21b7b0ddc5dc0..e62072da9a390 100644
+--- a/components/private_verification_tokens/common/athm_test_issuer_unittest.cc
++++ b/components/private_verification_tokens/common/athm_test_issuer_unittest.cc
+@@ -12,8 +12,6 @@
+ 
+ #include "base/check.h"
+ #include "base/containers/span.h"
+-#include "base/containers/to_vector.h"
+-#include "base/numerics/byte_conversions.h"
+ #include "base/strings/string_view_util.h"
+ #include "base/time/time.h"
+ #include "components/private_verification_tokens/common/privacy_pass_athm_batch_request.h"
+@@ -67,12 +65,13 @@ std::optional<std::vector<uint8_t>> CreateAthmTokenRequestBytes(
+ std::optional<uint8_t> RunRoundtrip(const AthmTestIssuer& issuer,
+                                     const AthmTestClient& client,
+                                     uint8_t metadata) {
+-  std::optional<AthmClientRequest> request = client.CreateClientRequest();
++  std::optional<AthmTestClient::ClientRequest> request =
++      client.CreateClientRequest();
+   if (!request) {
+     return std::nullopt;
+   }
+   std::optional<std::vector<uint8_t>> response =
+-      issuer.Issue(base::ToVector(request->request()), metadata);
++      issuer.Issue(request->request, metadata);
+   if (!response) {
+     return std::nullopt;
+   }
+@@ -91,6 +90,7 @@ TEST(AthmTestIssuerTest, IssuanceRedemptionRoundtrip) {
+   ASSERT_TRUE(issuer.has_value());
+   EXPECT_THAT(issuer->public_key(), testing::Not(testing::IsEmpty()));
+   EXPECT_THAT(issuer->public_key_proof(), testing::Not(testing::IsEmpty()));
++  EXPECT_THAT(issuer->params(), testing::Not(testing::IsEmpty()));
+ 
+   std::optional<AthmTestClient> client = AthmTestClient::Create(
+       issuer->public_key(), issuer->public_key_proof(), /*num_buckets=*/4,
+@@ -129,9 +129,9 @@ INSTANTIATE_TEST_SUITE_P(AllBuckets,
+ 
+ // Create() returns nullopt for parameters the ATHM crate rejects.
+ struct InvalidConstructionCase {
+-  const char* name;
++  std::string name;
+   uint8_t num_buckets;
+-  size_t deployment_id_len;
++  size_t deployment_id_size;
+ };
+ 
+ class AthmTestIssuerInvalidConstructionTest
+@@ -139,13 +139,10 @@ class AthmTestIssuerInvalidConstructionTest
+ 
+ TEST_P(AthmTestIssuerInvalidConstructionTest, CreateReturnsNullopt) {
+   const InvalidConstructionCase& test_case = GetParam();
+-  std::vector<uint8_t> deployment_id(test_case.deployment_id_len, 'x');
+-
+-  EXPECT_EQ(AthmTestIssuer::Create(test_case.num_buckets, deployment_id),
+-            std::nullopt);
+-  EXPECT_EQ(AthmTestClient::Create(/*public_key=*/{}, /*public_key_proof=*/{},
+-                                   test_case.num_buckets, deployment_id),
+-            std::nullopt);
++  std::vector<uint8_t> deployment_id(test_case.deployment_id_size,
++                                     uint8_t{'d'});
++  EXPECT_FALSE(
++      AthmTestIssuer::Create(test_case.num_buckets, deployment_id).has_value());
+ }
+ 
+ INSTANTIATE_TEST_SUITE_P(
+@@ -169,12 +166,14 @@ TEST(AthmTestIssuerTest, ClientRequestsAreFreshlyBlinded) {
+       AthmTestClient::Create(issuer->public_key(), issuer->public_key_proof(),
+                              /*num_buckets=*/4, DeploymentId("blinding"));
+   ASSERT_TRUE(client.has_value());
+-  std::optional<AthmClientRequest> first = client->CreateClientRequest();
+-  std::optional<AthmClientRequest> second = client->CreateClientRequest();
++  std::optional<AthmTestClient::ClientRequest> first =
++      client->CreateClientRequest();
++  std::optional<AthmTestClient::ClientRequest> second =
++      client->CreateClientRequest();
+   ASSERT_TRUE(first.has_value());
+   ASSERT_TRUE(second.has_value());
+-  EXPECT_NE(base::ToVector(first->request()),
+-            base::ToVector(second->request()));
++  EXPECT_THAT(first->context, testing::Not(testing::IsEmpty()));
++  EXPECT_NE(first->request, second->request);
+ }
+ 
+ // A tampered token must not verify. (Negative case: an early guard against
+@@ -189,10 +188,11 @@ TEST(AthmTestIssuerTest, TamperedTokenDoesNotVerify) {
+                              /*num_buckets=*/4, DeploymentId("tamper"));
+   ASSERT_TRUE(client.has_value());
+ 
+-  std::optional<AthmClientRequest> request = client->CreateClientRequest();
++  std::optional<AthmTestClient::ClientRequest> request =
++      client->CreateClientRequest();
+   ASSERT_TRUE(request.has_value());
+   std::optional<std::vector<uint8_t>> response =
+-      issuer->Issue(base::ToVector(request->request()), /*hidden_metadata=*/2);
++      issuer->Issue(request->request, /*hidden_metadata=*/2);
+   ASSERT_TRUE(response.has_value());
+   std::optional<std::vector<uint8_t>> token =
+       client->FinalizeToken(*request, *response);
+@@ -221,10 +221,11 @@ TEST(AthmTestIssuerTest, WrongIssuerKeyDoesNotVerify) {
+       issuer_a->public_key(), issuer_a->public_key_proof(),
+       /*num_buckets=*/4, DeploymentId("cross-key"));
+   ASSERT_TRUE(client_a.has_value());
+-  std::optional<AthmClientRequest> request = client_a->CreateClientRequest();
++  std::optional<AthmTestClient::ClientRequest> request =
++      client_a->CreateClientRequest();
+   ASSERT_TRUE(request.has_value());
+-  std::optional<std::vector<uint8_t>> response = issuer_a->Issue(
+-      base::ToVector(request->request()), /*hidden_metadata=*/1);
++  std::optional<std::vector<uint8_t>> response =
++      issuer_a->Issue(request->request, /*hidden_metadata=*/1);
+   ASSERT_TRUE(response.has_value());
+   std::optional<std::vector<uint8_t>> token =
+       client_a->FinalizeToken(*request, *response);
+@@ -253,15 +254,16 @@ TEST(AthmTestIssuerTest, BatchIssue_Success) {
+   ASSERT_TRUE(client.has_value());
+ 
+   constexpr size_t kBatchSize = 3;
+-  std::vector<AthmClientRequest> client_requests;
++  std::vector<AthmTestClient::ClientRequest> client_requests;
+   std::vector<std::vector<uint8_t>> requests;
+   for (size_t i = 0; i < kBatchSize; ++i) {
+-    std::optional<AthmClientRequest> req = client->CreateClientRequest();
++    std::optional<AthmTestClient::ClientRequest> req =
++        client->CreateClientRequest();
+     ASSERT_TRUE(req.has_value());
+     std::optional<std::vector<uint8_t>> request_bytes =
+         CreateAthmTokenRequestBytes(
+             PrivateVerificationTokensParameters::kAthmTokenType,
+-            issuer->truncated_key_id(), base::ToVector(req->request()));
++            issuer->truncated_key_id(), req->request);
+     ASSERT_TRUE(request_bytes.has_value());
+     requests.push_back(std::move(request_bytes.value()));
+     client_requests.push_back(std::move(*req));
+@@ -304,13 +306,14 @@ TEST(AthmTestIssuerTest, BatchIssue_InvalidRequestInBatch_ReturnsNullopt) {
+                              kBucketCount, DeploymentId("batch-issue-invalid"));
+   ASSERT_TRUE(client.has_value());
+ 
+-  std::optional<AthmClientRequest> valid_req = client->CreateClientRequest();
++  std::optional<AthmTestClient::ClientRequest> valid_req =
++      client->CreateClientRequest();
+   ASSERT_TRUE(valid_req.has_value());
+ 
+   std::optional<std::vector<uint8_t>> formatted_valid_req =
+       CreateAthmTokenRequestBytes(
+           PrivateVerificationTokensParameters::kAthmTokenType,
+-          issuer->truncated_key_id(), base::ToVector(valid_req->request()));
++          issuer->truncated_key_id(), valid_req->request);
+   ASSERT_TRUE(formatted_valid_req.has_value());
+ 
+   std::vector<uint8_t> invalid_req = {1, 2, 3};
+@@ -330,13 +333,14 @@ TEST(AthmTestIssuerTest, BatchIssue_InvalidMetadata_ReturnsNullopt) {
+                              kBucketCount, DeploymentId("batch-issue-meta"));
+   ASSERT_TRUE(client.has_value());
+ 
+-  std::optional<AthmClientRequest> valid_req = client->CreateClientRequest();
++  std::optional<AthmTestClient::ClientRequest> valid_req =
++      client->CreateClientRequest();
+   ASSERT_TRUE(valid_req.has_value());
+ 
+   std::optional<std::vector<uint8_t>> formatted_valid_req =
+       CreateAthmTokenRequestBytes(
+           PrivateVerificationTokensParameters::kAthmTokenType,
+-          issuer->truncated_key_id(), base::ToVector(valid_req->request()));
++          issuer->truncated_key_id(), valid_req->request);
+   ASSERT_TRUE(formatted_valid_req.has_value());
+ 
+   // Metadata >= kBucketCount is out of range.
+@@ -356,13 +360,14 @@ TEST(AthmTestIssuerTest, BatchIssue_WrongTokenType_ReturnsNullopt) {
+                              kBucketCount, DeploymentId("batch-type-inv"));
+   ASSERT_TRUE(client.has_value());
+ 
+-  std::optional<AthmClientRequest> valid_req = client->CreateClientRequest();
++  std::optional<AthmTestClient::ClientRequest> valid_req =
++      client->CreateClientRequest();
+   ASSERT_TRUE(valid_req.has_value());
+ 
+   std::optional<std::vector<uint8_t>> wrong_type_req =
+       CreateAthmTokenRequestBytes(/*token_type=*/0x1234,
+                                   issuer->truncated_key_id(),
+-                                  base::ToVector(valid_req->request()));
++                                  valid_req->request);
+   ASSERT_TRUE(wrong_type_req.has_value());
+ 
+   std::optional<std::vector<std::vector<uint8_t>>> batch_responses =
+@@ -380,7 +385,8 @@ TEST(AthmTestIssuerTest, BatchIssue_WrongTruncatedKeyId_ReturnsNullopt) {
+                              kBucketCount, DeploymentId("batch-keyid-inv"));
+   ASSERT_TRUE(client.has_value());
+ 
+-  std::optional<AthmClientRequest> valid_req = client->CreateClientRequest();
++  std::optional<AthmTestClient::ClientRequest> valid_req =
++      client->CreateClientRequest();
+   ASSERT_TRUE(valid_req.has_value());
+ 
+   uint8_t wrong_key_id =
+@@ -389,7 +395,7 @@ TEST(AthmTestIssuerTest, BatchIssue_WrongTruncatedKeyId_ReturnsNullopt) {
+   std::optional<std::vector<uint8_t>> wrong_key_req =
+       CreateAthmTokenRequestBytes(
+           PrivateVerificationTokensParameters::kAthmTokenType, wrong_key_id,
+-          base::ToVector(valid_req->request()));
++          valid_req->request);
+   ASSERT_TRUE(wrong_key_req.has_value());
+ 
+   std::optional<std::vector<std::vector<uint8_t>>> batch_responses =
+@@ -416,15 +422,6 @@ TEST(AthmTestIssuerTest, BatchIssue_StringOverload_Success) {
+           PrivacyPassAthmBatchRequest::Create(issuer_config, kBucketCount);
+   ASSERT_TRUE(batch_request.has_value());
+ 
+-  auto params = GetParametersForVersion(1);
+-  ASSERT_TRUE(params.has_value());
+-  EXPECT_EQ(batch_request->request_body().size(),
+-            kBatchSize * params->single_request_size + sizeof(uint32_t));
+-  EXPECT_EQ(
+-      base::U32FromBigEndian(
+-          base::span(batch_request->request_body()).last<sizeof(uint32_t)>()),
+-      1u);
+-
+   constexpr uint8_t kMetadata = 1;
+   std::optional<std::string> response_body = issuer->BatchIssue(
+       base::as_string_view(batch_request->request_body()), kMetadata);
+@@ -472,51 +469,6 @@ TEST(AthmTestIssuerTest,
+   EXPECT_FALSE(response_body.has_value());
+ }
+ 
+-TEST(AthmTestIssuerTest,
+-     BatchIssue_StringOverload_UnsupportedVersion_ReturnsNullopt) {
+-  std::optional<AthmTestIssuer> issuer =
+-      AthmTestIssuer::Create(kBucketCount, DeploymentId("batch-str-bad-ver"));
+-  ASSERT_TRUE(issuer.has_value());
+-
+-  std::optional<AthmTestClient> client =
+-      AthmTestClient::Create(issuer->public_key(), issuer->public_key_proof(),
+-                             kBucketCount, DeploymentId("batch-str-bad-ver"));
+-  ASSERT_TRUE(client.has_value());
+-
+-  std::optional<AthmClientRequest> valid_req = client->CreateClientRequest();
+-  ASSERT_TRUE(valid_req.has_value());
+-
+-  std::optional<std::vector<uint8_t>> formatted_valid_req =
+-      CreateAthmTokenRequestBytes(
+-          PrivateVerificationTokensParameters::kAthmTokenType,
+-          issuer->truncated_key_id(), base::ToVector(valid_req->request()));
+-  ASSERT_TRUE(formatted_valid_req.has_value());
+-
+-  // Append unsupported version number 2 as 4 bytes in big-endian.
+-  std::vector<uint8_t> request_body = *formatted_valid_req;
+-  std::array<uint8_t, sizeof(uint32_t)> version_bytes =
+-      base::U32ToBigEndian(2u);
+-  request_body.insert(request_body.end(), version_bytes.begin(),
+-                      version_bytes.end());
+-
+-  std::optional<std::string> response_body = issuer->BatchIssue(
+-      base::as_string_view(request_body), /*hidden_metadata=*/0);
+-  EXPECT_FALSE(response_body.has_value());
+-}
+-
+-TEST(AthmTestIssuerTest,
+-     BatchIssue_StringOverload_OnlyVersionBytes_ReturnsNullopt) {
+-  std::optional<AthmTestIssuer> issuer =
+-      AthmTestIssuer::Create(kBucketCount, DeploymentId("batch-str-ver-only"));
+-  ASSERT_TRUE(issuer.has_value());
+-
+-  // 4-byte body with version = 1, but no token requests.
+-  std::array<uint8_t, sizeof(uint32_t)> version_only = base::U32ToBigEndian(1u);
+-  std::optional<std::string> response_body = issuer->BatchIssue(
+-      base::as_string_view(version_only), /*hidden_metadata=*/0);
+-  EXPECT_FALSE(response_body.has_value());
+-}
+-
+ TEST(AthmTestIssuerTest, VerifyWithCheck_Success) {
+   std::optional<AthmTestIssuer> issuer =
+       AthmTestIssuer::Create(kBucketCount, DeploymentId("verify-check-ok"));
+diff --git a/components/private_verification_tokens/common/privacy_pass_athm_batch_request.cc b/components/private_verification_tokens/common/privacy_pass_athm_batch_request.cc
+index 1a688c4dc2098..21d26f53170f0 100644
+--- a/components/private_verification_tokens/common/privacy_pass_athm_batch_request.cc
++++ b/components/private_verification_tokens/common/privacy_pass_athm_batch_request.cc
+@@ -8,15 +8,13 @@
+ #include <string>
+ #include <utility>
+ 
++#include "base/containers/span_rust.h"
+ #include "base/containers/to_vector.h"
+-#include "base/numerics/byte_conversions.h"
+-#include "components/private_verification_tokens/common/athm_ffi/athm_ffi.h"
++#include "components/private_verification_tokens/common/athm_ffi.rs.h"
+ #include "components/private_verification_tokens/common/private_verification_tokens_parameters.h"
+ #include "components/private_verification_tokens/common/private_verification_tokens_public_key.h"
+ #include "crypto/hash.h"
+ #include "third_party/anonymous_tokens/src/anonymous_tokens/cpp/privacy_pass/athm_token_encodings_utils.h"
+-#include "third_party/crubit/support/rs_std/slice_ref.h"
+-#include "third_party/crubit/support/rs_std/vec.h"
+ 
+ namespace private_verification_tokens {
+ 
+@@ -34,33 +32,34 @@ PrivacyPassAthmBatchRequest::Create(const IssuerConfig& issuer_config,
+   }
+ 
+   // Derive client protocol parameters using the deployment ID and bucket count.
+-  auto params = AthmParameters::try_new(
+-      num_buckets, rs_std::SliceRef<const uint8_t>(
+-                       base::as_byte_span(issuer_config.deployment_id)));
+-  if (!params.has_value()) {
++  AthmClientParams client_params = athm_client_params(
++      num_buckets,
++      base::SpanToRustSlice(base::as_byte_span(issuer_config.deployment_id)));
++  if (client_params.status != AthmStatus::Ok) {
+     return base::unexpected(
+         PrivacyPassAthmBatchRequestError::kParameterGenerationFailed);
+   }
++  std::vector<uint8_t> params = base::ToVector(client_params.params);
+ 
+   const size_t count = static_cast<size_t>(issuer_config.batch_size);
+   base::span<const uint8_t> public_key = issuer_config.public_key.public_key();
+   base::span<const uint8_t> public_key_proof =
+       issuer_config.public_key.public_key_proof();
+ 
+-  std::vector<AthmClientRequest> client_requests;
+-  client_requests.reserve(count);
++  std::vector<TokenState> token_states;
++  token_states.reserve(count);
+   std::vector<uint8_t> batch_request_body;
+ 
+   for (size_t i = 0; i < count; ++i) {
+-    auto bridge_result = AthmClientRequest::try_new(
+-        rs_std::SliceRef<const uint8_t>(public_key),
+-        rs_std::SliceRef<const uint8_t>(public_key_proof), *params);
+-    if (!bridge_result.has_value()) {
++    AthmClientRequest bridge_result = athm_client_request(
++        base::SpanToRustSlice(public_key),
++        base::SpanToRustSlice(public_key_proof), base::SpanToRustSlice(params));
++    if (bridge_result.status != AthmStatus::Ok) {
+       return base::unexpected(
+           PrivacyPassAthmBatchRequestError::kClientRequestGenerationFailed);
+     }
+ 
+-    rs_std::Vec<uint8_t> req_bytes = bridge_result->request();
++    std::vector<uint8_t> req_bytes = base::ToVector(bridge_result.request);
+     anonymous_tokens::AthmTokenRequest token_req;
+     token_req.token_type = PrivateVerificationTokensParameters::kAthmTokenType;
+     token_req.truncated_issuer_key_id =
+@@ -77,27 +76,25 @@ PrivacyPassAthmBatchRequest::Create(const IssuerConfig& issuer_config,
+ 
+     batch_request_body.insert(batch_request_body.end(), marshaled_req.begin(),
+                               marshaled_req.end());
+-    client_requests.push_back(std::move(*bridge_result));
++    token_states.push_back(TokenState{
++        .context = base::ToVector(bridge_result.context),
++        .request = std::move(req_bytes),
++    });
+   }
+ 
+-  std::array<uint8_t, sizeof(uint32_t)> version_bytes =
+-      base::U32ToBigEndian(issuer_config.public_key.version());
+-  batch_request_body.insert(batch_request_body.end(), version_bytes.begin(),
+-                            version_bytes.end());
+-
+-  return PrivacyPassAthmBatchRequest(
+-      issuer_config.public_key, std::move(*params), std::move(client_requests),
+-      std::move(batch_request_body));
++  return PrivacyPassAthmBatchRequest(issuer_config.public_key,
++                                     std::move(params), std::move(token_states),
++                                     std::move(batch_request_body));
+ }
+ 
+ PrivacyPassAthmBatchRequest::PrivacyPassAthmBatchRequest(
+     PrivateVerificationTokensPublicKey pvt_public_key,
+-    AthmParameters params,
+-    std::vector<AthmClientRequest> client_requests,
++    std::vector<uint8_t> params,
++    std::vector<TokenState> token_states,
+     std::vector<uint8_t> request_body)
+     : pvt_public_key_(std::move(pvt_public_key)),
+       params_(std::move(params)),
+-      client_requests_(std::move(client_requests)),
++      token_states_(std::move(token_states)),
+       request_body_(std::move(request_body)) {}
+ 
+ PrivacyPassAthmBatchRequest::PrivacyPassAthmBatchRequest(
+@@ -109,12 +106,17 @@ PrivacyPassAthmBatchRequest::~PrivacyPassAthmBatchRequest() = default;
+ base::expected<std::vector<std::vector<uint8_t>>,
+                PrivacyPassAthmBatchRequestError>
+ PrivacyPassAthmBatchRequest::Finalize(base::span<const uint8_t> response_body) {
+-  if (client_requests_.empty()) {
++  if (token_states_.empty()) {
+     return base::unexpected(
+         PrivacyPassAthmBatchRequestError::kAlreadyFinalized);
+   }
+-  const size_t token_count = client_requests_.size();
+-  const size_t single_response_size = params_.token_response_size();
++  const size_t token_count = token_states_.size();
++  const size_t single_response_size =
++      athm_token_response_size(base::SpanToRustSlice(params_));
++  if (single_response_size == 0) {
++    return base::unexpected(
++        PrivacyPassAthmBatchRequestError::kParameterGenerationFailed);
++  }
+ 
+   const size_t expected_response_size = token_count * single_response_size;
+   if (response_body.size() != expected_response_size) {
+@@ -128,18 +130,20 @@ PrivacyPassAthmBatchRequest::Finalize(base::span<const uint8_t> response_body) {
+                                       issuer_key_id.end());
+ 
+   std::vector<std::vector<uint8_t>> finalized_tokens;
+-  finalized_tokens.reserve(client_requests_.size());
++  finalized_tokens.reserve(token_states_.size());
+ 
+-  // Consume client_requests_ so this instance cannot be finalized again.
+-  std::vector<AthmClientRequest> requests = std::exchange(client_requests_, {});
++  // Consume token_states_ so this instance cannot be finalized again.
++  std::vector<TokenState> states = std::exchange(token_states_, {});
+ 
+   for (size_t i = 0; i < token_count; ++i) {
+     base::span<const uint8_t> item_response =
+         response_body.subspan(i * single_response_size, single_response_size);
+-    auto finalize_result = requests[i].finalize(
+-        rs_std::SliceRef<const uint8_t>(pvt_public_key_.public_key()),
+-        rs_std::SliceRef<const uint8_t>(item_response), params_);
+-    if (!finalize_result.has_value()) {
++    AthmBytesResult finalize_result = athm_client_finalize(
++        base::SpanToRustSlice(states[i].context),
++        base::SpanToRustSlice(pvt_public_key_.public_key()),
++        base::SpanToRustSlice(states[i].request),
++        base::SpanToRustSlice(item_response), base::SpanToRustSlice(params_));
++    if (finalize_result.status != AthmStatus::Ok) {
+       return base::unexpected(
+           PrivacyPassAthmBatchRequestError::kClientFinalizeFailed);
+     }
+@@ -147,7 +151,8 @@ PrivacyPassAthmBatchRequest::Finalize(base::span<const uint8_t> response_body) {
+     anonymous_tokens::AthmToken token;
+     token.token_type = PrivateVerificationTokensParameters::kAthmTokenType;
+     token.issuer_key_id = issuer_key_id_str;
+-    token.token = std::string(finalize_result->begin(), finalize_result->end());
++    token.token =
++        std::string(finalize_result.bytes.begin(), finalize_result.bytes.end());
+ 
+     std::string marshaled_token;
+     absl::Status status =
+diff --git a/components/private_verification_tokens/common/privacy_pass_athm_batch_request.h b/components/private_verification_tokens/common/privacy_pass_athm_batch_request.h
+index 800c3891a3747..d27e2539e8e46 100644
+--- a/components/private_verification_tokens/common/privacy_pass_athm_batch_request.h
++++ b/components/private_verification_tokens/common/privacy_pass_athm_batch_request.h
+@@ -10,7 +10,6 @@
+ 
+ #include "base/containers/span.h"
+ #include "base/types/expected.h"
+-#include "components/private_verification_tokens/common/athm_ffi/athm_ffi.h"
+ #include "components/private_verification_tokens/common/private_verification_tokens_issuer_config.h"
+ 
+ namespace private_verification_tokens {
+@@ -63,8 +62,7 @@ class PrivacyPassAthmBatchRequest {
+       delete;
+ 
+   // The serialized HTTP request body containing the concatenated marshaled
+-  // AthmTokenRequest structures (each 36 bytes) for all tokens in the batch
+-  // followed by the 4-byte version number in big-endian order.
++  // AthmTokenRequest structures (each 36 bytes) for all tokens in the batch.
+   const std::vector<uint8_t>& request_body() const { return request_body_; }
+ 
+   // Unblinds and finalizes the batch response returned by the issuance server.
+@@ -80,14 +78,19 @@ class PrivacyPassAthmBatchRequest {
+   Finalize(base::span<const uint8_t> response_body);
+ 
+  private:
++  struct TokenState {
++    std::vector<uint8_t> context;
++    std::vector<uint8_t> request;
++  };
++
+   PrivacyPassAthmBatchRequest(PrivateVerificationTokensPublicKey pvt_public_key,
+-                              AthmParameters params,
+-                              std::vector<AthmClientRequest> client_requests,
++                              std::vector<uint8_t> params,
++                              std::vector<TokenState> token_states,
+                               std::vector<uint8_t> request_body);
+ 
+   PrivateVerificationTokensPublicKey pvt_public_key_;
+-  AthmParameters params_;
+-  std::vector<AthmClientRequest> client_requests_;
++  std::vector<uint8_t> params_;
++  std::vector<TokenState> token_states_;
+   std::vector<uint8_t> request_body_;
+ };
+ 
+diff --git a/components/private_verification_tokens/common/privacy_pass_athm_batch_request_unittest.cc b/components/private_verification_tokens/common/privacy_pass_athm_batch_request_unittest.cc
+index 4623e60433495..ffa887f78897a 100644
+--- a/components/private_verification_tokens/common/privacy_pass_athm_batch_request_unittest.cc
++++ b/components/private_verification_tokens/common/privacy_pass_athm_batch_request_unittest.cc
+@@ -11,7 +11,6 @@
+ 
+ #include "base/containers/span.h"
+ #include "base/containers/to_vector.h"
+-#include "base/numerics/byte_conversions.h"
+ #include "base/strings/string_view_util.h"
+ #include "base/time/time.h"
+ #include "components/private_verification_tokens/common/athm_test_issuer.h"
+@@ -81,11 +80,7 @@ TEST(PrivacyPassAthmBatchRequestTest, RoundtripBatchIssuance) {
+           PrivacyPassAthmBatchRequest::Create(issuer_config, kNumBuckets);
+   ASSERT_TRUE(batch_request.has_value());
+   EXPECT_EQ(batch_request->request_body().size(),
+-            kBatchSize * params->single_request_size + sizeof(uint32_t));
+-  EXPECT_EQ(
+-      base::U32FromBigEndian(
+-          base::span(batch_request->request_body()).last<sizeof(uint32_t)>()),
+-      issuer_config.public_key.version());
++            kBatchSize * params->single_request_size);
+ 
+   const uint8_t hidden_metadata = 1;
+   std::optional<std::string> batch_response = issuer->BatchIssue(
+@@ -151,18 +146,9 @@ TEST(PrivacyPassAthmBatchRequestTest, SingleUseFinalization) {
+           PrivacyPassAthmBatchRequest::Create(issuer_config, kNumBuckets);
+   ASSERT_TRUE(batch_request.has_value());
+ 
+-  auto params = GetParametersForVersion(1);
+-  ASSERT_TRUE(params.has_value());
+-  ASSERT_EQ(batch_request->request_body().size(),
+-            params->single_request_size + sizeof(uint32_t));
+-  EXPECT_EQ(
+-      base::U32FromBigEndian(
+-          base::span(batch_request->request_body()).last<sizeof(uint32_t)>()),
+-      issuer_config.public_key.version());
+-
+   std::string_view req_str(
+       reinterpret_cast<const char*>(batch_request->request_body().data()),
+-      params->single_request_size);
++      batch_request->request_body().size());
+   anonymous_tokens::AthmTokenRequest unmarshaled_req;
+   absl::Status req_status =
+       anonymous_tokens::UnmarshalAthmTokenRequest(req_str, &unmarshaled_req);
+diff --git a/components/private_verification_tokens/common/private_verification_tokens_issuer_config.cc b/components/private_verification_tokens/common/private_verification_tokens_issuer_config.cc
+index 0aeae526269e4..55ed49d8d5214 100644
+--- a/components/private_verification_tokens/common/private_verification_tokens_issuer_config.cc
++++ b/components/private_verification_tokens/common/private_verification_tokens_issuer_config.cc
+@@ -23,7 +23,6 @@
+ #include "components/private_verification_tokens/common/private_verification_tokens_issuer_config_internal.h"
+ #include "components/private_verification_tokens/common/private_verification_tokens_parameters.h"
+ #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
+-#include "net/base/url_util.h"
+ #include "url/gurl.h"
+ #include "url/origin.h"
+ #include "url/url_constants.h"
+@@ -84,9 +83,6 @@ std::optional<int64_t> GetValidExpiration(const base::DictValue& dict) {
+   if (!base::StringToInt64(*expiration_str, &expiration) || expiration < 0) {
+     return std::nullopt;
+   }
+-  if (base::Time::FromSecondsSinceUnixEpoch(expiration) <= base::Time::Now()) {
+-    return std::nullopt;
+-  }
+   return expiration;
+ }
+ 
+@@ -110,24 +106,14 @@ std::optional<std::vector<url::Origin>> GetValidRedeemers(
+     if (!item.is_string()) {
+       return std::nullopt;
+     }
+-    GURL redeemer_url(item.GetString());
+-    url::Origin redeemer_origin = url::Origin::Create(redeemer_url);
+-    const bool is_redeemer_localhost = net::IsLocalhost(redeemer_url);
+-    if (redeemer_origin.scheme() != url::kHttpsScheme &&
+-        !is_redeemer_localhost) {
++    url::Origin redeemer_origin = url::Origin::Create(GURL(item.GetString()));
++    if (redeemer_origin.scheme() != url::kHttpsScheme) {
+       return std::nullopt;
+     }
+-
+-    std::string redeemer_etld_plus_one;
+-    if (is_redeemer_localhost) {
+-      redeemer_etld_plus_one = "localhost";
+-    } else {
+-      redeemer_etld_plus_one =
+-          net::registry_controlled_domains::GetDomainAndRegistry(
+-              redeemer_origin,
+-              net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);
+-    }
+-
++    const std::string redeemer_etld_plus_one =
++        net::registry_controlled_domains::GetDomainAndRegistry(
++            redeemer_origin,
++            net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);
+     if (redeemer_etld_plus_one.empty() ||
+         redeemer_etld_plus_one != issuer_etld_plus_one) {
+       return std::nullopt;
+@@ -154,12 +140,8 @@ std::optional<IssuerConfig> ParseEntry(const base::DictValue& dict) {
+   }
+ 
+   GURL issuer_request_url(*issuer_request_url_str);
+-  if (!issuer_request_url.is_valid()) {
+-    return std::nullopt;
+-  }
+-
+-  const bool is_localhost = net::IsLocalhost(issuer_request_url);
+-  if (issuer_request_url.scheme() != url::kHttpsScheme && !is_localhost) {
++  if (!issuer_request_url.is_valid() ||
++      issuer_request_url.scheme() != url::kHttpsScheme) {
+     return std::nullopt;
+   }
+ 
+@@ -168,17 +150,11 @@ std::optional<IssuerConfig> ParseEntry(const base::DictValue& dict) {
+     return std::nullopt;
+   }
+ 
+-  std::string issuer_etld_plus_one;
+-  if (is_localhost) {
+-    issuer_etld_plus_one = "localhost";
+-  } else {
+-    issuer_etld_plus_one =
+-        net::registry_controlled_domains::GetDomainAndRegistry(
+-            origin,
+-            net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);
+-    if (issuer_etld_plus_one.empty()) {
+-      return std::nullopt;
+-    }
++  const std::string issuer_etld_plus_one =
++      net::registry_controlled_domains::GetDomainAndRegistry(
++          origin, net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);
++  if (issuer_etld_plus_one.empty()) {
++    return std::nullopt;
+   }
+ 
+   std::optional<int> version = internal::GetValidVersion(dict);
+diff --git a/components/private_verification_tokens/common/private_verification_tokens_issuer_config_internal.h b/components/private_verification_tokens/common/private_verification_tokens_issuer_config_internal.h
+index 893c76794d572..27b8296db6bdd 100644
+--- a/components/private_verification_tokens/common/private_verification_tokens_issuer_config_internal.h
++++ b/components/private_verification_tokens/common/private_verification_tokens_issuer_config_internal.h
+@@ -38,10 +38,8 @@ std::optional<int64_t> GetValidExpiration(const base::DictValue& dict);
+ // - The redeemer list size is larger than params.max_number_of_redeemers.
+ // - An item in the redeemer list is not a string.
+ // - The resulting origin for a redeemer does not have an HTTPS scheme.
+-//   (This condition also covers opaque and invalid origins, but exempts
+-//   localhost.)
+-// - A redeemer has an eTLD+1 different from the issuer's eTLD+1 (unless both
+-//   are localhost).
++//   (This condition also covers opaque and invalid origins.)
++// - A redeemer has an eTLD+1 different from the issuer's eTLD+1.
+ std::optional<std::vector<url::Origin>> GetValidRedeemers(
+     const base::DictValue& dict,
+     std::string_view issuer_etld_plus_one,
+diff --git a/components/private_verification_tokens/common/private_verification_tokens_issuer_config_unittest.cc b/components/private_verification_tokens/common/private_verification_tokens_issuer_config_unittest.cc
+index d9ae3cfebe6c3..d92ac71c4bff5 100644
+--- a/components/private_verification_tokens/common/private_verification_tokens_issuer_config_unittest.cc
++++ b/components/private_verification_tokens/common/private_verification_tokens_issuer_config_unittest.cc
+@@ -4,7 +4,6 @@
+ 
+ #include "components/private_verification_tokens/common/private_verification_tokens_issuer_config.h"
+ 
+-#include <cstdint>
+ #include <memory>
+ #include <optional>
+ #include <string>
+@@ -14,14 +13,10 @@
+ #include "base/files/scoped_temp_dir.h"
+ #include "base/json/json_reader.h"
+ #include "base/memory/scoped_refptr.h"
+-#include "base/strings/string_number_conversions.h"
+-#include "base/strings/string_util.h"
+ #include "base/strings/stringprintf.h"
+-#include "base/test/task_environment.h"
+ #include "base/values.h"
+ #include "components/private_verification_tokens/common/private_verification_tokens_issuer_config_internal.h"
+ #include "components/private_verification_tokens/common/private_verification_tokens_parameters.h"
+-#include "components/private_verification_tokens/common/private_verification_tokens_test_util.h"
+ #include "testing/gmock/include/gmock/gmock.h"
+ #include "testing/gtest/include/gtest/gtest.h"
+ #include "url/gurl.h"
+@@ -29,91 +24,40 @@
+ 
+ namespace private_verification_tokens {
+ 
+-using test::FutureExpiration;
+-using test::GetFutureExpiration;
+-
+ namespace internal {
+ 
+-class PrivateVerificationTokensIssuerConfigInternalTest : public testing::Test {
+- protected:
+-  base::test::TaskEnvironment task_environment_{
+-      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
+-};
+-
+-TEST_F(PrivateVerificationTokensIssuerConfigInternalTest,
+-       GetValidVersion_Valid) {
++TEST(PrivateVerificationTokensIssuerConfigInternalTest, GetValidVersion_Valid) {
+   base::DictValue dict;
+   dict.Set(kVersionKey, base::Value(1));
+   std::optional<int> version = GetValidVersion(dict);
+   EXPECT_THAT(version, testing::Optional(1));
+ }
+ 
+-TEST_F(PrivateVerificationTokensIssuerConfigInternalTest,
+-       GetValidVersion_Invalid) {
++TEST(PrivateVerificationTokensIssuerConfigInternalTest,
++     GetValidVersion_Invalid) {
+   base::DictValue dict;
+   dict.Set(kVersionKey, base::Value(2));
+   std::optional<int> version = GetValidVersion(dict);
+   EXPECT_FALSE(version.has_value());
+ }
+ 
+-TEST_F(PrivateVerificationTokensIssuerConfigInternalTest,
+-       GetValidVersion_InvalidType) {
++TEST(PrivateVerificationTokensIssuerConfigInternalTest,
++     GetValidVersion_InvalidType) {
+   base::DictValue dict;
+   dict.Set(kVersionKey, base::Value("1"));  // String, not integer
+   std::optional<int> version = GetValidVersion(dict);
+   EXPECT_FALSE(version.has_value());
+ }
+ 
+-TEST_F(PrivateVerificationTokensIssuerConfigInternalTest,
+-       GetValidVersion_Missing) {
++TEST(PrivateVerificationTokensIssuerConfigInternalTest,
++     GetValidVersion_Missing) {
+   base::DictValue dict;
+   std::optional<int> version = GetValidVersion(dict);
+   EXPECT_FALSE(version.has_value());
+ }
+ 
+-TEST_F(PrivateVerificationTokensIssuerConfigInternalTest,
+-       GetValidExpiration_Valid) {
+-  base::DictValue dict;
+-  int64_t expiration_num =
+-      (base::Time::Now() + base::Days(30) - base::Time::UnixEpoch())
+-          .InSeconds();
+-  const std::string expiration_str = base::NumberToString(expiration_num);
+-  dict.Set(kExpirationKey, base::Value(expiration_str));
+-  std::optional<int64_t> expiration = GetValidExpiration(dict);
+-  ASSERT_TRUE(expiration.has_value());
+-  EXPECT_EQ(*expiration, expiration_num);
+-}
+-
+-TEST_F(PrivateVerificationTokensIssuerConfigInternalTest,
+-       GetValidExpiration_Expired) {
+-  base::DictValue dict;
+-
+-  const int64_t expiration_num =
+-      (base::Time::Now() - base::Time::UnixEpoch()).InSeconds();
+-  const std::string expiration_str = base::NumberToString(expiration_num);
+-
+-  dict.Set(kExpirationKey, base::Value(expiration_str));
+-  std::optional<int64_t> expiration = GetValidExpiration(dict);
+-  EXPECT_FALSE(expiration.has_value());
+-}
+-
+-TEST_F(PrivateVerificationTokensIssuerConfigInternalTest,
+-       GetValidExpiration_InvalidType) {
+-  base::DictValue dict;
+-  dict.Set(kExpirationKey, base::Value(12));  // Number, not string
+-  std::optional<int64_t> expiration = GetValidExpiration(dict);
+-  EXPECT_FALSE(expiration.has_value());
+-}
+-
+-TEST_F(PrivateVerificationTokensIssuerConfigInternalTest,
+-       GetValidExpiration_Missing) {
+-  base::DictValue dict;
+-  std::optional<int64_t> expiration = GetValidExpiration(dict);
+-  EXPECT_FALSE(expiration.has_value());
+-}
+-
+-TEST_F(PrivateVerificationTokensIssuerConfigInternalTest,
+-       GetDecodedPublicKey_Valid) {
++TEST(PrivateVerificationTokensIssuerConfigInternalTest,
++     GetDecodedPublicKey_Valid) {
+   base::DictValue dict;
+   const std::vector<uint8_t> expected_bytes = {1, 2, 3};
+   dict.Set(kPublicKeyKey, base::Value(base::Base64Encode(expected_bytes)));
+@@ -122,31 +66,31 @@ TEST_F(PrivateVerificationTokensIssuerConfigInternalTest,
+   EXPECT_EQ(*bytes, expected_bytes);
+ }
+ 
+-TEST_F(PrivateVerificationTokensIssuerConfigInternalTest,
+-       GetDecodedPublicKey_InvalidBase64) {
++TEST(PrivateVerificationTokensIssuerConfigInternalTest,
++     GetDecodedPublicKey_InvalidBase64) {
+   base::DictValue dict;
+   dict.Set(kPublicKeyKey, base::Value("invalid-base64-!@#$"));
+   std::optional<std::vector<uint8_t>> bytes = GetDecodedPublicKey(dict);
+   EXPECT_FALSE(bytes.has_value());
+ }
+ 
+-TEST_F(PrivateVerificationTokensIssuerConfigInternalTest,
+-       GetDecodedPublicKey_InvalidType) {
++TEST(PrivateVerificationTokensIssuerConfigInternalTest,
++     GetDecodedPublicKey_InvalidType) {
+   base::DictValue dict;
+   dict.Set(kPublicKeyKey, base::Value(123));  // Number, not string
+   std::optional<std::vector<uint8_t>> bytes = GetDecodedPublicKey(dict);
+   EXPECT_FALSE(bytes.has_value());
+ }
+ 
+-TEST_F(PrivateVerificationTokensIssuerConfigInternalTest,
+-       GetDecodedPublicKey_Missing) {
++TEST(PrivateVerificationTokensIssuerConfigInternalTest,
++     GetDecodedPublicKey_Missing) {
+   base::DictValue dict;
+   std::optional<std::vector<uint8_t>> bytes = GetDecodedPublicKey(dict);
+   EXPECT_FALSE(bytes.has_value());
+ }
+ 
+-TEST_F(PrivateVerificationTokensIssuerConfigInternalTest,
+-       GetDecodedPublicKeyProof_Valid) {
++TEST(PrivateVerificationTokensIssuerConfigInternalTest,
++     GetDecodedPublicKeyProof_Valid) {
+   base::DictValue dict;
+   const std::vector<uint8_t> expected_bytes = {4, 5, 6};
+   dict.Set(kPublicKeyProofKey, base::Value(base::Base64Encode(expected_bytes)));
+@@ -155,15 +99,15 @@ TEST_F(PrivateVerificationTokensIssuerConfigInternalTest,
+   EXPECT_EQ(*bytes, expected_bytes);
+ }
+ 
+-TEST_F(PrivateVerificationTokensIssuerConfigInternalTest,
+-       GetDecodedPublicKeyProof_Missing) {
++TEST(PrivateVerificationTokensIssuerConfigInternalTest,
++     GetDecodedPublicKeyProof_Missing) {
+   base::DictValue dict;
+   std::optional<std::vector<uint8_t>> bytes = GetDecodedPublicKeyProof(dict);
+   EXPECT_FALSE(bytes.has_value());
+ }
+ 
+-TEST_F(PrivateVerificationTokensIssuerConfigInternalTest,
+-       GetValidRedeemers_Valid) {
++TEST(PrivateVerificationTokensIssuerConfigInternalTest,
++     GetValidRedeemers_Valid) {
+   PrivateVerificationTokensParameters params{.max_number_of_redeemers = 2};
+   base::DictValue dict;
+   base::ListValue list;
+@@ -179,8 +123,8 @@ TEST_F(PrivateVerificationTokensIssuerConfigInternalTest,
+                   url::Origin::Create(GURL("https://s2.example.com"))));
+ }
+ 
+-TEST_F(PrivateVerificationTokensIssuerConfigInternalTest,
+-       GetValidRedeemers_TooManyOrigins) {
++TEST(PrivateVerificationTokensIssuerConfigInternalTest,
++     GetValidRedeemers_TooManyOrigins) {
+   PrivateVerificationTokensParameters params{.max_number_of_redeemers = 2};
+   base::DictValue dict;
+   base::ListValue list;
+@@ -193,8 +137,8 @@ TEST_F(PrivateVerificationTokensIssuerConfigInternalTest,
+   EXPECT_FALSE(redeemers.has_value());
+ }
+ 
+-TEST_F(PrivateVerificationTokensIssuerConfigInternalTest,
+-       GetValidRedeemers_NonHttpsScheme) {
++TEST(PrivateVerificationTokensIssuerConfigInternalTest,
++     GetValidRedeemers_NonHttpsScheme) {
+   PrivateVerificationTokensParameters params{.max_number_of_redeemers = 2};
+   base::DictValue dict;
+   base::ListValue list;
+@@ -205,8 +149,8 @@ TEST_F(PrivateVerificationTokensIssuerConfigInternalTest,
+   EXPECT_FALSE(redeemers.has_value());
+ }
+ 
+-TEST_F(PrivateVerificationTokensIssuerConfigInternalTest,
+-       GetValidRedeemers_DifferentEtldPlusOne) {
++TEST(PrivateVerificationTokensIssuerConfigInternalTest,
++     GetValidRedeemers_DifferentEtldPlusOne) {
+   PrivateVerificationTokensParameters params{.max_number_of_redeemers = 2};
+   base::DictValue dict;
+   base::ListValue list;
+@@ -217,8 +161,8 @@ TEST_F(PrivateVerificationTokensIssuerConfigInternalTest,
+   EXPECT_FALSE(redeemers.has_value());
+ }
+ 
+-TEST_F(PrivateVerificationTokensIssuerConfigInternalTest,
+-       GetValidRedeemers_Missing) {
++TEST(PrivateVerificationTokensIssuerConfigInternalTest,
++     GetValidRedeemers_Missing) {
+   PrivateVerificationTokensParameters params{.max_number_of_redeemers = 2};
+   base::DictValue dict;
+   std::optional<std::vector<url::Origin>> redeemers =
+@@ -226,9 +170,7 @@ TEST_F(PrivateVerificationTokensIssuerConfigInternalTest,
+   EXPECT_FALSE(redeemers.has_value());
+ }
+ 
+-TEST_F(PrivateVerificationTokensIssuerConfigInternalTest, ParseEntry_Valid) {
+-  const FutureExpiration future_expiration = GetFutureExpiration();
+-
++TEST(PrivateVerificationTokensIssuerConfigInternalTest, ParseEntry_Valid) {
+   base::DictValue entry;
+   entry.Set(kIssuerRequestUrlKey, base::Value("https://example.com/pvt/issue"));
+   entry.Set(kVersionKey, base::Value(1));
+@@ -236,7 +178,7 @@ TEST_F(PrivateVerificationTokensIssuerConfigInternalTest, ParseEntry_Valid) {
+   entry.Set(kPublicKeyProofKey,
+             base::Value(base::Base64Encode("some-pvt-proof")));
+   entry.Set(kBatchSizeKey, base::Value(3));
+-  entry.Set(kExpirationKey, base::Value(future_expiration.string_rep));
++  entry.Set(kExpirationKey, base::Value("12"));
+   base::ListValue redeemers_list;
+   redeemers_list.Append("https://s1.example.com");
+   entry.Set(kRedeemersKey, std::move(redeemers_list));
+@@ -258,69 +200,15 @@ TEST_F(PrivateVerificationTokensIssuerConfigInternalTest, ParseEntry_Valid) {
+   EXPECT_EQ(result->deployment_id, "test-deployment-id");
+ }
+ 
+-TEST_F(PrivateVerificationTokensIssuerConfigInternalTest,
+-       ParseEntry_ValidLocalhost) {
+-  base::DictValue entry;
+-  entry.Set(kIssuerRequestUrlKey,
+-            base::Value("http://localhost:8080/pvt/issue"));
+-  entry.Set(kVersionKey, base::Value(1));
+-  entry.Set(kPublicKeyKey, base::Value(base::Base64Encode("some-pvt-key")));
+-  entry.Set(kPublicKeyProofKey,
+-            base::Value(base::Base64Encode("some-pvt-proof")));
+-  entry.Set(kBatchSizeKey, base::Value(3));
+-
+-  const FutureExpiration future_expiration = GetFutureExpiration();
+-  entry.Set(kExpirationKey, base::Value(future_expiration.string_rep));
+-  base::ListValue redeemers_list;
+-  redeemers_list.Append("http://127.0.0.1:8081");
+-  entry.Set(kRedeemersKey, std::move(redeemers_list));
+-  entry.Set(kDeploymentIdKey, base::Value("test-deployment-id"));
+-
+-  auto result = ParseEntry(entry);
+-  EXPECT_TRUE(result.has_value());
+-  EXPECT_EQ(result->issuer_request_url,
+-            GURL("http://localhost:8080/pvt/issue"));
+-  EXPECT_EQ(result->redeemers.size(), 1u);
+-  EXPECT_EQ(result->redeemers[0],
+-            url::Origin::Create(GURL("http://127.0.0.1:8081")));
+-}
+-
+-TEST_F(PrivateVerificationTokensIssuerConfigInternalTest,
+-       ParseEntry_InvalidLocalhostPublicRedeemer) {
+-  base::DictValue entry;
+-  entry.Set(kIssuerRequestUrlKey,
+-            base::Value("http://localhost:8080/pvt/issue"));
+-  entry.Set(kVersionKey, base::Value(1));
+-  entry.Set(kPublicKeyKey, base::Value(base::Base64Encode("some-pvt-key")));
+-  entry.Set(kPublicKeyProofKey,
+-            base::Value(base::Base64Encode("some-pvt-proof")));
+-  entry.Set(kBatchSizeKey, base::Value(3));
+-  const FutureExpiration future_expiration = GetFutureExpiration();
+-  entry.Set(kExpirationKey, base::Value(future_expiration.string_rep));
+-  base::ListValue redeemers_list;
+-  redeemers_list.Append("https://example.com");
+-  entry.Set(kRedeemersKey, std::move(redeemers_list));
+-  entry.Set(kDeploymentIdKey, base::Value("test-deployment-id"));
+-
+-  auto result = ParseEntry(entry);
+-  EXPECT_FALSE(result.has_value());
+-}
+-
+ struct MissingFieldTestCase {
+   std::string field_to_remove;
+ };
+ 
+ class PrivateVerificationTokensIssuerConfigInternalMissingFieldTest
+-    : public testing::TestWithParam<MissingFieldTestCase> {
+- protected:
+-  base::test::TaskEnvironment task_environment_{
+-      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
+-};
++    : public testing::TestWithParam<MissingFieldTestCase> {};
+ 
+ TEST_P(PrivateVerificationTokensIssuerConfigInternalMissingFieldTest,
+        MissingField) {
+-  const FutureExpiration future_expiration = GetFutureExpiration();
+-
+   const auto& test_case = GetParam();
+ 
+   base::DictValue entry;
+@@ -330,7 +218,7 @@ TEST_P(PrivateVerificationTokensIssuerConfigInternalMissingFieldTest,
+   entry.Set(kPublicKeyProofKey,
+             base::Value(base::Base64Encode("some-pvt-proof")));
+   entry.Set(kBatchSizeKey, base::Value(3));
+-  entry.Set(kExpirationKey, base::Value(future_expiration.string_rep));
++  entry.Set(kExpirationKey, base::Value("12"));
+   base::ListValue redeemers_list;
+   redeemers_list.Append("https://s1.example.com");
+   entry.Set(kRedeemersKey, std::move(redeemers_list));
+@@ -364,10 +252,6 @@ class PrivateVerificationTokensIssuerConfigTest : public testing::Test {
+   }
+ 
+   base::DictValue config_dict_;
+-
+- protected:
+-  base::test::TaskEnvironment task_environment_{
+-      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
+ };
+ 
+ TEST_F(PrivateVerificationTokensIssuerConfigTest,
+@@ -395,8 +279,6 @@ TEST_F(PrivateVerificationTokensIssuerConfigTest,
+ 
+ TEST_F(PrivateVerificationTokensIssuerConfigTest,
+        Create_ValidArgument_SuccessSingleIssuer) {
+-  const FutureExpiration future_expiration = GetFutureExpiration();
+-
+   const url::Origin issuer = url::Origin::Create(GURL("https://example.com"));
+   const std::vector<uint8_t> serialized_public_key = {3, 6, 8, 12, 14};
+   const std::string encoded_public_key =
+@@ -404,7 +286,7 @@ TEST_F(PrivateVerificationTokensIssuerConfigTest,
+   const std::vector<uint8_t> serialized_public_key_proof = {1, 2, 4, 8};
+   const std::string encoded_public_key_proof =
+       base::Base64Encode(serialized_public_key_proof);
+-  const std::string expiration_str = future_expiration.string_rep;
++  const std::string expiration_str = "12";
+   const uint64_t version = 1;
+   const std::string json_str = base::StringPrintf(
+       R"({
+@@ -431,7 +313,7 @@ TEST_F(PrivateVerificationTokensIssuerConfigTest,
+ 
+   PrivateVerificationTokensPublicKey expected_public_key{
+       issuer, serialized_public_key, serialized_public_key_proof,
+-      future_expiration.time, version};
++      base::Time::UnixEpoch() + base::Seconds(12), version};
+   const auto& parsed_issuer_config = config->config().at(issuer);
+   EXPECT_EQ(parsed_issuer_config.issuer_request_url,
+             GURL("https://example.com/pvt/issue"));
+@@ -446,8 +328,6 @@ TEST_F(PrivateVerificationTokensIssuerConfigTest,
+ 
+ TEST_F(PrivateVerificationTokensIssuerConfigTest,
+        Create_ValidArgument_SuccessMultipleIssuers) {
+-  const FutureExpiration future_expiration = GetFutureExpiration();
+-
+   const std::vector<uint8_t> serialized_public_key1 = {3, 6, 8, 12, 14};
+   const std::string encoded_public_key1 =
+       base::Base64Encode(serialized_public_key1);
+@@ -465,7 +345,7 @@ TEST_F(PrivateVerificationTokensIssuerConfigTest,
+         "publicKey": "%s",
+         "publicKeyProof": "%s",
+         "batchSize": 3,
+-        "expiration": "%s",
++        "expiration": "49",
+         "redeemers": ["https://sub1.a.com"],
+         "deploymentId": "dep-a"
+       },
+@@ -475,15 +355,14 @@ TEST_F(PrivateVerificationTokensIssuerConfigTest,
+         "publicKey": "%s",
+         "publicKeyProof": "%s",
+         "batchSize": 5,
+-        "expiration": "%s",
++        "expiration": "53",
+         "redeemers": ["https://sub1.b.com"],
+         "deploymentId": "dep-b"
+       }
+     ]
+   })",
+       encoded_public_key1.c_str(), encoded_proof.c_str(),
+-      future_expiration.string_rep, encoded_public_key2.c_str(),
+-      encoded_proof.c_str(), future_expiration.string_rep);
++      encoded_public_key2.c_str(), encoded_proof.c_str());
+   GetDictFromJSON(json_str);
+   scoped_refptr<PrivateVerificationTokensIssuerConfig> config =
+       PrivateVerificationTokensIssuerConfig::Create(std::move(config_dict_));
+@@ -495,7 +374,7 @@ TEST_F(PrivateVerificationTokensIssuerConfigTest,
+ 
+   PrivateVerificationTokensPublicKey expected_pk1{
+       a_origin, serialized_public_key1, serialized_proof,
+-      future_expiration.time, 1};
++      base::Time::UnixEpoch() + base::Seconds(49), 1};
+   const auto& config1 = config->config().at(a_origin);
+   EXPECT_EQ(config1.issuer_request_url, GURL("https://a.com/pvt/issue"));
+   EXPECT_EQ(config1.batch_size, 3);
+@@ -507,7 +386,7 @@ TEST_F(PrivateVerificationTokensIssuerConfigTest,
+ 
+   PrivateVerificationTokensPublicKey expected_pk2{
+       b_origin, serialized_public_key2, serialized_proof,
+-      future_expiration.time, 1};
++      base::Time::UnixEpoch() + base::Seconds(53), 1};
+   const auto& config2 = config->config().at(b_origin);
+   EXPECT_EQ(config2.issuer_request_url, GURL("https://b.com/pvt/issue"));
+   EXPECT_EQ(config2.batch_size, 5);
+@@ -520,8 +399,6 @@ TEST_F(PrivateVerificationTokensIssuerConfigTest,
+ 
+ TEST_F(PrivateVerificationTokensIssuerConfigTest,
+        Create_MixedArguments_SkipsInvalidEntry) {
+-  const FutureExpiration future_expiration = GetFutureExpiration();
+-
+   const std::vector<uint8_t> serialized_public_key1 = {3, 6, 8, 12, 14};
+   const std::string encoded_public_key1 =
+       base::Base64Encode(serialized_public_key1);
+@@ -536,7 +413,7 @@ TEST_F(PrivateVerificationTokensIssuerConfigTest,
+         "publicKey": "%s",
+         "publicKeyProof": "%s",
+         "batchSize": 3,
+-        "expiration": "%s",
++        "expiration": "49",
+         "redeemers": ["https://sub.valid.com"],
+         "deploymentId": "athm-dep"
+       },
+@@ -546,14 +423,13 @@ TEST_F(PrivateVerificationTokensIssuerConfigTest,
+         "publicKey": "Cg==",
+         "publicKeyProof": "Cg==",
+         "batchSize": 5,
+-        "expiration": "%s",
++        "expiration": "53",
+         "redeemers": ["https://sub.invalid.com"],
+         "deploymentId": "test-dep"
+       }
+     ]
+   })",
+-      encoded_public_key1.c_str(), encoded_proof.c_str(),
+-      future_expiration.string_rep, future_expiration.string_rep);
++      encoded_public_key1.c_str(), encoded_proof.c_str());
+   GetDictFromJSON(json_str);
+   scoped_refptr<PrivateVerificationTokensIssuerConfig> config =
+       PrivateVerificationTokensIssuerConfig::Create(std::move(config_dict_));
+@@ -567,7 +443,7 @@ TEST_F(PrivateVerificationTokensIssuerConfigTest,
+ 
+   PrivateVerificationTokensPublicKey expected_pk1{
+       valid_origin, serialized_public_key1, serialized_proof,
+-      future_expiration.time, 1};
++      base::Time::UnixEpoch() + base::Seconds(49), 1};
+   const auto& config1 = config->config().at(valid_origin);
+   EXPECT_EQ(config1.batch_size, 3);
+   EXPECT_EQ(config1.public_key, expected_pk1);
+@@ -577,8 +453,6 @@ TEST_F(PrivateVerificationTokensIssuerConfigTest,
+ 
+ TEST_F(PrivateVerificationTokensIssuerConfigTest,
+        Create_ValidArgument_DuplicateIssuers) {
+-  const FutureExpiration future_expiration = GetFutureExpiration();
+-
+   const std::vector<uint8_t> serialized_public_key = {3, 6, 8, 12, 14};
+   const std::string encoded_public_key =
+       base::Base64Encode(serialized_public_key);
+@@ -594,7 +468,7 @@ TEST_F(PrivateVerificationTokensIssuerConfigTest,
+         "publicKey": "%s",
+         "publicKeyProof": "%s",
+         "batchSize": 3,
+-        "expiration": "%s",
++        "expiration": "49",
+         "redeemers": ["https://sub.a.com"],
+         "deploymentId": "dep-a"
+       },
+@@ -604,7 +478,7 @@ TEST_F(PrivateVerificationTokensIssuerConfigTest,
+         "publicKey": "%s",
+         "publicKeyProof": "%s",
+         "batchSize": 5,
+-        "expiration": "%s",
++        "expiration": "53",
+         "redeemers": ["https://sub.b.com"],
+         "deploymentId": "dep-b"
+       },
+@@ -614,17 +488,15 @@ TEST_F(PrivateVerificationTokensIssuerConfigTest,
+         "publicKey": "%s",
+         "publicKeyProof": "%s",
+         "batchSize": 7,
+-        "expiration": "%s",
++        "expiration": "62",
+         "redeemers": ["https://sub.a.com"],
+         "deploymentId": "dep-a-v2"
+       }
+     ]
+   })",
+       encoded_public_key.c_str(), encoded_proof.c_str(),
+-      future_expiration.string_rep, encoded_public_key.c_str(),
+-      encoded_proof.c_str(), future_expiration.string_rep,
+       encoded_public_key.c_str(), encoded_proof.c_str(),
+-      future_expiration.string_rep);
++      encoded_public_key.c_str(), encoded_proof.c_str());
+   GetDictFromJSON(json_str);
+   scoped_refptr<PrivateVerificationTokensIssuerConfig> config =
+       PrivateVerificationTokensIssuerConfig::Create(std::move(config_dict_));
+@@ -636,15 +508,15 @@ TEST_F(PrivateVerificationTokensIssuerConfigTest,
+ 
+   // Verify first a.com entry is picked
+   PrivateVerificationTokensPublicKey expected_pk1{
+-      a_origin, serialized_public_key, serialized_proof, future_expiration.time,
+-      1};
++      a_origin, serialized_public_key, serialized_proof,
++      base::Time::UnixEpoch() + base::Seconds(49), 1};
+   const auto& config1 = config->config().at(a_origin);
+   EXPECT_EQ(config1.batch_size, 3);
+   EXPECT_EQ(config1.public_key, expected_pk1);
+ 
+   PrivateVerificationTokensPublicKey expected_pk2{
+-      b_origin, serialized_public_key, serialized_proof, future_expiration.time,
+-      1};
++      b_origin, serialized_public_key, serialized_proof,
++      base::Time::UnixEpoch() + base::Seconds(53), 1};
+   const auto& config2 = config->config().at(b_origin);
+   EXPECT_EQ(config2.batch_size, 5);
+   EXPECT_EQ(config2.public_key, expected_pk2);
+@@ -686,8 +558,6 @@ TEST_F(PrivateVerificationTokensIssuerConfigTest, LoadFromFile_EmptyFile) {
+ }
+ 
+ TEST_F(PrivateVerificationTokensIssuerConfigTest, LoadFromFile_ValidJson) {
+-  const FutureExpiration future_expiration = GetFutureExpiration();
+-
+   const std::vector<uint8_t> serialized_public_key = {3, 6, 8, 12, 14};
+   const std::string encoded_public_key =
+       base::Base64Encode(serialized_public_key);
+@@ -703,15 +573,14 @@ TEST_F(PrivateVerificationTokensIssuerConfigTest, LoadFromFile_ValidJson) {
+           "publicKey": "%s",
+           "publicKeyProof": "%s",
+           "batchSize": 3,
+-          "expiration": "%s",
++          "expiration": "12",
+           "redeemers": ["https://s1.example.com", "https://s2.example.com"],
+           "deploymentId": "test-deployment-id"
+         }
+       ]
+     }
+   })",
+-      encoded_public_key.c_str(), encoded_proof.c_str(),
+-      future_expiration.string_rep);
++      encoded_public_key.c_str(), encoded_proof.c_str());
+   base::ScopedTempDir temp_dir;
+   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+   base::FilePath path =
+@@ -730,7 +599,7 @@ TEST_F(PrivateVerificationTokensIssuerConfigTest, LoadFromFile_ValidJson) {
+ 
+   const PrivateVerificationTokensPublicKey expected_public_key{
+       expected_origin, serialized_public_key, serialized_proof,
+-      future_expiration.time, 1};
++      base::Time::UnixEpoch() + base::Seconds(12), 1};
+   EXPECT_EQ(result->config().at(expected_origin).public_key,
+             expected_public_key);
+   EXPECT_THAT(result->config().at(expected_origin).redeemers,
+@@ -741,26 +610,23 @@ TEST_F(PrivateVerificationTokensIssuerConfigTest, LoadFromFile_ValidJson) {
+ 
+ TEST_F(PrivateVerificationTokensIssuerConfigTest,
+        CreateWithCustomIssuer_Valid) {
+-  const FutureExpiration future_expiration = GetFutureExpiration();
+-
+   const std::vector<uint8_t> serialized_public_key = {1, 2, 3, 4};
+   const std::string encoded_public_key =
+       base::Base64Encode(serialized_public_key);
+   const std::vector<uint8_t> serialized_proof = {5, 6, 7};
+   const std::string encoded_proof = base::Base64Encode(serialized_proof);
+-  std::string json_entry = base::StringPrintf(
++  const std::string json_entry = base::StringPrintf(
+       R"({
+         "issuerRequestUrl": "https://custom.example.com/issue",
+         "version": 1,
+         "publicKey": "%s",
+         "publicKeyProof": "%s",
+         "batchSize": 4,
+-        "expiration": "%s",
++        "expiration": "2147483647",
+         "redeemers": ["https://s1.custom.example.com"],
+         "deploymentId": "test-deployment-id"
+       })",
+-      encoded_public_key.c_str(), encoded_proof.c_str(),
+-      future_expiration.string_rep);
++      encoded_public_key.c_str(), encoded_proof.c_str());
+ 
+   std::optional<base::Value> value = base::JSONReader::Read(json_entry, 0);
+   ASSERT_TRUE(value.has_value());
+@@ -786,19 +652,17 @@ TEST_F(PrivateVerificationTokensIssuerConfigTest,
+ 
+   const PrivateVerificationTokensPublicKey expected_public_key{
+       custom_origin, serialized_public_key, serialized_proof,
+-      future_expiration.time, 1};
++      base::Time::UnixEpoch() + base::Seconds(2147483647), 1};
+   EXPECT_EQ(issuer_config.public_key, expected_public_key);
+ }
+ 
+ TEST_F(PrivateVerificationTokensIssuerConfigTest,
+        CreateWithCustomIssuer_MergeWithBaseConfig) {
+-  const FutureExpiration future_expiration = GetFutureExpiration();
+-
+   const std::vector<uint8_t> pk1 = {1, 2, 3};
+   const std::string encoded_pk1 = base::Base64Encode(pk1);
+   const std::vector<uint8_t> proof1 = {4, 5, 6};
+   const std::string encoded_proof1 = base::Base64Encode(proof1);
+-  std::string base_json = base::StringPrintf(
++  const std::string base_json = base::StringPrintf(
+       R"({
+     "1": {
+       "issuers": [
+@@ -808,21 +672,19 @@ TEST_F(PrivateVerificationTokensIssuerConfigTest,
+           "publicKey": "%s",
+           "publicKeyProof": "%s",
+           "batchSize": 3,
+-          "expiration": "%s",
++          "expiration": "2147483647",
+           "redeemers": ["https://sub.base.com"],
+           "deploymentId": "dep1"
+         }
+       ]
+     }
+   })",
+-      encoded_pk1.c_str(), encoded_proof1.c_str(),
+-      future_expiration.string_rep);
++      encoded_pk1.c_str(), encoded_proof1.c_str());
+ 
+   base::ScopedTempDir temp_dir;
+   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+   base::FilePath path =
+       temp_dir.GetPath().Append(FILE_PATH_LITERAL("base_config.json"));
+-
+   ASSERT_TRUE(base::WriteFile(path, base_json));
+   scoped_refptr<PrivateVerificationTokensIssuerConfig> base_config =
+       PrivateVerificationTokensIssuerConfig::LoadFromFile(path);
+@@ -832,19 +694,18 @@ TEST_F(PrivateVerificationTokensIssuerConfigTest,
+   const std::string encoded_pk2 = base::Base64Encode(pk2);
+   const std::vector<uint8_t> proof2 = {10, 11, 12};
+   const std::string encoded_proof2 = base::Base64Encode(proof2);
+-  std::string custom_entry = base::StringPrintf(
++  const std::string custom_entry = base::StringPrintf(
+       R"({
+         "issuerRequestUrl": "https://custom.com/issue",
+         "version": 1,
+         "publicKey": "%s",
+         "publicKeyProof": "%s",
+         "batchSize": 5,
+-        "expiration": "%s",
++        "expiration": "2147483647",
+         "redeemers": ["https://sub.custom.com"],
+         "deploymentId": "dep2"
+       })",
+-      encoded_pk2.c_str(), encoded_proof2.c_str(),
+-      future_expiration.string_rep);
++      encoded_pk2.c_str(), encoded_proof2.c_str());
+ 
+   std::optional<base::Value> value = base::JSONReader::Read(custom_entry, 0);
+   ASSERT_TRUE(value.has_value());
+@@ -871,7 +732,8 @@ TEST_F(PrivateVerificationTokensIssuerConfigTest,
+       base_entry.redeemers,
+       testing::ElementsAre(url::Origin::Create(GURL("https://sub.base.com"))));
+   const PrivateVerificationTokensPublicKey expected_base_pk{
+-      base_origin, pk1, proof1, future_expiration.time, 1};
++      base_origin, pk1, proof1,
++      base::Time::UnixEpoch() + base::Seconds(2147483647), 1};
+   EXPECT_EQ(base_entry.public_key, expected_base_pk);
+ 
+   // Verify custom config entry fields
+@@ -884,7 +746,8 @@ TEST_F(PrivateVerificationTokensIssuerConfigTest,
+               testing::ElementsAre(
+                   url::Origin::Create(GURL("https://sub.custom.com"))));
+   const PrivateVerificationTokensPublicKey expected_custom_pk{
+-      custom_origin, pk2, proof2, future_expiration.time, 1};
++      custom_origin, pk2, proof2,
++      base::Time::UnixEpoch() + base::Seconds(2147483647), 1};
+   EXPECT_EQ(custom_entry_cfg.public_key, expected_custom_pk);
+ }
+ 
+diff --git a/components/private_verification_tokens/common/private_verification_tokens_test_util.h b/components/private_verification_tokens/common/private_verification_tokens_test_util.h
+deleted file mode 100644
+index a4998a70c8e9f..0000000000000
+--- a/components/private_verification_tokens/common/private_verification_tokens_test_util.h
++++ /dev/null
+@@ -1,30 +0,0 @@
+-// Copyright 2026 The Chromium Authors
+-// Use of this source code is governed by a BSD-style license that can be
+-// found in the LICENSE file.
+-
+-#ifndef COMPONENTS_PRIVATE_VERIFICATION_TOKENS_COMMON_PRIVATE_VERIFICATION_TOKENS_TEST_UTIL_H_
+-#define COMPONENTS_PRIVATE_VERIFICATION_TOKENS_COMMON_PRIVATE_VERIFICATION_TOKENS_TEST_UTIL_H_
+-
+-#include <string>
+-
+-#include "base/strings/string_number_conversions.h"
+-#include "base/time/time.h"
+-
+-namespace private_verification_tokens::test {
+-
+-struct FutureExpiration {
+-  base::Time time;
+-  std::string string_rep;
+-};
+-
+-inline FutureExpiration GetFutureExpiration(
+-    base::TimeDelta delta = base::Days(30)) {
+-  const base::TimeDelta future_seconds = base::Seconds(
+-      (base::Time::Now() + delta - base::Time::UnixEpoch()).InSeconds());
+-  return {base::Time::UnixEpoch() + future_seconds,
+-          base::NumberToString(future_seconds.InSeconds())};
+-}
+-
+-}  // namespace private_verification_tokens::test
+-
+-#endif  // COMPONENTS_PRIVATE_VERIFICATION_TOKENS_COMMON_PRIVATE_VERIFICATION_TOKENS_TEST_UTIL_H_
+-- 
+2.54.0
+
