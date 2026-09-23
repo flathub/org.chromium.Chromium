@@ -77,6 +77,7 @@ def github-output [line: string] {
 
 def main [--commit] {
   const manifest = path self ../org.chromium.Chromium.yaml
+  const metainfo = path self ../org.chromium.Chromium.metainfo.xml
   const cargo_gen_py = path self flatpak-cargo-generator.py
   const cargo_gen_stamp = path self flatpak-cargo-generator.py.stamp
   const cargo_gen_lock = path self flatpak-cargo-generator.py.lock
@@ -97,12 +98,14 @@ def main [--commit] {
     uv lock --script $cargo_gen_py
   }
 
-  let chromium_version = (
+  let release_info = (
     http ['https://chromiumdash.appspot.com/fetch_releases?platform=Linux&channel=Stable&num=1']
     | from json
-    | only version
+    | only
   )
-  print $'Chromium version: ($chromium_version)'
+  let chromium_version = $release_info | get version
+  let chromium_time = ($release_info | get time) // 1000 | into datetime -f '%s' -z UTC
+  print $'Chromium version: ($chromium_version), released on: ($chromium_time)'
   github-output $'chromium-version=($chromium_version)'
 
   let chromium_url = $'https://github.com/chromium-linux-tarballs/chromium-tarballs/releases/download/($chromium_version)/chromium-($chromium_version)-linux.tar.xz'
@@ -253,27 +256,55 @@ def main [--commit] {
   - &dawn_go_arm64_sha256 ($dawn_go_arm64_sha256)
 '
 
-  let updated = (
+  let updated_manifest = (
     open -r $manifest
     | decode
     | str replace -rmn '^x-version-data:\n(?: +[^\n]+\n)+' $yaml
   )
 
-  let tmp = $'($manifest).tmp'
-  $updated | save -f $tmp
-  let has_diff = try {
-    diff -u $manifest $tmp
+  let manifest_tmp = $'($manifest).tmp'
+  $updated_manifest | save -f $manifest_tmp
+  let has_manifest_diff = try {
+    diff -u $manifest $manifest_tmp
     false
   } catch {
     true
   }
-  if not $has_diff {
+
+  if not $has_manifest_diff {
+    rm $manifest_tmp
+  }
+
+  let metainfo_tmp = $'($metainfo).tmp'
+  let current_metainfo = open -r $metainfo | decode
+  let has_metainfo_diff = if not ($current_metainfo
+    | str contains $'<release version="($chromium_version)"') {
+    let now = $chromium_time | format date "%Y-%m-%d"
+    let release = $'
+    <release version="($chromium_version)" date="($now)">
+      <description/>
+    </release>
+'
+    $current_metainfo | str replace -rmn "(?<=^\\s+<releases>)\n" $release | save -f $metainfo_tmp
+    do -i { diff -u $metainfo $metainfo_tmp }
+    true
+  } else {
+    false
+  }
+
+  if not ($has_manifest_diff or $has_metainfo_diff) {
     print 'Nothing to do.'
-    rm $tmp
     exit
   }
 
-  mv $tmp $manifest
+  if $has_manifest_diff {
+    mv $manifest_tmp $manifest
+  }
+
+  if $has_metainfo_diff {
+    mv $metainfo_tmp $metainfo
+  }
+
   github-output 'changed=yes'
 
   if $commit {
