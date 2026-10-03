@@ -8,8 +8,15 @@ command: chromium
 finish-args:
   - --require-version=1.8.2
   - --filesystem=home
+  # WebXR: OpenXR runtime manifest and SteamVR path registry
+  - --filesystem=xdg-config/openxr:ro
+  - --filesystem=xdg-config/openvr
+  # WebXR: Monado IPC socket
+  - --filesystem=xdg-run/monado_comp_ipc
   - --filesystem=/run/.heim_org.h5l.kcm-socket
   - --device=all
+  # WebXR: SteamVR shared memory
+  - --device=shm
   - --env=LD_LIBRARY_PATH=/app/chromium/nonfree-codecs/lib
   - --share=ipc
   - --share=network
