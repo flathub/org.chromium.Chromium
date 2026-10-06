@@ -9,5 +9,4 @@ registries:
 - type: standard
   ref: v4.562.0
 packages:
-- name: astral-sh/uv@0.12.13
 - name: nushell/nushell@0.115.1
