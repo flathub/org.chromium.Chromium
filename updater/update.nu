@@ -41,6 +41,10 @@ def parse-node-sha512 [] {
   $parts.b64 | decode base64 | encode hex --lower
 }
 
+def parse-sha256-table [] {
+  $in | split column -r '\s+' sha256 filename
+}
+
 def cipd-sha256 [p: string, v: string] {
   let data = ({package: $p, version: $v} | to json)
   let instance = (
@@ -65,6 +69,28 @@ def gitiles-src [path: string] {
   http [$'($path)?format=TEXT'] | decode base64 | decode
 }
 
+def get-arm64-toolchain-release-url [
+  release_prefix: string
+  revision: string
+  filename_prefix?: string
+] {
+  let release = (
+    git ls-remote --tags https://github.com/refi64/cr-toolchain-arm64 $'($release_prefix)-($revision)-*'
+    | lines
+    | parse -r '^\S+\s+refs/tags/(?<release>\S+)$'
+    | sort -n
+    | last -s
+    | get release
+  )
+
+  mut filename = $'($release).tar.xz'
+  if $filename_prefix != null {
+    $filename = $filename | str replace -r $'^($release_prefix)' $filename_prefix
+  }
+
+  $'https://github.com/refi64/cr-toolchain-arm64/releases/download/($release)/($filename)'
+}
+
 def is-gha [] {
   'GITHUB_OUTPUT' in $env
 }
@@ -78,32 +104,14 @@ def github-output [line: string] {
 def main [--commit] {
   const manifest = path self ../org.chromium.Chromium.yaml
   const metainfo = path self ../org.chromium.Chromium.metainfo.xml
-  const cargo_gen_py = path self flatpak-cargo-generator.py
-  const cargo_gen_stamp = path self flatpak-cargo-generator.py.stamp
-  const cargo_gen_lock = path self flatpak-cargo-generator.py.lock
-  const generated_bindgen_sources = path self ../generated-sources.bindgen.json
-
-  # remember to delete this repo's vendored lockfile (if needed) when this changes!
-  let cargo_gen_commit = 'f03a673abe6ce189cea1c2857e2b44af2dd79d1f'
-
-  if not ($cargo_gen_stamp | path exists) or (open $cargo_gen_stamp | str trim) != $cargo_gen_commit {
-    http [
-      $'https://github.com/flatpak/flatpak-builder-tools/raw/($cargo_gen_commit)/cargo/flatpak-cargo-generator.py'
-    ] | save -f $cargo_gen_py
-    $cargo_gen_commit | save -f $cargo_gen_stamp
-  }
-
-  if not ($cargo_gen_lock | path exists) {
-    print -e 'WARNING: flatpak-cargo-generator lockfile missing, regenerating'
-    uv lock --script $cargo_gen_py
-  }
 
   let release_info = (
     http ['https://chromiumdash.appspot.com/fetch_releases?platform=Linux&channel=Stable&num=1']
     | from json
     | only
   )
-  let chromium_version = $release_info | get version
+  # let chromium_version = $release_info | get version
+  let chromium_version = '154.0.8037.97'
   let chromium_time = ($release_info | get time) // 1000 | into datetime -f '%s' -z UTC
   print $'Chromium version: ($chromium_version), released on: ($chromium_time)'
   github-output $'chromium-version=($chromium_version)'
@@ -141,8 +149,7 @@ def main [--commit] {
   let cmake_ver = $clang_build_py | parse -r "'cmake-(?<value>[0-9.]+)-linux-x86_64'" | only value
   let cmake_sha256_table = (
     http [$'https://github.com/Kitware/CMake/releases/download/v($cmake_ver)/cmake-($cmake_ver)-SHA-256.txt']
-    | lines
-    | parse '{sha256}  {filename}'
+    | lines | parse-sha256-table
   )
   let cmake_x64_url = $'https://github.com/Kitware/CMake/releases/download/v($cmake_ver)/cmake-($cmake_ver)-linux-x86_64.tar.gz'
   let cmake_x64_sha256 = ($cmake_sha256_table | where filename == ($cmake_x64_url | path basename) | only sha256)
@@ -154,26 +161,27 @@ def main [--commit] {
   let clang_update_py = gitiles-src $'($websrc)/tools/clang/scripts/update.py'
   let llvm_revision = $clang_update_py | parse -r "(?m)^CLANG_REVISION = '(?<value>[^']+)'" | only value
   let llvm_sub_revision = $clang_update_py | parse -r '(?m)^CLANG_SUB_REVISION = (?<value>.+)' | only value
-  let llvm_prebuilt_url = $'https://commondatastorage.googleapis.com/chromium-browser-clang/Linux_x64/clang-($llvm_revision)-($llvm_sub_revision).tar.xz'
-  let llvm_prebuilt_sha256 = http [$llvm_prebuilt_url] | hash sha256
-  print $'LLVM: ($llvm_revision)-($llvm_sub_revision) ($llvm_prebuilt_sha256)'
+  print $'LLVM: ($llvm_revision)-($llvm_sub_revision)'
+  let llvm_prebuilt_x64_url = $'https://commondatastorage.googleapis.com/chromium-browser-clang/Linux_x64/clang-($llvm_revision)-($llvm_sub_revision).tar.xz'
+  let llvm_prebuilt_x64_sha256 = http [$llvm_prebuilt_x64_url] | hash sha256
+  print $'LLVM x64: ($llvm_prebuilt_x64_url) ($llvm_prebuilt_x64_sha256)'
+  let llvm_prebuilt_arm64_url = get-arm64-toolchain-release-url 'clang' $'($llvm_revision)-($llvm_sub_revision)'
+  let llvm_prebuilt_arm64_sha256 = http [$'($llvm_prebuilt_arm64_url).sha256'] | lines | parse-sha256-table | only sha256
+  print $'LLVM arm64: ($llvm_prebuilt_arm64_url) ($llvm_prebuilt_arm64_sha256)'
+  let clang_format_arm64_url = $llvm_prebuilt_arm64_url | str replace -r '/clang-([^/]+)$' '/clang-format-${1}'
+  let clang_format_arm64_sha256 = http [$'($clang_format_arm64_url).sha256'] | lines | parse-sha256-table | only sha256
+  print $'Clang format arm64: ($clang_format_arm64_url) ($clang_format_arm64_sha256)'
 
   let rust_update_py = gitiles-src $'($websrc)/tools/rust/update_rust.py'
   let rust_revision = $rust_update_py | parse -r "(?m)^RUST_REVISION = '(?<value>[^']+)'" | only value
   let rust_sub_revision = $rust_update_py | parse -r "(?m)^RUST_SUB_REVISION = (?<value>.+)" | only value
-  let rust_prebuilt_url = $'https://commondatastorage.googleapis.com/chromium-browser-clang/Linux_x64/rust-toolchain-($rust_revision)-($rust_sub_revision)-($llvm_revision).tar.xz'
-  let rust_prebuilt_sha256 = http [$rust_prebuilt_url] | hash sha256
-  print $'Rust: ($rust_revision)-($rust_sub_revision) ($rust_prebuilt_sha256)'
-
-  let bindgen_build_py = gitiles-src $'($websrc)/tools/rust/build_bindgen.py'
-  let bindgen_revision = $bindgen_build_py | parse -r "(?m)^BINDGEN_GIT_VERSION = '(?<value>[^']+)'" | only value
-  print $'bindgen revision: ($bindgen_revision)'
-
-  print '(re-generating bindgen sources)'
-  (
-    gitiles-src $'https://chromium.googlesource.com/external/github.com/rust-lang/rust-bindgen/+/($bindgen_revision)/Cargo.lock'
-    | uv run --script $cargo_gen_py /dev/stdin -o $generated_bindgen_sources
-  )
+  print $'Rust: ($rust_revision)-($rust_sub_revision)-($llvm_revision)'
+  let rust_prebuilt_x64_url = $'https://commondatastorage.googleapis.com/chromium-browser-clang/Linux_x64/rust-toolchain-($rust_revision)-($rust_sub_revision)-($llvm_revision).tar.xz'
+  let rust_prebuilt_x64_sha256 = http [$rust_prebuilt_x64_url] | hash sha256
+  print $'Rust x64: ($rust_prebuilt_x64_url) ($rust_prebuilt_x64_sha256)'
+  let rust_prebuilt_arm64_url = get-arm64-toolchain-release-url 'rust' $'($rust_revision)-($rust_sub_revision)-($llvm_revision)' 'rust-toolchain'
+  let rust_prebuilt_arm64_sha256 = http [$'($rust_prebuilt_arm64_url).sha256'] | lines | parse-sha256-table | only sha256
+  print $'Rust arm64: ($rust_prebuilt_arm64_url) ($rust_prebuilt_arm64_sha256)'
 
   let ts_3pp = gitiles-src $'($websrc)/third_party/typescript/linux-amd64/3pp/3pp.pb'
   let ts_arm64_url = (
@@ -236,12 +244,16 @@ def main [--commit] {
   - &cmake_x64_sha256 ($cmake_x64_sha256)
   - &cmake_arm64_url ($cmake_arm64_url)
   - &cmake_arm64_sha256 ($cmake_arm64_sha256)
-  - &llvm_revision ($llvm_revision)
-  - &llvm_prebuilt_url ($llvm_prebuilt_url)
-  - &llvm_prebuilt_sha256 ($llvm_prebuilt_sha256)
-  - &rust_prebuilt_url ($rust_prebuilt_url)
-  - &rust_prebuilt_sha256 ($rust_prebuilt_sha256)
-  - &bindgen_revision ($bindgen_revision)
+  - &llvm_prebuilt_x64_url ($llvm_prebuilt_x64_url)
+  - &llvm_prebuilt_x64_sha256 ($llvm_prebuilt_x64_sha256)
+  - &llvm_prebuilt_arm64_url ($llvm_prebuilt_arm64_url)
+  - &llvm_prebuilt_arm64_sha256 ($llvm_prebuilt_arm64_sha256)
+  - &clang_format_arm64_url ($clang_format_arm64_url)
+  - &clang_format_arm64_sha256 ($clang_format_arm64_sha256)
+  - &rust_prebuilt_x64_url ($rust_prebuilt_x64_url)
+  - &rust_prebuilt_x64_sha256 ($rust_prebuilt_x64_sha256)
+  - &rust_prebuilt_arm64_url ($rust_prebuilt_arm64_url)
+  - &rust_prebuilt_arm64_sha256 ($rust_prebuilt_arm64_sha256)
   - &ts_arm64_url ($ts_arm64_url)
   - &ts_arm64_sha256 ($ts_arm64_sha256)
   - &esbuild_x64_url ($esbuild_x64_url)

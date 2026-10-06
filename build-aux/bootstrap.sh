@@ -28,42 +28,7 @@ ln -sf /usr/bin/ninja third_party/ninja
 ln -sf /app/lib/sdk/esbuild/bin/esbuild \
   third_party/devtools-frontend/src/third_party/esbuild/esbuild
 
-if [[ -d third_party/llvm-build/Release+Asserts/bin ]]; then
-  # The build scripts check that the stamp file is present, so write it out
-  # here.
-  PYTHONPATH=tools/clang/scripts/ \
-    python3 -c 'import update; print(update.PACKAGE_VERSION)' \
-    > third_party/llvm-build/Release+Asserts/cr_build_revision
-else
-  python3 tools/clang/scripts/build.py --disable-asserts --pic \
-      --skip-checkout --use-system-cmake --use-system-libxml \
-      --host-cc=/usr/lib/sdk/llvm22/bin/clang \
-      --host-cxx=/usr/lib/sdk/llvm22/bin/clang++ \
-      --target-triple=$(clang -dumpmachine) \
-      --without-android --without-fuchsia --without-zstd \
-      --with-ml-inliner-model=
-fi
-
-cp -r /app/lib/sdk/bindgen bindgen
-if [[ -e third_party/rust-toolchain/lib/libclang.so ]]; then
-  ln -s "$PWD/third_party/rust-toolchain/lib" -t bindgen
-else
-  ln -s "$PWD/third_party/llvm-build/Release+Asserts/lib" -t bindgen
-fi
-
-if [[ ! -e third_party/rust-toolchain ]]; then
-  ln -s /app/lib/sdk/rust-nightly third_party/rust-toolchain
-fi
-
 ln -sf /usr/bin/gperf third_party/gperf/cipd/bin/
-
-rustc_version=$(/app/lib/sdk/rust-nightly/bin/rustc -V \
-    | perl -ne '/rustc (\S+) \((\S+) (\S+)\)/ and print "$1-$2-$3"')
-if [[ -z "$rustc_version" ]]; then
-  echo 'failed to match rustc version'
-  /app/lib/sdk/rust-nightly/bin/rustc -V
-  exit 1
-fi
 
 # (TODO: enable use_qt in the future?)
 # DO NOT REUSE THE BELOW API KEY; it is for Flathub only.
@@ -93,9 +58,6 @@ tools/gn/bootstrap/bootstrap.py -v --no-clean --gn-gen-args='
     use_system_libffi=true
     use_qt=false
     enable_remoting=false
-    rust_sysroot_absolute="/app/lib/sdk/rust-nightly"
-    rustc_version="'"$rustc_version"'"
-    rust_bindgen_root="'$PWD/bindgen'"
     chrome_pgo_phase='$chrome_pgo_phase'
     use_clang_modules=false
 '
