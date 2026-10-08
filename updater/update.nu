@@ -110,8 +110,7 @@ def main [--commit] {
     | from json
     | only
   )
-  # let chromium_version = $release_info | get version
-  let chromium_version = '154.0.8037.97'
+  let chromium_version = $release_info | get version
   let chromium_time = ($release_info | get time) // 1000 | into datetime -f '%s' -z UTC
   print $'Chromium version: ($chromium_version), released on: ($chromium_time)'
   github-output $'chromium-version=($chromium_version)'
@@ -202,25 +201,21 @@ def main [--commit] {
     gitiles-src $'https://chromium.googlesource.com/devtools/devtools-frontend/+/($devtools_frontend_revision)/package-lock.json'
     | from json
   )
-  let esbuild_x64_url = $devtools_package_lock.packages.'node_modules/@esbuild/linux-x64'.resolved
+  let esbuild_x64_version = $devtools_package_lock.packages.'node_modules/@esbuild/linux-x64'.version
+  let esbuild_x64_url = $'https://npm.skia.org/chrome-devtools/@esbuild/linux-x64/-/linux-x64-($esbuild_x64_version).tgz'
   let esbuild_x64_sha512 = (
     $devtools_package_lock.packages.'node_modules/@esbuild/linux-x64'.integrity
     | parse-node-sha512
   )
-  let esbuild_arm64_url = $devtools_package_lock.packages.'node_modules/@esbuild/linux-arm64'.resolved
+  let esbuild_arm64_version = $devtools_package_lock.packages.'node_modules/@esbuild/linux-arm64'.version
+  let esbuild_arm64_url = $'https://npm.skia.org/chrome-devtools/@esbuild/linux-arm64/-/linux-arm64-($esbuild_arm64_version).tgz'
   let esbuild_arm64_sha512 = (
     $devtools_package_lock.packages.'node_modules/@esbuild/linux-arm64'.integrity
-    | parse-node-sha512
-  )
-  let rollup_arm64_url = $devtools_package_lock.packages.'node_modules/@rollup/rollup-linux-arm64-gnu'.resolved
-  let rollup_arm64_sha512 = (
-    $devtools_package_lock.packages.'node_modules/@rollup/rollup-linux-arm64-gnu'.integrity
     | parse-node-sha512
   )
 
   print $'esbuild x64: ($esbuild_x64_url) ($esbuild_x64_sha512)'
   print $'esbuild arm64: ($esbuild_arm64_url) ($esbuild_arm64_sha512)'
-  print $'rollup arm64: ($rollup_arm64_url) ($rollup_arm64_sha512)'
 
   let dawn_revision = $gclient_deps | get-deps-dict-value dawn_revision
   print $'Dawn revision: ($dawn_revision)'
@@ -260,8 +255,6 @@ def main [--commit] {
   - &esbuild_x64_sha512 ($esbuild_x64_sha512)
   - &esbuild_arm64_url ($esbuild_arm64_url)
   - &esbuild_arm64_sha512 ($esbuild_arm64_sha512)
-  - &rollup_arm64_url ($rollup_arm64_url)
-  - &rollup_arm64_sha512 ($rollup_arm64_sha512)
   - &dawn_go_x64_url ($dawn_go_x64_url)
   - &dawn_go_x64_sha256 ($dawn_go_x64_sha256)
   - &dawn_go_arm64_url ($dawn_go_arm64_url)
