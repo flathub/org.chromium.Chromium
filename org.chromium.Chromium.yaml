@@ -194,6 +194,10 @@ modules:
         dest: third_party/rust-toolchain
         strip-components: 0
         only-arches: [aarch64]
+      - type: shell
+        commands:
+          - cp third_party/rust-toolchain/lib/libclang.so third_party/llvm-libclang/lib/
+        only-arches: [aarch64]
       - type: archive
         archive-type: zip
         url: *dawn_go_x64_url
