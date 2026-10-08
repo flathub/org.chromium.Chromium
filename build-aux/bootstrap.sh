@@ -65,3 +65,8 @@ mkdir -p out/ReleaseFree
 cp out/Release{,Free}/args.gn
 echo -e 'proprietary_codecs = false\nffmpeg_branding = "Chromium"' >> out/ReleaseFree/args.gn
 out/Release/gn gen out/ReleaseFree
+
+if [[ "$(uname -m)" == "aarch64" ]]; then
+  # This is needed by V8's metagen.
+  ln -sf "$PWD/out/Release/gn" buildtools/linux64/gn
+fi
