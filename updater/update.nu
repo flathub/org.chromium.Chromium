@@ -161,6 +161,10 @@ def main [--commit] {
   let llvm_revision = $clang_update_py | parse -r "(?m)^CLANG_REVISION = '(?<value>[^']+)'" | only value
   let llvm_sub_revision = $clang_update_py | parse -r '(?m)^CLANG_SUB_REVISION = (?<value>.+)' | only value
   print $'LLVM: ($llvm_revision)-($llvm_sub_revision)'
+  # Python bindings only, so it being for x64 doesn't really matter.
+  let llvm_libclang_url = $'https://commondatastorage.googleapis.com/chromium-browser-clang/Linux_x64/libclang-($llvm_revision)-($llvm_sub_revision).tar.xz'
+  let llvm_libclang_sha256 = http [$llvm_libclang_url] | hash sha256
+  print $'LLVM libclang bindings: ($llvm_libclang_url) ($llvm_libclang_sha256)'
   let llvm_prebuilt_x64_url = $'https://commondatastorage.googleapis.com/chromium-browser-clang/Linux_x64/clang-($llvm_revision)-($llvm_sub_revision).tar.xz'
   let llvm_prebuilt_x64_sha256 = http [$llvm_prebuilt_x64_url] | hash sha256
   print $'LLVM x64: ($llvm_prebuilt_x64_url) ($llvm_prebuilt_x64_sha256)'
@@ -239,6 +243,8 @@ def main [--commit] {
   - &cmake_x64_sha256 ($cmake_x64_sha256)
   - &cmake_arm64_url ($cmake_arm64_url)
   - &cmake_arm64_sha256 ($cmake_arm64_sha256)
+  - &llvm_libclang_url ($llvm_libclang_url)
+  - &llvm_libclang_sha256 ($llvm_libclang_sha256)
   - &llvm_prebuilt_x64_url ($llvm_prebuilt_x64_url)
   - &llvm_prebuilt_x64_sha256 ($llvm_prebuilt_x64_sha256)
   - &llvm_prebuilt_arm64_url ($llvm_prebuilt_arm64_url)
