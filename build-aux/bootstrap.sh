@@ -30,6 +30,8 @@ ln -sf /app/lib/sdk/esbuild/bin/esbuild \
 
 ln -sf /usr/bin/gperf third_party/gperf/cipd/bin/
 
+install -D third_party/rust-toolchain/lib/libclang.so -t third_party/llvm-libclang/lib/
+
 # (TODO: enable use_qt in the future?)
 # DO NOT REUSE THE BELOW API KEY; it is for Flathub only.
 # http://lists.debian.org/debian-legal/2013/11/msg00006.html
