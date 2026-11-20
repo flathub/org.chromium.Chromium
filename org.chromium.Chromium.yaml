@@ -29,6 +29,10 @@ finish-args:
   - --talk-name=org.kde.kwalletd6
   - --talk-name=org.gnome.SessionManager
   - --own-name=org.mpris.MediaPlayer2.chromium.*
+  # Qt Theme
+  - --filesystem=xdg-config/kdeglobals:ro
+  - --talk-name=org.kde.KGlobalSettings
+  - --talk-name=org.kde.kconfig.notify
 
 add-extensions:
   org.chromium.Chromium.Codecs:
